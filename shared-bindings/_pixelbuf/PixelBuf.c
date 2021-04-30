@@ -120,14 +120,12 @@ STATIC mp_obj_t pixelbuf_pixelbuf_make_new(const mp_obj_type_t *type, size_t n_a
 }
 
 static void parse_byteorder(mp_obj_t byteorder_obj, pixelbuf_byteorder_details_t *parsed) {
-    if (!mp_obj_is_str(byteorder_obj)) {
-        mp_raise_TypeError(translate("byteorder is not a string"));
-    }
+    mp_arg_validate_string(byteorder_obj, MP_QSTR_byteorder);
 
     size_t bo_len;
     const char *byteorder = mp_obj_str_get_data(byteorder_obj, &bo_len);
     if (bo_len < 3 || bo_len > 4) {
-        mp_raise_ValueError(translate("Invalid byteorder string"));
+        mp_raise_ValueError_varg(translate("Invalid %q"), MP_QSTR_byteorder);
     }
     parsed->order_string = byteorder_obj;
 
@@ -139,7 +137,7 @@ static void parse_byteorder(mp_obj_t byteorder_obj, pixelbuf_byteorder_details_t
     char *w = strchr(byteorder, 'W');
     int num_chars = (dotstar ? 1 : 0) + (w ? 1 : 0) + (r ? 1 : 0) + (g ? 1 : 0) + (b ? 1 : 0);
     if ((num_chars < parsed->bpp) || !(r && b && g)) {
-        mp_raise_ValueError(translate("Invalid byteorder string"));
+        mp_raise_ValueError_varg(translate("Invalid %q"), MP_QSTR_byteorder);
     }
     parsed->is_dotstar = dotstar ? true : false;
     parsed->has_white = w ? true : false;
@@ -148,11 +146,8 @@ static void parse_byteorder(mp_obj_t byteorder_obj, pixelbuf_byteorder_details_t
     parsed->byteorder.b = b - byteorder;
     parsed->byteorder.w = w ? w - byteorder : 0;
     // The dotstar brightness byte is always first (as it goes with the pixel start bits)
-    if (dotstar && byteorder[0] != 'P') {
-        mp_raise_ValueError(translate("Invalid byteorder string"));
-    }
-    if (parsed->has_white && parsed->is_dotstar) {
-        mp_raise_ValueError(translate("Invalid byteorder string"));
+    if ((dotstar && byteorder[0] != 'P') || (parsed->has_white && parsed->is_dotstar)) {
+        mp_raise_ValueError_varg(translate("Invalid %q"), MP_QSTR_byteorder);
     }
 }
 

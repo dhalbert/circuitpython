@@ -117,10 +117,10 @@ STATIC mp_obj_t displayio_tilegrid_make_new(const mp_obj_type_t *type, size_t n_
         tile_height = bitmap_height;
     }
     if (bitmap_width % tile_width != 0) {
-        mp_raise_ValueError(translate("Tile width must exactly divide bitmap width"));
+        mp_raise_ValueError_varg(translate("%q must exactly divide bitmap width"), MP_QSTR_tile_width);
     }
     if (bitmap_height % tile_height != 0) {
-        mp_raise_ValueError(translate("Tile height must exactly divide bitmap height"));
+        mp_raise_ValueError_varg(translate("%q must exactly divide bitmap height"), MP_QSTR_tile_height);
     }
 
     int16_t x = args[ARG_x].u_int;
@@ -371,9 +371,7 @@ STATIC mp_obj_t tilegrid_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t v
             return MP_OBJ_NULL; // op not supported
         } else {
             mp_int_t value = mp_obj_get_int(value_obj);
-            if (value < 0 || value > 255) {
-                mp_raise_ValueError(translate("Tile value out of bounds"));
-            }
+            mp_arg_validate_int_range(value, 0, 255, MP_QSTR_value);
             common_hal_displayio_tilegrid_set_tile(self, x, y, value);
         }
     }

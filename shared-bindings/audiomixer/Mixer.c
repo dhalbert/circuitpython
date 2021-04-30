@@ -92,21 +92,17 @@ STATIC mp_obj_t audiomixer_mixer_make_new(const mp_obj_type_t *type, size_t n_ar
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     mp_int_t voice_count = args[ARG_voice_count].u_int;
-    if (voice_count < 1 || voice_count > 255) {
-        mp_raise_ValueError(translate("Invalid voice count"));
-    }
+    mp_arg_validate_int_range(voice_count, 1, 255, MP_QSTR_voice_count);
 
     mp_int_t channel_count = args[ARG_channel_count].u_int;
-    if (channel_count < 1 || channel_count > 2) {
-        mp_raise_ValueError(translate("Invalid channel count"));
-    }
+    mp_arg_validate_int_range(channel_count, 1, 2, MP_QSTR_channel_count);
+
     mp_int_t sample_rate = args[ARG_sample_rate].u_int;
-    if (sample_rate < 1) {
-        mp_raise_ValueError(translate("Sample rate must be positive"));
-    }
+    mp_arg_validate_int_min(sample_rate, 1, MP_QSTR_sample_rate);
+
     mp_int_t bits_per_sample = args[ARG_bits_per_sample].u_int;
     if (bits_per_sample != 8 && bits_per_sample != 16) {
-        mp_raise_ValueError(translate("bits_per_sample must be 8 or 16"));
+        mp_raise_ValueError_varg(translate("%q must be 8 or 16"), MP_QSTR_bits_per_sample);
     }
     audiomixer_mixer_obj_t *self = m_new_obj_var(audiomixer_mixer_obj_t, mp_obj_t, voice_count);
     self->base.type = &audiomixer_mixer_type;
@@ -234,7 +230,7 @@ STATIC mp_obj_t audiomixer_mixer_obj_play(size_t n_args, const mp_obj_t *pos_arg
 
     uint8_t v = args[ARG_voice].u_int;
     if (v > (self->voice_count - 1)) {
-        mp_raise_ValueError(translate("Invalid voice"));
+        mp_raise_ValueError_varg(translate("Invalid %q"), MP_QSTR_voice);
     }
     audiomixer_mixervoice_obj_t *voice = MP_OBJ_TO_PTR(self->voice[v]);
     mp_obj_t sample = args[ARG_sample].u_obj;

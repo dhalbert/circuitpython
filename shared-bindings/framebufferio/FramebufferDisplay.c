@@ -70,7 +70,7 @@ STATIC mp_obj_t framebufferio_framebufferdisplay_make_new(const mp_obj_type_t *t
 
     mp_int_t rotation = args[ARG_rotation].u_int;
     if (rotation % 90 != 0) {
-        mp_raise_ValueError(translate("Display rotation must be in 90 degree increments"));
+        mp_raise_ValueError_varg(translate("%q must be in 90 degree increments"), MP_QSTR_rotation);
     }
 
     primary_display_t *disp = allocate_display_or_raise();
@@ -195,11 +195,11 @@ STATIC mp_obj_t framebufferio_framebufferdisplay_obj_set_brightness(mp_obj_t sel
     common_hal_framebufferio_framebufferdisplay_set_auto_brightness(self, false);
     mp_float_t brightness = mp_obj_get_float(brightness_obj);
     if (brightness < 0.0f || brightness > 1.0f) {
-        mp_raise_ValueError(translate("Brightness must be 0-1.0"));
+        mp_raise_ValueError_varg(translate("%q must be 0-1.0"), MP_QSTR_brightness);
     }
     bool ok = common_hal_framebufferio_framebufferdisplay_set_brightness(self, brightness);
     if (!ok) {
-        mp_raise_RuntimeError(translate("Brightness not adjustable"));
+        mp_raise_RuntimeError_varg(translate("%q not adjustable"), MP_QSTR_brightness);
     }
     return mp_const_none;
 }
@@ -339,7 +339,7 @@ STATIC mp_obj_t framebufferio_framebufferdisplay_obj_fill_row(size_t n_args, con
     mp_get_buffer_raise(result, &bufinfo, MP_BUFFER_WRITE);
 
     if (bufinfo.typecode != BYTEARRAY_TYPECODE) {
-        mp_raise_ValueError(translate("Buffer is not a bytearray."));
+        mp_raise_ValueError_varg(translate("%q is not a bytearray."), MP_QSTR_buffer);
     }
     if (self->core.colorspace.depth != 16) {
         mp_raise_ValueError(translate("Display must have a 16 bit colorspace."));
@@ -372,7 +372,7 @@ STATIC mp_obj_t framebufferio_framebufferdisplay_obj_fill_row(size_t n_args, con
         displayio_display_core_fill_area(&self->core, &area, mask, result_buffer);
         return result;
     } else {
-        mp_raise_ValueError(translate("Buffer is too small"));
+        mp_raise_ValueError_varg(translate("%q is too small"), MP_QSTR_buffer);
     }
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(framebufferio_framebufferdisplay_fill_row_obj, 1, framebufferio_framebufferdisplay_obj_fill_row);

@@ -72,17 +72,13 @@ STATIC mp_obj_t bleio_characteristic_buffer_make_new(const mp_obj_type_t *type, 
 
     mp_float_t timeout = mp_obj_get_float(args[ARG_timeout].u_obj);
     if (timeout < 0.0f) {
-        mp_raise_ValueError(translate("timeout must be >= 0.0"));
+        mp_raise_ValueError_varg(translate("%q must be >= 0.0"), MP_QSTR_timeout);
     }
 
-    const int buffer_size = args[ARG_buffer_size].u_int;
-    if (buffer_size < 1) {
-        mp_raise_ValueError_varg(translate("%q must be >= 1"), MP_QSTR_buffer_size);
-    }
+    const mp_int_t buffer_size = args[ARG_buffer_size].u_int;
+    mp_arg_validate_int_min(buffer_size, 1, MP_QSTR_buffer_size);
 
-    if (!mp_obj_is_type(characteristic, &bleio_characteristic_type)) {
-        mp_raise_TypeError(translate("Expected a Characteristic"));
-    }
+    mp_arg_validate_type(characteristic, &bleio_characteristic_type, MP_QSTR_characteristic);
 
     bleio_characteristic_buffer_obj_t *self = m_new_obj(bleio_characteristic_buffer_obj_t);
     self->base.type = &bleio_characteristic_buffer_type;

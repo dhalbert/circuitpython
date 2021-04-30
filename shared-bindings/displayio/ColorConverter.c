@@ -75,7 +75,7 @@ STATIC mp_obj_t displayio_colorconverter_obj_convert(mp_obj_t self_in, mp_obj_t 
 
     mp_int_t color;
     if (!mp_obj_get_int_maybe(color_obj, &color)) {
-        mp_raise_ValueError(translate("color should be an int"));
+        mp_raise_ValueError(translate(" should be an int"));
     }
     _displayio_colorspace_t colorspace;
     colorspace.depth = 16;

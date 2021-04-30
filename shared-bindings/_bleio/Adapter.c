@@ -96,16 +96,12 @@ STATIC mp_obj_t bleio_adapter_make_new(const mp_obj_type_t *type, size_t n_args,
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     busio_uart_obj_t *uart = args[ARG_uart].u_obj;
-    if (!mp_obj_is_type(uart, &busio_uart_type)) {
-        mp_raise_ValueError(translate("Expected a UART"));
-    }
+    mp_arg_validate_type(uart, &busio_uart_type, MP_QSTR_uart);
 
     digitalio_digitalinout_obj_t *rts = args[ARG_rts].u_obj;
     digitalio_digitalinout_obj_t *cts = args[ARG_cts].u_obj;
-    if (!mp_obj_is_type(rts, &digitalio_digitalinout_type) ||
-        !mp_obj_is_type(cts, &digitalio_digitalinout_type)) {
-        mp_raise_ValueError(translate("Expected a DigitalInOut"));
-    }
+    mp_arg_validate_type(rts, &digitalio_digitalinout_type, MP_QSTR_rts);
+    mp_arg_validate_type(cts, &digitalio_digitalinout_type, MP_QSTR_cts);
 
     // Will enable the adapter.
     common_hal_bleio_adapter_construct_hci_uart(self, uart, rts, cts);
@@ -239,7 +235,8 @@ STATIC mp_obj_t bleio_adapter_start_advertising(mp_uint_t n_args, const mp_obj_t
 
     const mp_float_t interval = mp_obj_get_float(args[ARG_interval].u_obj);
     if (interval < ADV_INTERVAL_MIN || interval > ADV_INTERVAL_MAX) {
-        mp_raise_ValueError_varg(translate("interval must be in range %s-%s"),
+        mp_raise_ValueError_varg(translate("%q must be in range %s-%s"),
+            MP_QSTR_INTERVAL,
             ADV_INTERVAL_MIN_STRING, ADV_INTERVAL_MAX_STRING);
     }
 
@@ -322,7 +319,9 @@ STATIC mp_obj_t bleio_adapter_start_scan(size_t n_args, const mp_obj_t *pos_args
 
     const mp_float_t interval = mp_obj_get_float(args[ARG_interval].u_obj);
     if (interval < INTERVAL_MIN || interval > INTERVAL_MAX) {
-        mp_raise_ValueError_varg(translate("interval must be in range %s-%s"), INTERVAL_MIN_STRING, INTERVAL_MAX_STRING);
+        mp_raise_ValueError_varg(translate("%q must be in range %s-%s"),
+            MP_QSTR_interval,
+            INTERVAL_MIN_STRING, INTERVAL_MAX_STRING);
     }
 
     #pragma GCC diagnostic push
@@ -334,7 +333,8 @@ STATIC mp_obj_t bleio_adapter_start_scan(size_t n_args, const mp_obj_t *pos_args
 
     const mp_float_t window = mp_obj_get_float(args[ARG_window].u_obj);
     if (window > interval) {
-        mp_raise_ValueError(translate("window must be <= interval"));
+        mp_raise_ValueError_varg(translate("%q must be <= %q"),
+            MP_QSTR_window, MP_QSTR_interval);
     }
 
     mp_buffer_info_t prefix_bufinfo;
@@ -431,9 +431,7 @@ STATIC mp_obj_t bleio_adapter_connect(mp_uint_t n_args, const mp_obj_t *pos_args
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    if (!mp_obj_is_type(args[ARG_address].u_obj, &bleio_address_type)) {
-        mp_raise_TypeError(translate("Expected an Address"));
-    }
+    mp_arg_validate_type(args[ARG_address].u_obj, &bleio_address_type, MP_QSTR_address);
 
     bleio_address_obj_t *address = MP_OBJ_TO_PTR(args[ARG_address].u_obj);
     mp_float_t timeout = mp_obj_get_float(args[ARG_timeout].u_obj);

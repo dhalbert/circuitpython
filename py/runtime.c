@@ -1567,6 +1567,13 @@ NORETURN void mp_raise_RuntimeError(const compressed_string_t *msg) {
     mp_raise_msg(&mp_type_RuntimeError, msg);
 }
 
+NORETURN void mp_raise_RuntimeError_varg(const compressed_string_t *fmt, ...) {
+    va_list argptr;
+    va_start(argptr,fmt);
+    mp_raise_msg_vlist(&mp_type_RuntimeError, fmt, argptr);
+    va_end(argptr);
+}
+
 NORETURN void mp_raise_ImportError(const compressed_string_t *msg) {
     mp_raise_msg(&mp_type_ImportError, msg);
 }

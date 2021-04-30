@@ -161,3 +161,39 @@ NORETURN void mp_arg_error_unimpl_kw(void) {
     mp_raise_NotImplementedError(translate("keyword argument(s) not yet implemented - use normal args instead"));
 }
 #endif
+
+void mp_arg_validate_int_min(mp_int_t i, mp_int_t min, qstr arg_name) {
+    if (i < min) {
+        mp_raise_ValueError_varg(translate("%q must be >= %d"), arg_name, min);
+    }
+}
+
+void mp_arg_validate_int_max(mp_int_t i, mp_int_t max, qstr arg_name) {
+    if (i > max) {
+        mp_raise_ValueError_varg(translate("%q must <= %d"), arg_name, max);
+    }
+}
+
+void mp_arg_validate_int_range(mp_int_t i, mp_int_t min, mp_int_t max, qstr arg_name) {
+    if (i < min || i > max) {
+        mp_raise_ValueError_varg(translate("%q must be %d-%d"), arg_name, min, max);
+    }
+}
+
+void mp_arg_validate_int(mp_obj_t obj, qstr arg_name) {
+    if (!mp_obj_is_int(obj)) {
+        mp_raise_TypeError_varg(translate("%q must be an int"), arg_name);
+    }
+}
+
+void mp_arg_validate_type(mp_obj_t obj, const mp_obj_type_t *type, qstr arg_name) {
+    if (!mp_obj_is_type(obj, type)) {
+        mp_raise_TypeError_varg(translate("%q must be %q"), arg_name, type->name);
+    }
+}
+
+void mp_arg_validate_string(mp_obj_t obj, qstr arg_name) {
+    if (!mp_obj_is_str(obj)) {
+        mp_raise_TypeError_varg(translate("%q must be a string"), arg_name);
+    }
+}

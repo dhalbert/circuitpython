@@ -215,7 +215,7 @@ STATIC mp_obj_t digitalio_digitalinout_obj_set_direction(mp_obj_t self_in, mp_ob
             mp_raise_NotImplementedError(translate("Pin is input only"));
         }
     } else {
-        mp_raise_ValueError(translate("Invalid direction."));
+        mp_raise_ValueError_varg(translate("Invalid %q"), MP_QSTR_direction);
     }
     return mp_const_none;
 }
@@ -341,7 +341,7 @@ STATIC mp_obj_t digitalio_digitalinout_obj_set_pull(mp_obj_t self_in, mp_obj_t p
     } else if (pull_obj == &digitalio_pull_down_obj) {
         pull = PULL_DOWN;
     } else if (pull_obj != mp_const_none) {
-        mp_raise_ValueError(translate("Unsupported pull value."));
+        mp_raise_ValueError(translate("Unsupported pull value"));
     }
     common_hal_digitalio_digitalinout_set_pull(self, pull);
     return mp_const_none;

@@ -119,9 +119,7 @@ STATIC mp_obj_t audiomixer_mixervoice_obj_set_level(size_t n_args, const mp_obj_
 
     float level = mp_obj_get_float(args[ARG_level].u_obj);
 
-    if (level > 1 || level < 0) {
-        mp_raise_ValueError(translate("level must be between 0 and 1"));
-    }
+    mp_arg_validate_int_range(level, 0, 1, MP_QSTR_level);
 
     common_hal_audiomixer_mixervoice_set_level(self, level);
 

@@ -160,7 +160,7 @@ STATIC mp_obj_t alarm_sleep_memory_subscr(mp_obj_t self_in, mp_obj_t index_in, m
                 // store
                 mp_int_t byte_value = mp_obj_get_int(value);
                 if (byte_value > 0xff || byte_value < 0) {
-                    mp_raise_ValueError(translate("Bytes must be between 0 and 255."));
+                    mp_raise_ValueError(translate("Bytes must be 0-255."));
                 }
                 uint8_t short_value = byte_value;
                 if (!common_hal_alarm_sleep_memory_set_bytes(self, index, &short_value, 1)) {

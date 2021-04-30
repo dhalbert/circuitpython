@@ -60,9 +60,7 @@ STATIC mp_obj_t displayio_group_make_new(const mp_obj_type_t *type, size_t n_arg
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     mp_int_t scale = args[ARG_scale].u_int;
-    if (scale < 1) {
-        mp_raise_ValueError_varg(translate("%q must be >= 1"), MP_QSTR_scale);
-    }
+    mp_arg_validate_int_min(scale, 1, MP_QSTR_scale);
 
     displayio_group_t *self = m_new_obj(displayio_group_t);
     self->base.type = &displayio_group_type;
@@ -75,7 +73,7 @@ STATIC mp_obj_t displayio_group_make_new(const mp_obj_type_t *type, size_t n_arg
 displayio_group_t *native_group(mp_obj_t group_obj) {
     mp_obj_t native_group = mp_instance_cast_to_native_base(group_obj, &displayio_group_type);
     if (native_group == MP_OBJ_NULL) {
-        mp_raise_ValueError_varg(translate("Must be a %q subclass."), MP_QSTR_Group);
+        mp_raise_ValueError_varg(translate("Must be a %q subclass"), MP_QSTR_Group);
     }
     mp_obj_assert_native_inited(native_group);
     return MP_OBJ_TO_PTR(native_group);
@@ -120,9 +118,8 @@ STATIC mp_obj_t displayio_group_obj_set_scale(mp_obj_t self_in, mp_obj_t scale_o
     displayio_group_t *self = native_group(self_in);
 
     mp_int_t scale = mp_obj_get_int(scale_obj);
-    if (scale < 1) {
-        mp_raise_ValueError_varg(translate("%q must be >= 1"), MP_QSTR_scale);
-    }
+    mp_arg_validate_int_min(scale, 1, MP_QSTR_scale);
+
     common_hal_displayio_group_set_scale(self, scale);
     return mp_const_none;
 }

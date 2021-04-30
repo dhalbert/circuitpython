@@ -74,9 +74,8 @@ STATIC mp_obj_t dualbank_flash(size_t n_args, const mp_obj_t *pos_args, mp_map_t
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    if (args[ARG_offset].u_int < 0) {
-        mp_raise_ValueError(translate("offset must be >= 0"));
-    }
+    mp_int_t offset = args[ARG_offset].u_int;
+    mp_arg_validate_int_min(offset, 0, MP_QSTR_offset);
 
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[ARG_buffer].u_obj, &bufinfo, MP_BUFFER_READ);

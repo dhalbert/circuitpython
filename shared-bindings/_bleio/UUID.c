@@ -208,7 +208,7 @@ STATIC mp_obj_t bleio_uuid_pack_into(mp_uint_t n_args, const mp_obj_t *pos_args,
 
     size_t offset = args[ARG_offset].u_int;
     if (offset + common_hal_bleio_uuid_get_size(self) / 8 > bufinfo.len) {
-        mp_raise_ValueError(translate("Buffer + offset too small %d %d %d"));
+        mp_raise_ValueError(translate("Buffer + offset too small"));
     }
 
     common_hal_bleio_uuid_pack_into(self, bufinfo.buf + offset);

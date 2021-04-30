@@ -483,14 +483,15 @@ STATIC mp_obj_t bitmaptools_readinto(size_t n_args, const mp_obj_t *pos_args, mp
 
     int element_size = args[ARG_element_size].u_int;
     if (element_size != 1 && element_size != 2 && element_size != 4) {
-        mp_raise_ValueError_varg(translate("invalid element_size %d, must be, 1, 2, or 4"), element_size);
+        mp_raise_ValueError_varg(translate("%q must be, 1, 2, or 4"), MP_QSTR_element_size);
     }
 
     int bits_per_pixel = args[ARG_bits_per_pixel].u_int;
     switch (bits_per_pixel) {
         case 24:
             if (element_size != 1) {
-                mp_raise_ValueError_varg(translate("invalid element size %d for bits_per_pixel %d\n"), element_size, bits_per_pixel);
+                mp_raise_ValueError_varg(translate("invalid %q for bits_per_pixel %d"),
+                    MP_QSTR_element_size, bits_per_pixel);
             }
             break;
         case 1:
@@ -501,7 +502,7 @@ STATIC mp_obj_t bitmaptools_readinto(size_t n_args, const mp_obj_t *pos_args, mp
         case 32:
             break;
         default:
-            mp_raise_ValueError_varg(translate("invalid bits_per_pixel %d, must be, 1, 4, 8, 16, 24, or 32"), bits_per_pixel);
+            mp_raise_ValueError_varg(translate("%q must be, 1, 4, 8, 16, 24, or 32"), MP_QSTR_bits_per_pixel);
     }
 
     bool reverse_pixels_in_element = args[ARG_reverse_pixels_in_element].u_bool;

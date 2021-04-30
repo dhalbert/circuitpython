@@ -59,13 +59,10 @@ STATIC mp_obj_t displayio_shape_make_new(const mp_obj_type_t *type, size_t n_arg
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     mp_int_t width = args[ARG_width].u_int;
-    if (width < 1) {
-        mp_raise_ValueError_varg(translate("%q must be >= 1"), MP_QSTR_width);
-    }
+    mp_arg_validate_int_min(width, 1, MP_QSTR_width);
+
     mp_int_t height = args[ARG_height].u_int;
-    if (height < 1) {
-        mp_raise_ValueError_varg(translate("%q must be >= 1"), MP_QSTR_height);
-    }
+    mp_arg_validate_int_min(height, 1, MP_QSTR_height);
 
     displayio_shape_t *self = m_new_obj(displayio_shape_t);
     self->base.type = &displayio_shape_type;
@@ -92,11 +89,11 @@ STATIC mp_obj_t displayio_shape_obj_set_boundary(size_t n_args, const mp_obj_t *
     }
     mp_int_t start_x;
     if (!mp_obj_get_int_maybe(args[2], &start_x)) {
-        mp_raise_ValueError(translate("start_x should be an int"));
+        mp_raise_ValueError_varg(translate("%q should be an int"), MP_QSTR_start_x);
     }
     mp_int_t end_x;
     if (!mp_obj_get_int_maybe(args[3], &end_x)) {
-        mp_raise_ValueError(translate("end_x should be an int"));
+        mp_raise_ValueError_varg(translate("%q should be an int"), MP_QSTR_end_x);
     }
     common_hal_displayio_shape_set_boundary(self, y, start_x, end_x);
 

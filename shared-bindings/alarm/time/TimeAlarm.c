@@ -86,7 +86,7 @@ STATIC mp_obj_t alarm_time_timealarm_make_new(const mp_obj_type_t *type,
 
     if (have_epoch) {
         #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_NONE
-        mp_raise_ValueError(translate("epoch_time not supported on this board"));
+        mp_raise_ValueError_var(translate("%q not supported on this board"), MP_QSTR_epoch_time);
         #else
         mp_uint_t epoch_time_secs = mp_obj_int_get_checked(args[ARG_epoch_time].u_obj);
 

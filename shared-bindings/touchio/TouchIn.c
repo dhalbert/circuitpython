@@ -172,12 +172,10 @@ MP_DEFINE_CONST_FUN_OBJ_1(touchio_touchin_get_threshold_obj, touchio_touchin_obj
 STATIC mp_obj_t touchio_touchin_obj_set_threshold(mp_obj_t self_in, mp_obj_t threshold_obj) {
     touchio_touchin_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
-    uint32_t new_threshold = mp_obj_get_int(threshold_obj);
-    if (new_threshold < 0 || new_threshold > UINT16_MAX) {
-        // I would use MP_STRINGIFY(UINT16_MAX), but that prints "0xffff" instead of 65536.
-        mp_raise_ValueError(translate("threshold must be in the range 0-65536"));
-    }
-    common_hal_touchio_touchin_set_threshold(self, new_threshold);
+    mp_int_t new_threshold = mp_obj_int_get_checked(threshold_obj);
+    mp_arg_validate_int_range(new_threshold, 0, 65535, MP_QSTR_threshold);
+
+    common_hal_touchio_touchin_set_threshold(self, (uint32_t)new_threshold);
     return mp_const_none;
 }
 

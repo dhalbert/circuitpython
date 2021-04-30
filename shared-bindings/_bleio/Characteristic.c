@@ -89,14 +89,10 @@ STATIC mp_obj_t bleio_characteristic_add_to_service(size_t n_args, const mp_obj_
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     const mp_obj_t service_obj = args[ARG_service].u_obj;
-    if (!mp_obj_is_type(service_obj, &bleio_service_type)) {
-        mp_raise_TypeError(translate("Expected a Service"));
-    }
+    mp_arg_validate_type(service_obj, &bleio_service_type, MP_QSTR_service);
 
     const mp_obj_t uuid_obj = args[ARG_uuid].u_obj;
-    if (!mp_obj_is_type(uuid_obj, &bleio_uuid_type)) {
-        mp_raise_TypeError(translate("Expected a UUID"));
-    }
+    mp_arg_validate_type(uuid_obj, &bleio_uuid_type, MP_QSTR_uuid);
 
     const bleio_characteristic_properties_t properties = args[ARG_properties].u_int;
     if (properties & ~CHAR_PROP_ALL) {
@@ -110,9 +106,8 @@ STATIC mp_obj_t bleio_characteristic_add_to_service(size_t n_args, const mp_obj_
     common_hal_bleio_attribute_security_mode_check_valid(write_perm);
 
     const mp_int_t max_length_int = args[ARG_max_length].u_int;
-    if (max_length_int < 0) {
-        mp_raise_ValueError(translate("max_length must be >= 0"));
-    }
+    mp_arg_validate_int_min(max_length_int, 0, MP_QSTR_max_length);
+
     const size_t max_length = (size_t)max_length_int;
     const bool fixed_length = args[ARG_fixed_length].u_bool;
     mp_obj_t initial_value = args[ARG_initial_value].u_obj;
@@ -129,7 +124,7 @@ STATIC mp_obj_t bleio_characteristic_add_to_service(size_t n_args, const mp_obj_
     mp_get_buffer_raise(initial_value, &initial_value_bufinfo, MP_BUFFER_READ);
     if (initial_value_bufinfo.len > max_length ||
         (fixed_length && initial_value_bufinfo.len != max_length)) {
-        mp_raise_ValueError(translate("initial_value length is wrong"));
+        mp_raise_ValueError_varg(translate("%q length is wrong"), MP_QSTR_initial_value);
     }
 
     bleio_characteristic_obj_t *characteristic = m_new_obj(bleio_characteristic_obj_t);

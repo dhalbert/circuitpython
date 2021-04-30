@@ -140,7 +140,7 @@ STATIC mp_obj_t palette_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t val
         }
     } else if (mp_obj_get_int_maybe(value, &int_value)) {
         if (int_value < 0 || int_value > 0xffffff) {
-            mp_raise_TypeError(translate("color must be between 0x000000 and 0xffffff"));
+            mp_raise_ValueError(translate("color must be between 0x000000 and 0xffffff"));
         }
         color = int_value;
     } else {
@@ -173,7 +173,7 @@ STATIC mp_obj_t displayio_palette_obj_make_opaque(mp_obj_t self_in, mp_obj_t pal
 
     mp_int_t palette_index;
     if (!mp_obj_get_int_maybe(palette_index_obj, &palette_index)) {
-        mp_raise_ValueError(translate("palette_index should be an int"));
+        mp_raise_ValueError_varg(translate("%q should be an int"), MP_QSTR_palette_index);
     }
     common_hal_displayio_palette_make_opaque(self, palette_index);
     return mp_const_none;
@@ -189,7 +189,7 @@ STATIC mp_obj_t displayio_palette_obj_is_transparent(mp_obj_t self_in, mp_obj_t 
 
     mp_int_t palette_index;
     if (!mp_obj_get_int_maybe(palette_index_obj, &palette_index)) {
-        mp_raise_ValueError(translate("palette_index should be an int"));
+        mp_raise_ValueError_varg(translate("%q should be an int"), MP_QSTR_palette_index);
     }
     return mp_obj_new_bool(common_hal_displayio_palette_is_transparent(self, palette_index));
 }

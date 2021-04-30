@@ -135,7 +135,7 @@ STATIC mp_obj_t wifi_radio_set_hostname(mp_obj_t self_in, mp_obj_t hostname_in) 
     regex_t regex; // validate hostname according to RFC 1123
     regcomp(&regex,"^(([a-z0-9]|[a-z0-9][a-z0-9\\-]{0,61}[a-z0-9])\\.)*([a-z0-9]|[a-z0-9][a-z0-9\\-]{0,61}[a-z0-9])$", REG_EXTENDED | REG_ICASE | REG_NOSUB);
     if (regexec(&regex, hostname.buf, 0, NULL, 0)) {
-        mp_raise_ValueError(translate("invalid hostname"));
+        mp_raise_ValueError_varg(translate("Invalid %q"), MP_QSTR_hostname);
     }
     regfree(&regex);
 

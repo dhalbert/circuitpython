@@ -152,7 +152,7 @@ STATIC mp_obj_t displayio_epaperdisplay_make_new(const mp_obj_type_t *type, size
 
     mp_int_t rotation = args[ARG_rotation].u_int;
     if (rotation % 90 != 0) {
-        mp_raise_ValueError(translate("Display rotation must be in 90 degree increments"));
+        mp_raise_ValueError_varg(translate("%q must be in 90 degree increments"), MP_QSTR_rotation);
     }
 
     primary_display_t *disp = allocate_display_or_raise();
@@ -209,7 +209,7 @@ STATIC mp_obj_t displayio_epaperdisplay_obj_show(mp_obj_t self_in, mp_obj_t grou
 
     bool ok = common_hal_displayio_epaperdisplay_show(self, group);
     if (!ok) {
-        mp_raise_ValueError(translate("Group already used"));
+        mp_raise_ValueError_varg(translate("%q already used"), MP_QSTR_group);
     }
     return mp_const_none;
 }

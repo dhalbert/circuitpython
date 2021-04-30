@@ -83,13 +83,10 @@ STATIC mp_obj_t displayio_fourwire_make_new(const mp_obj_type_t *type, size_t n_
     self->base.type = &displayio_fourwire_type;
 
     uint8_t polarity = args[ARG_polarity].u_int;
-    if (polarity != 0 && polarity != 1) {
-        mp_raise_ValueError(translate("Invalid polarity"));
-    }
+    mp_arg_validate_int_range(polarity, 0, 1, MP_QSTR_polarity);
+
     uint8_t phase = args[ARG_phase].u_int;
-    if (phase != 0 && phase != 1) {
-        mp_raise_ValueError(translate("Invalid phase"));
-    }
+    mp_arg_validate_int_range(phase, 0, 1, MP_QSTR_phase);
 
     common_hal_displayio_fourwire_construct(self,
         MP_OBJ_TO_PTR(spi), command, chip_select, reset, args[ARG_baudrate].u_int, polarity, phase);
@@ -127,9 +124,8 @@ STATIC mp_obj_t displayio_fourwire_obj_send(size_t n_args, const mp_obj_t *pos_a
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     mp_int_t command_int = args[ARG_command].u_int;
-    if (command_int > 255 || command_int < 0) {
-        mp_raise_ValueError(translate("Command must be an int between 0 and 255"));
-    }
+    mp_arg_validate_int_range(command_int, 0, 255, MP_QSTR_command);
+
     displayio_fourwire_obj_t *self = pos_args[0];
     uint8_t command = command_int;
     mp_buffer_info_t bufinfo;

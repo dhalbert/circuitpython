@@ -64,10 +64,8 @@ STATIC mp_obj_t bit_transpose(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    int width = args[ARG_width].u_int;
-    if (width < 2 || width > 8) {
-        mp_raise_ValueError_varg(translate("width must be from 2 to 8 (inclusive), not %d"), width);
-    }
+    mp_int_t width = args[ARG_width].u_int;
+    mp_arg_validate_int_range(width, 2, 8, MP_QSTR_width);
 
     mp_buffer_info_t input_bufinfo;
     mp_get_buffer_raise(args[ARG_input].u_obj, &input_bufinfo, MP_BUFFER_READ);

@@ -74,13 +74,9 @@ STATIC mp_obj_t bleio_packet_buffer_make_new(const mp_obj_type_t *type, size_t n
     const mp_obj_t characteristic = args[ARG_characteristic].u_obj;
 
     const mp_int_t buffer_size = args[ARG_buffer_size].u_int;
-    if (buffer_size < 1) {
-        mp_raise_ValueError_varg(translate("%q must be >= 1"), MP_QSTR_buffer_size);
-    }
+    mp_arg_validate_int_min(buffer_size, 1, MP_QSTR_buffer_size);
 
-    if (!mp_obj_is_type(characteristic, &bleio_characteristic_type)) {
-        mp_raise_TypeError(translate("Expected a Characteristic"));
-    }
+    mp_arg_validate_type(characteristic, &bleio_characteristic_type, MP_QSTR_characteristic);
 
     size_t max_packet_size = common_hal_bleio_characteristic_get_max_length(characteristic);
     if (args[ARG_max_packet_size].u_obj != mp_const_none) {

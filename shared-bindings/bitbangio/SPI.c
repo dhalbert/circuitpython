@@ -157,17 +157,13 @@ STATIC mp_obj_t bitbangio_spi_configure(size_t n_args, const mp_obj_t *pos_args,
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     uint8_t polarity = args[ARG_polarity].u_int;
-    if (polarity != 0 && polarity != 1) {
-        mp_raise_ValueError(translate("Invalid polarity"));
-    }
+    mp_arg_validate_int_range(polarity, 0, 1, MP_QSTR_polarity);
+
     uint8_t phase = args[ARG_phase].u_int;
-    if (phase != 0 && phase != 1) {
-        mp_raise_ValueError(translate("Invalid phase"));
-    }
+    mp_arg_validate_int_range(phase, 0, 1, MP_QSTR_phase);
+
     uint8_t bits = args[ARG_bits].u_int;
-    if (bits != 8 && bits != 9) {
-        mp_raise_ValueError(translate("Invalid number of bits"));
-    }
+    mp_arg_validate_int_range(bits, 8, 9, MP_QSTR_bits);
 
     shared_module_bitbangio_spi_configure(self, args[ARG_baudrate].u_int, polarity, phase, bits);
     return mp_const_none;

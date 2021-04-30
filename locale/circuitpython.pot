@@ -51,15 +51,26 @@ msgstr ""
 msgid " output:\n"
 msgstr ""
 
+#: shared-bindings/displayio/ColorConverter.c
+msgid " should be an int"
+msgstr ""
+
 #: py/objstr.c
 #, c-format
 msgid "%%c requires int or char"
 msgstr ""
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
-#, c-format
-msgid ""
-"%d address pins, %d rgb pins and %d tiles indicate a height of %d, not %d"
+msgid "%d %q, %d %q, and %d %q indicate a height of %d, not %d"
+msgstr ""
+
+#: shared-bindings/displayio/Display.c
+#: shared-bindings/displayio/EPaperDisplay.c
+msgid "%q already used"
+msgstr ""
+
+#: shared-bindings/audiobusio/PDMIn.c
+msgid "%q capacity is smaller than %q"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/sdioio/SDCard.c
@@ -83,24 +94,135 @@ msgstr ""
 msgid "%q indices must be integers, not %q"
 msgstr ""
 
+#: shared-bindings/i2cperipheral/I2CPeripheral.c
+msgid "%q is empty"
+msgstr ""
+
+#: shared-bindings/displayio/Display.c
+#: shared-bindings/framebufferio/FramebufferDisplay.c
+msgid "%q is not a bytearray."
+msgstr ""
+
+#: shared-bindings/analogio/AnalogOut.c
+msgid "%q is only 16 bits. %q must be < 65536."
+msgstr ""
+
+#: shared-bindings/displayio/Display.c
+#: shared-bindings/framebufferio/FramebufferDisplay.c
+msgid "%q is too small"
+msgstr ""
+
+#: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
+msgid "%q length is wrong"
+msgstr ""
+
+#: shared-bindings/canio/RemoteTransmissionRequest.c
+msgid "%q limited to 8 bytes"
+msgstr ""
+
 #: shared-bindings/vectorio/Polygon.c
 msgid "%q list must be a list"
 msgstr ""
 
-#: shared-bindings/memorymonitor/AllocationAlarm.c
-msgid "%q must be >= 0"
+#: py/argcheck.c
+msgid "%q must <= %d"
+msgstr ""
+
+#: shared-bindings/_bleio/Address.c
+msgid "%q must be %d bytes long"
+msgstr ""
+
+#: py/argcheck.c
+msgid "%q must be %d-%d"
+msgstr ""
+
+#: py/argcheck.c
+msgid "%q must be %q"
+msgstr ""
+
+#: shared-bindings/displayio/Display.c
+#: shared-bindings/framebufferio/FramebufferDisplay.c
+#: shared-bindings/rgbmatrix/RGBMatrix.c
+msgid "%q must be 0-1.0"
+msgstr ""
+
+#: shared-bindings/busio/UART.c
+msgid "%q must be 0.0-100.0 seconds"
+msgstr ""
+
+#: shared-bindings/audiomixer/Mixer.c
+msgid "%q must be 8 or 16"
+msgstr ""
+
+#: shared-bindings/_bleio/Adapter.c
+msgid "%q must be <= %q"
+msgstr ""
+
+#: py/argcheck.c
+msgid "%q must be >= %d"
 msgstr ""
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
-#: shared-bindings/_bleio/PacketBuffer.c shared-bindings/displayio/Group.c
-#: shared-bindings/displayio/Shape.c
-#: shared-bindings/memorymonitor/AllocationAlarm.c
-#: shared-bindings/vectorio/Circle.c shared-bindings/vectorio/Rectangle.c
-msgid "%q must be >= 1"
+msgid "%q must be >= 0.0"
+msgstr ""
+
+#: shared-bindings/audiobusio/PDMIn.c
+msgid "%q must be a bytearray or array of type 'B' for bit_depth = 8"
+msgstr ""
+
+#: py/argcheck.c
+msgid "%q must be a string"
 msgstr ""
 
 #: shared-module/vectorio/Polygon.c
 msgid "%q must be a tuple of length 2"
+msgstr ""
+
+#: py/argcheck.c
+msgid "%q must be an int"
+msgstr ""
+
+#: shared-bindings/displayio/Display.c
+#: shared-bindings/displayio/EPaperDisplay.c
+#: shared-bindings/framebufferio/FramebufferDisplay.c
+msgid "%q must be in 90 degree increments"
+msgstr ""
+
+#: shared-bindings/_bleio/Adapter.c
+msgid "%q must be in range %s-%s"
+msgstr ""
+
+#: shared-bindings/audiobusio/PDMIn.c
+msgid "%q must be in range 0.0 to 1.0"
+msgstr ""
+
+#: shared-bindings/audiobusio/PDMIn.c
+msgid "%q must be multiple of 8"
+msgstr ""
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "%q must be, 1, 2, or 4"
+msgstr ""
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "%q must be, 1, 4, 8, 16, 24, or 32"
+msgstr ""
+
+#: shared-bindings/displayio/TileGrid.c
+msgid "%q must exactly divide bitmap height"
+msgstr ""
+
+#: shared-bindings/displayio/TileGrid.c
+msgid "%q must exactly divide bitmap width"
+msgstr ""
+
+#: shared-bindings/displayio/Display.c
+#: shared-bindings/framebufferio/FramebufferDisplay.c
+msgid "%q not adjustable"
+msgstr ""
+
+#: shared-bindings/alarm/time/TimeAlarm.c
+msgid "%q not supported on this board"
 msgstr ""
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
@@ -112,12 +234,21 @@ msgstr ""
 msgid "%q pin invalid"
 msgstr ""
 
+#: shared-bindings/displayio/Palette.c shared-bindings/displayio/Shape.c
 #: shared-bindings/fontio/BuiltinFont.c
 msgid "%q should be an int"
 msgstr ""
 
 #: py/bc.c py/objnamedtuple.c
 msgid "%q() takes %d positional arguments but %d were given"
+msgstr ""
+
+#: shared-bindings/rgbmatrix/RGBMatrix.c
+msgid "%q[%d] duplicates another pin assignment"
+msgstr ""
+
+#: shared-bindings/rgbmatrix/RGBMatrix.c
+msgid "%q[%d] is not on the same port as clock"
 msgstr ""
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
@@ -300,13 +431,9 @@ msgstr ""
 msgid "ADC2 is being used by WiFi"
 msgstr ""
 
-#: shared-bindings/_bleio/Address.c shared-bindings/ipaddress/IPv4Address.c
+#: shared-bindings/ipaddress/IPv4Address.c
 #, c-format
 msgid "Address must be %d bytes long"
-msgstr ""
-
-#: shared-bindings/_bleio/Address.c
-msgid "Address type out of range"
 msgstr ""
 
 #: ports/esp32s2/common-hal/canio/CAN.c
@@ -350,7 +477,7 @@ msgstr ""
 msgid "All state machines in use"
 msgstr ""
 
-#: ports/atmel-samd/audio_dma.c ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+#: ports/atmel-samd/audio_dma.c
 msgid "All sync event channels in use"
 msgstr ""
 
@@ -401,10 +528,6 @@ msgstr ""
 #: ports/nrf/common-hal/analogio/AnalogOut.c
 #: ports/raspberrypi/common-hal/analogio/AnalogOut.c
 msgid "AnalogOut functionality not supported"
-msgstr ""
-
-#: shared-bindings/analogio/AnalogOut.c
-msgid "AnalogOut is only 16 bits. Value must be less than 65536."
 msgstr ""
 
 #: ports/atmel-samd/common-hal/analogio/AnalogOut.c
@@ -472,15 +595,6 @@ msgstr ""
 msgid "Bit clock and word select must share a clock unit"
 msgstr ""
 
-#: shared-bindings/rgbmatrix/RGBMatrix.c
-#, c-format
-msgid "Bit depth must be from 1 to 6 inclusive, not %d"
-msgstr ""
-
-#: shared-bindings/audiobusio/PDMIn.c
-msgid "Bit depth must be multiple of 8."
-msgstr ""
-
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Both RX and TX required for flow control"
 msgstr ""
@@ -491,22 +605,11 @@ msgstr ""
 
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
-#: shared-bindings/rgbmatrix/RGBMatrix.c
-msgid "Brightness must be 0-1.0"
-msgstr ""
-
-#: shared-bindings/supervisor/__init__.c
-msgid "Brightness must be between 0 and 255"
-msgstr ""
-
-#: shared-bindings/displayio/Display.c
-#: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Brightness not adjustable"
 msgstr ""
 
 #: shared-bindings/_bleio/UUID.c
-#, c-format
-msgid "Buffer + offset too small %d %d %d"
+msgid "Buffer + offset too small"
 msgstr ""
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
@@ -518,13 +621,7 @@ msgstr ""
 msgid "Buffer incorrect size. Should be %d bytes."
 msgstr ""
 
-#: shared-bindings/displayio/Display.c
-#: shared-bindings/framebufferio/FramebufferDisplay.c
-msgid "Buffer is not a bytearray."
-msgstr ""
-
-#: ports/cxd56/common-hal/camera/Camera.c shared-bindings/displayio/Display.c
-#: shared-bindings/framebufferio/FramebufferDisplay.c
+#: ports/cxd56/common-hal/camera/Camera.c
 msgid "Buffer is too small"
 msgstr ""
 
@@ -534,6 +631,10 @@ msgstr ""
 msgid "Buffer length %d too big. It must be less than %d"
 msgstr ""
 
+#: shared-bindings/bitbangio/I2C.c shared-bindings/busio/I2C.c
+msgid "Buffer length must be >= 1"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/sdioio/SDCard.c
 #: ports/cxd56/common-hal/sdioio/SDCard.c shared-module/sdcardio/SDCard.c
 msgid "Buffer length must be a multiple of 512"
@@ -541,10 +642,6 @@ msgstr ""
 
 #: ports/stm/common-hal/sdioio/SDCard.c
 msgid "Buffer must be a multiple of 512 bytes"
-msgstr ""
-
-#: shared-bindings/bitbangio/I2C.c shared-bindings/busio/I2C.c
-msgid "Buffer must be at least length 1"
 msgstr ""
 
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
@@ -569,7 +666,7 @@ msgid "Byte buffer must be 16 bytes."
 msgstr ""
 
 #: shared-bindings/alarm/SleepMemory.c shared-bindings/nvm/ByteArray.c
-msgid "Bytes must be between 0 and 255."
+msgid "Bytes must be 0-255."
 msgstr ""
 
 #: shared-bindings/aesio/aes.c
@@ -723,11 +820,6 @@ msgstr ""
 msgid "Column entry must be digitalio.DigitalInOut"
 msgstr ""
 
-#: shared-bindings/displayio/FourWire.c shared-bindings/displayio/I2CDisplay.c
-#: shared-bindings/displayio/ParallelBus.c
-msgid "Command must be an int between 0 and 255"
-msgstr ""
-
 #: shared-bindings/_bleio/Connection.c
 msgid ""
 "Connection has been disconnected and can no longer be used. Create a new "
@@ -830,10 +922,6 @@ msgstr ""
 msgid "Data too large for advertisement packet"
 msgstr ""
 
-#: shared-bindings/audiobusio/PDMIn.c
-msgid "Destination capacity is smaller than destination_length."
-msgstr ""
-
 #: ports/nrf/common-hal/audiobusio/I2SOut.c
 msgid "Device in use"
 msgstr ""
@@ -845,12 +933,6 @@ msgstr ""
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Display must have a 16 bit colorspace."
-msgstr ""
-
-#: shared-bindings/displayio/Display.c
-#: shared-bindings/displayio/EPaperDisplay.c
-#: shared-bindings/framebufferio/FramebufferDisplay.c
-msgid "Display rotation must be in 90 degree increments"
 msgstr ""
 
 #: shared-bindings/digitalio/DigitalInOut.c
@@ -887,36 +969,9 @@ msgstr ""
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c py/enum.c
 #: shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
-#: shared-bindings/busio/SPI.c shared-bindings/microcontroller/Pin.c
+#: shared-bindings/microcontroller/Pin.c
 #: shared-bindings/neopixel_write/__init__.c
-#: shared-bindings/terminalio/Terminal.c
 msgid "Expected a %q"
-msgstr ""
-
-#: shared-bindings/_bleio/CharacteristicBuffer.c
-#: shared-bindings/_bleio/Descriptor.c shared-bindings/_bleio/PacketBuffer.c
-msgid "Expected a Characteristic"
-msgstr ""
-
-#: shared-bindings/_bleio/Adapter.c
-msgid "Expected a DigitalInOut"
-msgstr ""
-
-#: shared-bindings/_bleio/Characteristic.c
-msgid "Expected a Service"
-msgstr ""
-
-#: shared-bindings/_bleio/Adapter.c
-msgid "Expected a UART"
-msgstr ""
-
-#: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
-#: shared-bindings/_bleio/Service.c
-msgid "Expected a UUID"
-msgstr ""
-
-#: shared-bindings/_bleio/Adapter.c
-msgid "Expected an Address"
 msgstr ""
 
 #: shared-bindings/alarm/__init__.c
@@ -1046,8 +1101,6 @@ msgstr ""
 msgid "Generic Failure"
 msgstr ""
 
-#: shared-bindings/displayio/Display.c
-#: shared-bindings/displayio/EPaperDisplay.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Group already used"
 msgstr ""
@@ -1172,7 +1225,9 @@ msgstr ""
 msgid "Internal error #%d"
 msgstr ""
 
-#: shared-bindings/sdioio/SDCard.c
+#: shared-bindings/_bleio/Address.c shared-bindings/_pixelbuf/PixelBuf.c
+#: shared-bindings/audiomixer/Mixer.c shared-bindings/digitalio/DigitalInOut.c
+#: shared-bindings/sdioio/SDCard.c shared-bindings/wifi/Radio.c
 msgid "Invalid %q"
 msgstr ""
 
@@ -1236,26 +1291,14 @@ msgstr ""
 msgid "Invalid buffer size"
 msgstr ""
 
-#: shared-bindings/_pixelbuf/PixelBuf.c
-msgid "Invalid byteorder string"
-msgstr ""
-
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/esp32s2/common-hal/frequencyio/FrequencyIn.c
 msgid "Invalid capture period. Valid range: 1 - 500"
 msgstr ""
 
-#: shared-bindings/audiomixer/Mixer.c
-msgid "Invalid channel count"
-msgstr ""
-
 #: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
 #, c-format
 msgid "Invalid data_count %d"
-msgstr ""
-
-#: shared-bindings/digitalio/DigitalInOut.c
-msgid "Invalid direction."
 msgstr ""
 
 #: shared-module/audiocore/WaveFile.c
@@ -1272,15 +1315,6 @@ msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "Invalid memory access."
-msgstr ""
-
-#: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
-msgid "Invalid number of bits"
-msgstr ""
-
-#: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
-#: shared-bindings/displayio/FourWire.c
-msgid "Invalid phase"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
@@ -1316,11 +1350,6 @@ msgstr ""
 msgid "Invalid pins"
 msgstr ""
 
-#: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
-#: shared-bindings/displayio/FourWire.c
-msgid "Invalid polarity"
-msgstr ""
-
 #: shared-bindings/_bleio/Characteristic.c
 msgid "Invalid properties"
 msgstr ""
@@ -1347,10 +1376,6 @@ msgstr ""
 
 #: shared-bindings/audiomixer/Mixer.c
 msgid "Invalid voice"
-msgstr ""
-
-#: shared-bindings/audiomixer/Mixer.c
-msgid "Invalid voice count"
 msgstr ""
 
 #: shared-module/audiocore/WaveFile.c
@@ -1407,10 +1432,6 @@ msgstr ""
 msgid "Messages limited to 8 bytes"
 msgstr ""
 
-#: shared-bindings/audiobusio/PDMIn.c
-msgid "Microphone startup delay must be in range 0.0 to 1.0"
-msgstr ""
-
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
 msgid "Missing MISO or MOSI Pin"
 msgstr ""
@@ -1446,7 +1467,7 @@ msgid "Missing first_set_pin. Instruction %d sets pin(s)"
 msgstr ""
 
 #: shared-bindings/displayio/Group.c
-msgid "Must be a %q subclass."
+msgid "Must be a %q subclass"
 msgstr ""
 
 #: ports/mimxrt10xx/common-hal/busio/SPI.c shared-bindings/busio/SPI.c
@@ -1703,10 +1724,6 @@ msgid "Output buffer must be at least %d bytes"
 msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
-msgid "Oversample must be multiple of 8."
-msgstr ""
-
-#: shared-bindings/audiobusio/PDMIn.c
 msgid "PDMIn not available"
 msgstr ""
 
@@ -1912,10 +1929,6 @@ msgstr ""
 msgid "Refresh too soon"
 msgstr ""
 
-#: shared-bindings/canio/RemoteTransmissionRequest.c
-msgid "RemoteTransmissionRequests limited to 8 bytes"
-msgstr ""
-
 #: shared-bindings/aesio/aes.c
 msgid "Requested AES mode is unsupported"
 msgstr ""
@@ -1960,10 +1973,6 @@ msgstr ""
 
 #: ports/raspberrypi/common-hal/busio/SPI.c
 msgid "SPI peripheral in use"
-msgstr ""
-
-#: shared-bindings/audiomixer/Mixer.c
-msgid "Sample rate must be positive"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
@@ -2064,7 +2073,7 @@ msgid ""
 msgstr ""
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
-msgid "The length of rgb_pins must be 6, 12, 18, 24, or 30"
+msgid "The length of %q must be 6, 12, 18, 24, or 30"
 msgstr ""
 
 #: supervisor/shared/safe_mode.c
@@ -2090,20 +2099,8 @@ msgstr ""
 msgid "The sample's signedness does not match the mixer's"
 msgstr ""
 
-#: shared-bindings/displayio/TileGrid.c
-msgid "Tile height must exactly divide bitmap height"
-msgstr ""
-
 #: shared-bindings/displayio/TileGrid.c shared-module/displayio/TileGrid.c
 msgid "Tile index out of bounds"
-msgstr ""
-
-#: shared-bindings/displayio/TileGrid.c
-msgid "Tile value out of bounds"
-msgstr ""
-
-#: shared-bindings/displayio/TileGrid.c
-msgid "Tile width must exactly divide bitmap width"
 msgstr ""
 
 #: shared-bindings/alarm/time/TimeAlarm.c
@@ -2113,14 +2110,6 @@ msgstr ""
 #: ports/nrf/common-hal/_bleio/Adapter.c
 #, c-format
 msgid "Timeout is too long: Maximum timeout length is %d seconds"
-msgstr ""
-
-#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
-msgid "Timeout waiting for DRDY"
-msgstr ""
-
-#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
-msgid "Timeout waiting for VSYNC"
 msgstr ""
 
 #: supervisor/shared/safe_mode.c
@@ -2292,7 +2281,7 @@ msgid "Unsupported operation"
 msgstr ""
 
 #: shared-bindings/digitalio/DigitalInOut.c
-msgid "Unsupported pull value."
+msgid "Unsupported pull value"
 msgstr ""
 
 #: ports/esp32s2/common-hal/dualbank/__init__.c
@@ -2392,14 +2381,6 @@ msgstr ""
 msgid "abort() called"
 msgstr ""
 
-#: shared-bindings/i2cperipheral/I2CPeripheral.c
-msgid "address out of bounds"
-msgstr ""
-
-#: shared-bindings/i2cperipheral/I2CPeripheral.c
-msgid "addresses is empty"
-msgstr ""
-
 #: py/compile.c
 msgid "annotation must be an identifier"
 msgstr ""
@@ -2487,14 +2468,6 @@ msgstr ""
 msgid "binary op %q not implemented"
 msgstr ""
 
-#: shared-bindings/busio/UART.c
-msgid "bits must be in range 5 to 9"
-msgstr ""
-
-#: shared-bindings/audiomixer/Mixer.c
-msgid "bits_per_sample must be 8 or 16"
-msgstr ""
-
 #: py/emitinlinethumb.c
 msgid "branch not in range"
 msgstr ""
@@ -2530,10 +2503,6 @@ msgstr ""
 
 #: py/vm.c
 msgid "byte code not implemented"
-msgstr ""
-
-#: shared-bindings/_pixelbuf/PixelBuf.c
-msgid "byteorder is not a string"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/UART.c
@@ -2740,10 +2709,6 @@ msgstr ""
 msgid "color must be between 0x000000 and 0xffffff"
 msgstr ""
 
-#: shared-bindings/displayio/ColorConverter.c
-msgid "color should be an int"
-msgstr ""
-
 #: py/objcomplex.c
 msgid "complex division by zero"
 msgstr ""
@@ -2817,19 +2782,6 @@ msgstr ""
 msgid "default is not a function"
 msgstr ""
 
-#: shared-bindings/audiobusio/PDMIn.c
-msgid ""
-"destination buffer must be a bytearray or array of type 'B' for bit_depth = 8"
-msgstr ""
-
-#: shared-bindings/audiobusio/PDMIn.c
-msgid "destination buffer must be an array of type 'H' for bit_depth = 16"
-msgstr ""
-
-#: shared-bindings/audiobusio/PDMIn.c
-msgid "destination_length must be an int >= 0"
-msgstr ""
-
 #: py/objdict.c
 msgid "dict update sequence has wrong length"
 msgstr ""
@@ -2869,14 +2821,6 @@ msgstr ""
 
 #: py/objstr.c
 msgid "end of format while looking for conversion specifier"
-msgstr ""
-
-#: shared-bindings/displayio/Shape.c
-msgid "end_x should be an int"
-msgstr ""
-
-#: shared-bindings/alarm/time/TimeAlarm.c
-msgid "epoch_time not supported on this board"
 msgstr ""
 
 #: ports/nrf/common-hal/busio/UART.c
@@ -3123,10 +3067,6 @@ msgstr ""
 msgid "initial values must be iterable"
 msgstr ""
 
-#: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
-msgid "initial_value length is wrong"
-msgstr ""
-
 #: py/compile.c
 msgid "inline assembler must be a function"
 msgstr ""
@@ -3203,9 +3143,8 @@ msgstr ""
 msgid "interp is defined for 1D arrays of equal length"
 msgstr ""
 
-#: shared-bindings/_bleio/Adapter.c
-#, c-format
-msgid "interval must be in range %s-%s"
+#: shared-bindings/bitmaptools/__init__.c
+msgid "invalid %q for bits_per_pixel %d"
 msgstr ""
 
 #: py/compile.c
@@ -3216,11 +3155,6 @@ msgstr ""
 msgid "invalid arguments"
 msgstr ""
 
-#: shared-bindings/bitmaptools/__init__.c
-#, c-format
-msgid "invalid bits_per_pixel %d, must be, 1, 4, 8, 16, 24, or 32"
-msgstr ""
-
 #: py/compile.c
 msgid "invalid decorator"
 msgstr ""
@@ -3229,26 +3163,12 @@ msgstr ""
 msgid "invalid dupterm index"
 msgstr ""
 
-#: shared-bindings/bitmaptools/__init__.c
-#, c-format
-msgid "invalid element size %d for bits_per_pixel %d\n"
-msgstr ""
-
-#: shared-bindings/bitmaptools/__init__.c
-#, c-format
-msgid "invalid element_size %d, must be, 1, 2, or 4"
-msgstr ""
-
 #: extmod/modframebuf.c
 msgid "invalid format"
 msgstr ""
 
 #: py/objstr.c
 msgid "invalid format specifier"
-msgstr ""
-
-#: shared-bindings/wifi/Radio.c
-msgid "invalid hostname"
 msgstr ""
 
 #: py/compile.c
@@ -3312,10 +3232,6 @@ msgstr ""
 msgid "length argument not allowed for this type"
 msgstr ""
 
-#: shared-bindings/audiomixer/MixerVoice.c
-msgid "level must be between 0 and 1"
-msgstr ""
-
 #: py/objarray.c
 msgid "lhs and rhs should be compatible"
 msgstr ""
@@ -3360,10 +3276,6 @@ msgstr ""
 #: ports/nrf/common-hal/_bleio/Descriptor.c
 #, c-format
 msgid "max_length must be 0-%d when fixed_length is %s"
-msgstr ""
-
-#: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
-msgid "max_length must be >= 0"
 msgstr ""
 
 #: extmod/ulab/code/ndarray.c
@@ -3417,6 +3329,10 @@ msgstr ""
 
 #: py/objtype.c
 msgid "multiple inheritance not supported"
+msgstr ""
+
+#: shared-bindings/audiobusio/PDMIn.c
+msgid "must be an array of type 'H' for bit_depth = 16"
 msgstr ""
 
 #: py/emitnative.c
@@ -3597,10 +3513,6 @@ msgstr ""
 msgid "offset is too large"
 msgstr ""
 
-#: shared-bindings/dualbank/__init__.c
-msgid "offset must be >= 0"
-msgstr ""
-
 #: extmod/ulab/code/ulab_create.c
 msgid "offset must be non-negative and no greater than buffer length"
 msgstr ""
@@ -3718,10 +3630,6 @@ msgstr ""
 msgid "pop from empty %q"
 msgstr ""
 
-#: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
-msgid "port must be >= 0"
-msgstr ""
-
 #: py/objint_mpz.c
 msgid "pow() 3rd argument cannot be 0"
 msgstr ""
@@ -3809,16 +3717,6 @@ msgstr ""
 
 #: py/emitnative.c
 msgid "return expected '%q' but got '%q'"
-msgstr ""
-
-#: shared-bindings/rgbmatrix/RGBMatrix.c
-#, c-format
-msgid "rgb_pins[%d] duplicates another pin assignment"
-msgstr ""
-
-#: shared-bindings/rgbmatrix/RGBMatrix.c
-#, c-format
-msgid "rgb_pins[%d] is not on the same port as clock"
 msgstr ""
 
 #: extmod/ulab/code/numpy/numerical/numerical.c
@@ -3916,16 +3814,8 @@ msgstr ""
 msgid "start/end indices"
 msgstr ""
 
-#: shared-bindings/displayio/Shape.c
-msgid "start_x should be an int"
-msgstr ""
-
 #: shared-bindings/random/__init__.c
 msgid "step must be non-zero"
-msgstr ""
-
-#: shared-bindings/busio/UART.c
-msgid "stop must be 1 or 2"
 msgstr ""
 
 #: shared-bindings/random/__init__.c
@@ -3968,14 +3858,6 @@ msgstr ""
 msgid "syntax error in uctypes descriptor"
 msgstr ""
 
-#: shared-bindings/touchio/TouchIn.c
-msgid "threshold must be in the range 0-65536"
-msgstr ""
-
-#: shared-bindings/rgbmatrix/RGBMatrix.c
-msgid "tile must be greater than zero"
-msgstr ""
-
 #: shared-bindings/time/__init__.c
 msgid "time.struct_time() takes a 9-sequence"
 msgstr ""
@@ -3986,16 +3868,8 @@ msgstr ""
 msgid "timeout duration exceeded the maximum supported value"
 msgstr ""
 
-#: shared-bindings/busio/UART.c
-msgid "timeout must be 0.0-100.0 seconds"
-msgstr ""
-
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "timeout must be < 655.35 secs"
-msgstr ""
-
-#: shared-bindings/_bleio/CharacteristicBuffer.c
-msgid "timeout must be >= 0.0"
 msgstr ""
 
 #: shared-module/sdcardio/SDCard.c
@@ -4169,10 +4043,6 @@ msgstr ""
 msgid "value must fit in %d byte(s)"
 msgstr ""
 
-#: shared-bindings/displayio/Bitmap.c
-msgid "value_count must be > 0"
-msgstr ""
-
 #: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
 msgid "watchdog not initialized"
 msgstr ""
@@ -4181,21 +4051,8 @@ msgstr ""
 msgid "watchdog timeout must be greater than 0"
 msgstr ""
 
-#: shared-bindings/bitops/__init__.c
-#, c-format
-msgid "width must be from 2 to 8 (inclusive), not %d"
-msgstr ""
-
-#: shared-bindings/rgbmatrix/RGBMatrix.c
-msgid "width must be greater than zero"
-msgstr ""
-
 #: ports/esp32s2/common-hal/wifi/Radio.c
 msgid "wifi is not enabled"
-msgstr ""
-
-#: shared-bindings/_bleio/Adapter.c
-msgid "window must be <= interval"
 msgstr ""
 
 #: extmod/ulab/code/numpy/numerical/numerical.c

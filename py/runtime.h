@@ -89,6 +89,15 @@ void mp_arg_parse_all_kw_array(size_t n_pos, size_t n_kw, const mp_obj_t *args, 
 NORETURN void mp_arg_error_terse_mismatch(void);
 NORETURN void mp_arg_error_unimpl_kw(void);
 
+void mp_arg_validate_int_min(mp_int_t i, mp_int_t min, qstr arg_name);
+void mp_arg_validate_int_max(mp_int_t i, mp_int_t max, qstr arg_name);
+void mp_arg_validate_int_range(mp_int_t i, mp_int_t min, mp_int_t max, qstr arg_name);
+void mp_arg_validate_int(mp_obj_t obj, qstr arg_name);
+void mp_arg_validate_type(mp_obj_t obj, const mp_obj_type_t *type, qstr arg_name);
+void mp_arg_validate_string(mp_obj_t obj, qstr arg_name);
+
+
+
 static inline mp_obj_dict_t *PLACE_IN_ITCM(mp_locals_get)(void) {
     return MP_STATE_THREAD(dict_locals);
 }
@@ -171,6 +180,7 @@ NORETURN void mp_raise_TypeError(const compressed_string_t *msg);
 NORETURN void mp_raise_TypeError_varg(const compressed_string_t *fmt, ...);
 NORETURN void mp_raise_AttributeError(const compressed_string_t *msg);
 NORETURN void mp_raise_RuntimeError(const compressed_string_t *msg);
+NORETURN void mp_raise_RuntimeError_varg(const compressed_string_t *fmt, ...);
 NORETURN void mp_raise_ImportError(const compressed_string_t *msg);
 NORETURN void mp_raise_IndexError(const compressed_string_t *msg);
 NORETURN void mp_raise_IndexError_varg(const compressed_string_t *msg, ...);

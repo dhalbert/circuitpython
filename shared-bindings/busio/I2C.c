@@ -198,7 +198,7 @@ STATIC void readfrom(busio_i2c_obj_t *self, mp_int_t address, mp_obj_t buffer, i
     size_t length = bufinfo.len;
     normalize_buffer_bounds(&start, end, &length);
     if (length == 0) {
-        mp_raise_ValueError(translate("Buffer must be at least length 1"));
+        mp_raise_ValueError(translate("Buffer length must be >= 1"));
     }
 
     uint8_t status = common_hal_busio_i2c_read(self, address, ((uint8_t *)bufinfo.buf) + start, length);

@@ -70,9 +70,8 @@ STATIC mp_obj_t displayio_bitmap_make_new(const mp_obj_type_t *type, size_t n_ar
     uint32_t value_count = mp_obj_get_int(pos_args[2]);
     uint32_t bits = 1;
 
-    if (value_count == 0) {
-        mp_raise_ValueError(translate("value_count must be > 0"));
-    }
+    mp_arg_validate_int_min(value_count, 1, MP_QSTR_value_count);
+
     while ((value_count - 1) >> bits) {
         if (bits < 8) {
             bits <<= 1;

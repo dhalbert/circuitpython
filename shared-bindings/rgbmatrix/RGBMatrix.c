@@ -74,7 +74,8 @@ STATIC void preflight_pins_or_throw(uint8_t clock_pin, uint8_t *rgb_pins, uint8_
     uint32_t bit_mask = 1 << (clock_pin % 32);
 
     if (rgb_pin_count <= 0 || rgb_pin_count % 6 != 0 || rgb_pin_count > 30) {
-        mp_raise_ValueError_varg(translate("The length of rgb_pins must be 6, 12, 18, 24, or 30"));
+        mp_raise_ValueError_varg(translate("The length of %q must be 6, 12, 18, 24, or 30"),
+            MP_QSTR_rgb_pins);
     }
 
     for (uint8_t i = 0; i < rgb_pin_count; i++) {
@@ -82,13 +83,13 @@ STATIC void preflight_pins_or_throw(uint8_t clock_pin, uint8_t *rgb_pins, uint8_
 
         if (pin_port != port) {
             mp_raise_ValueError_varg(
-                translate("rgb_pins[%d] is not on the same port as clock"), i);
+                translate("%q[%d] is not on the same port as clock"), MP_QSTR_rgb_pins, i);
         }
 
         uint32_t pin_mask = 1 << (rgb_pins[i] % 32);
         if (pin_mask & bit_mask) {
             mp_raise_ValueError_varg(
-                translate("rgb_pins[%d] duplicates another pin assignment"), i);
+                translate("%q[%d] duplicates another pin assignment"), MP_QSTR_rgb_pins, i);
         }
 
         bit_mask |= pin_mask;
@@ -209,10 +210,7 @@ STATIC mp_obj_t rgbmatrix_rgbmatrix_make_new(const mp_obj_type_t *type, size_t n
     uint8_t output_enable_pin = validate_pin(args[ARG_output_enable_pin].u_obj);
     int bit_depth = args[ARG_bit_depth].u_int;
 
-    if (bit_depth <= 0 || bit_depth > 6) {
-        mp_raise_ValueError_varg(translate("Bit depth must be from 1 to 6 inclusive, not %d"), bit_depth);
-    }
-
+    mp_arg_validate_int_range(bit_depth, 1, 6, MP_QSTR_bit_depth);
     validate_pins(MP_QSTR_rgb_pins, rgb_pins, MP_ARRAY_SIZE(self->rgb_pins), args[ARG_rgb_list].u_obj, &rgb_count);
     validate_pins(MP_QSTR_addr_pins, addr_pins, MP_ARRAY_SIZE(self->addr_pins), args[ARG_addr_list].u_obj, &addr_count);
 
@@ -221,23 +219,21 @@ STATIC mp_obj_t rgbmatrix_rgbmatrix_make_new(const mp_obj_type_t *type, size_t n
     }
 
     int tile = args[ARG_tile].u_int;
-
-    if (tile <= 0) {
-        mp_raise_ValueError_varg(
-            translate("tile must be greater than zero"));
-    }
+    mp_arg_validate_int_min(tile, 1, MP_QSTR_tile);
 
     int computed_height = (rgb_count / 3) * (1 << (addr_count)) * tile;
     if (args[ARG_height].u_int != 0) {
         if (computed_height != args[ARG_height].u_int) {
             mp_raise_ValueError_varg(
-                translate("%d address pins, %d rgb pins and %d tiles indicate a height of %d, not %d"), addr_count, rgb_count, tile, computed_height, args[ARG_height].u_int);
+                translate("%d %q, %d %q, and %d %q indicate a height of %d, not %d"),
+                addr_count, MP_QSTR_addr_pins,
+                rgb_count, MP_QSTR_rgb_pins,
+                tile, MP_QSTR_tile,
+                computed_height, args[ARG_height].u_int);
         }
     }
 
-    if (args[ARG_width].u_int <= 0) {
-        mp_raise_ValueError(translate("width must be greater than zero"));
-    }
+    mp_arg_validate_int_min(args[ARG_width].u_int, 1, MP_QSTR_width);
 
     preflight_pins_or_throw(clock_pin, rgb_pins, rgb_count, true);
 
@@ -302,7 +298,7 @@ STATIC mp_obj_t rgbmatrix_rgbmatrix_set_brightness(mp_obj_t self_in, mp_obj_t va
     check_for_deinit(self);
     mp_float_t brightness = mp_obj_get_float(value_in);
     if (brightness < 0.0f || brightness > 1.0f) {
-        mp_raise_ValueError(translate("Brightness must be 0-1.0"));
+        mp_raise_ValueError_varg(translate("%q must be 0-1.0"), MP_QSTR_brightness);
     }
     common_hal_rgbmatrix_rgbmatrix_set_paused(self, brightness <= 0);
 

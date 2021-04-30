@@ -97,9 +97,7 @@ STATIC mp_obj_t ssl_sslsocket_bind(mp_obj_t self_in, mp_obj_t addr_in) {
     size_t hostlen;
     const char *host = mp_obj_str_get_data(addr_items[0], &hostlen);
     mp_int_t port = mp_obj_get_int(addr_items[1]);
-    if (port < 0) {
-        mp_raise_ValueError(translate("port must be >= 0"));
-    }
+    mp_arg_validate_int_min(port, 0, MP_QSTR_port);
 
     bool ok = common_hal_ssl_sslsocket_bind(self, host, hostlen, (uint32_t)port);
     if (!ok) {
@@ -135,9 +133,7 @@ STATIC mp_obj_t ssl_sslsocket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
     size_t hostlen;
     const char *host = mp_obj_str_get_data(addr_items[0], &hostlen);
     mp_int_t port = mp_obj_get_int(addr_items[1]);
-    if (port < 0) {
-        mp_raise_ValueError(translate("port must be >= 0"));
-    }
+    mp_arg_validate_int_min(port, 0, MP_QSTR_port);
 
     bool ok = common_hal_ssl_sslsocket_connect(self, host, hostlen, (uint32_t)port);
     if (!ok) {

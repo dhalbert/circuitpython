@@ -64,12 +64,13 @@ STATIC mp_obj_t bleio_address_make_new(const mp_obj_type_t *type, size_t n_args,
     mp_buffer_info_t buf_info;
     mp_get_buffer_raise(address, &buf_info, MP_BUFFER_READ);
     if (buf_info.len != NUM_BLEIO_ADDRESS_BYTES) {
-        mp_raise_ValueError_varg(translate("Address must be %d bytes long"), NUM_BLEIO_ADDRESS_BYTES);
+        mp_raise_ValueError_varg(translate("%q must be %d bytes long"),
+            MP_QSTR_address, NUM_BLEIO_ADDRESS_BYTES);
     }
 
     const mp_int_t address_type = args[ARG_address_type].u_int;
     if (address_type < BLEIO_ADDRESS_TYPE_MIN || address_type > BLEIO_ADDRESS_TYPE_MAX) {
-        mp_raise_ValueError(translate("Address type out of range"));
+        mp_raise_ValueError_varg(translate("Invalid %q"), MP_QSTR_address_type);
     }
 
     common_hal_bleio_address_construct(self, buf_info.buf, address_type);
