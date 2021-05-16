@@ -74,15 +74,13 @@ extern "C" {
 
 // ------------- CLASS -------------//
 
-// Will be set to 2 in supervisor.mk if CIRCUITPY_USB_CDC is set.
-#ifndef CFG_TUD_CDC
-#define CFG_TUD_CDC                 1
-#endif
-
-#define CFG_TUD_MSC                 CIRCUITPY_USB_MSC
-#define CFG_TUD_HID                 CIRCUITPY_USB_HID
-#define CFG_TUD_MIDI                CIRCUITPY_USB_MIDI
-#define CFG_TUD_VENDOR              CIRCUITPY_USB_VENDOR
+// Up to 2 CDC instances. Always at least one.
+#define CFG_TUD_CDC                 (CIRCUITPY_USB_CDC ? 2 : 1)
+#define CFG_TUD_MSC                 (CIRCUITPY_USB_MSC ? 1 : 0)
+// Up to 2 HID instances.
+#define CFG_TUD_HID                 (CIRCUITPY_USB_HID ? 2 : 0)
+#define CFG_TUD_MIDI                (CIRCUITPY_USB_MIDI ? 1 : 0)
+#define CFG_TUD_VENDOR              (CIRCUITPY_USB_VENDOR ? 1 : 0)
 #define CFG_TUD_CUSTOM_CLASS        0
 
 /*------------------------------------------------------------------*/

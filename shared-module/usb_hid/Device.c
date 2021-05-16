@@ -164,7 +164,7 @@ const usb_hid_device_obj_t usb_hid_device_consumer_control_obj = {
 };
 
 
-void common_hal_usb_hid_device_construct(usb_hid_device_obj_t *self, mp_obj_t report_descriptor, uint8_t usage_page, uint8_t usage, uint8_t in_report_length, uint8_t out_report_length, uint8_t report_id_index) {
+void common_hal_usb_hid_device_construct(usb_hid_device_obj_t *self, mp_obj_t report_descriptor, uint8_t usage_page, uint8_t usage, uint8_t in_report_length, uint8_t out_report_length, uint8_t report_id_index, bool boot) {
     // report buffer pointers are NULL at start, and are created when USB is initialized.
 
     mp_buffer_info_t bufinfo;
@@ -182,6 +182,8 @@ void common_hal_usb_hid_device_construct(usb_hid_device_obj_t *self, mp_obj_t re
     self->in_report_length = in_report_length;
     self->out_report_length = out_report_length;
     self->report_id_index = report_id_index;
+    // device has already been validated to be a keyboard or mouse if boot is true.
+    self->boot = boot;
 }
 
 uint8_t common_hal_usb_hid_device_get_usage_page(usb_hid_device_obj_t *self) {
@@ -190,6 +192,10 @@ uint8_t common_hal_usb_hid_device_get_usage_page(usb_hid_device_obj_t *self) {
 
 uint8_t common_hal_usb_hid_device_get_usage(usb_hid_device_obj_t *self) {
     return self->usage;
+}
+
+bool common_hal_usb_hid_device_get_boot(usb_hid_device_obj_t *self) {
+    return self->boot;
 }
 
 void common_hal_usb_hid_device_send_report(usb_hid_device_obj_t *self, uint8_t *report, uint8_t len) {

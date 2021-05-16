@@ -31,7 +31,7 @@
 //| class Device:
 //|     """HID Device specification"""
 //|
-//|     def __init__(self, *, descriptor: ReadableBuffer, usage_page: int, usage: int, in_report_length: int, out_report_length: int = 0, report_id_index: Optional[int]) -> None:
+//|     def __init__(self, *, descriptor: ReadableBuffer, usage_page: int, usage: int, in_report_length: int, out_report_length: int = 0, report_id_index: Optional[int], boot: bool=False) -> None:
 //|         """Create a description of a USB HID device. The actual device is created when you
 //|         pass a `Device` to `usb_hid.enable()`.
 //|
@@ -45,25 +45,146 @@
 //|           "Out" is with respect to the host. If no reports are expected, use 0.
 //|         :param int report_id_index: position of byte in descriptor that contains the Report ID.
 //|           A Report ID will be assigned when the device is created. If there is no
-//|           Report ID, use ``None``.
+//|           Report ID, use ``None``. The report ID will be omitted if this device is the only
+//|           device in its parent HID descriptor.
+//|         :param bool boot: Present this device as a boot protocol device if it is a mouse or keyboard
+//|           and if it is the only device in its parent HID descriptor. If used as a boot device,
+//|           the report descriptor presented is ignored, and a standard one is used instead.
 //|         """
 //|         ...
 //|
 //|     KEYBOARD: Device
-//|     """Standard keyboard device supporting keycodes 0x00-0xDD, modifiers 0xE-0xE7, and five LED indicators."""
+//|     """Typical keyboard device supporting keycodes 0x00-0xDD, modifiers 0xE-0xE7, and five LED indicators.
+//|     Can be used as a boot device. The `Device` values are shown below.
+//|
+//|     .. code-block::
+//|
+//|       KEYBOARD = Device(descriptor=<see below>, usage_page=0x01, usage=0x06,
+//|                         in_report_length=8, out_report_length=1, report_id_index=7, boot=True)
+//|
+//|       Keyboard report descriptor:
+//|
+//|       0x05, 0x01,  # Usage Page (Generic Desktop Ctrls)
+//|       0x09, 0x06,  # Usage (Keyboard)
+//|       0xA1, 0x01,  # Collection (Application)
+//|       0x85, 0x--,  #   Report ID  [set at runtime, will be omitted if sole device]
+//|       0x05, 0x07,  #   Usage Page (Kbrd/Keypad)
+//|       0x19, 0xE0,  #   Usage Minimum (0xE0 = 224)
+//|       0x29, 0xE7,  #   Usage Maximum (0xE7 = 231)
+//|       0x15, 0x00,  #   Logical Minimum (0)
+//|       0x25, 0x01,  #   Logical Maximum (1)
+//|       0x75, 0x01,  #   Report Size (1)
+//|       0x95, 0x08,  #   Report Count (8)
+//|       0x81, 0x02,  #   Input (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
+//|       0x81, 0x01,  #   Input (Const,Array,Abs,No Wrap,Linear,Preferred State,No Null Position)
+//|       0x19, 0x00,  #   Usage Minimum (0x00)
+//|       0x29, 0xDD,  #   Usage Maximum (0xDD = 221)
+//|       0x15, 0x00,  #   Logical Minimum (0)
+//|       0x25, 0xDD,  #   Logical Maximum (0xDD = 221)
+//|       0x75, 0x08,  #   Report Size (8)
+//|       0x95, 0x06,  #   Report Count (6)
+//|       0x81, 0x00,  #   Input (Data,Array,Abs,No Wrap,Linear,Preferred State,No Null Position)
+//|       0x05, 0x08,  #   Usage Page (LEDs)
+//|       0x19, 0x01,  #   Usage Minimum (Num Lock)
+//|       0x29, 0x05,  #   Usage Maximum (Kana)
+//|       0x15, 0x00,  #   Logical Minimum (0)
+//|       0x25, 0x01,  #   Logical Maximum (1)
+//|       0x75, 0x01,  #   Report Size (1)
+//|       0x95, 0x05,  #   Report Count (5)
+//|       0x91, 0x02,  #   Output (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position,Non-volatile)
+//|       0x95, 0x03,  #   Report Count (3)
+//|       0x91, 0x01,  #   Output (Const,Array,Abs,No Wrap,Linear,Preferred State,No Null Position,Non-volatile)
+//|       0xC0,        # End Collection
+//|
+//|     The boot keyboard report descriptor is pre-defined in the USB standard and is very similar to the
+//|     descriptor above. The pre-defined descriptor is used *instead* of the descriptor above.
+//|     See page 59 in the `Device Class Definition for Human Interface Devices (HID) <https://www.usb.org/sites/default/files/hid1_11.pdf>`_.
+//|     """
 //|
 //|     MOUSE: Device
-//|     """Standard mouse device supporting five mouse buttons, X and Y relative movements from -127 to 127
-//|     in each report, and a relative mouse wheel change from -127 to 127 in each report."""
+//|     """Typical mouse device supporting five mouse buttons, X and Y relative movements from -127 to 127
+//|     in each report, and a relative mouse wheel change from -127 to 127 in each report.
+//|     Can be used as a boot device. The `Device` values are shown below.
+//|
+//|     .. code-block::
+//|
+//|       MOUSE = Device(descriptor=<see below>, usage_page=0x01, usage=0x02,
+//|                      in_report_length=4, out_report_length=0, report_id_index=11, boot=True)
+//|
+//|       Mouse report descriptor:
+//|
+//|       0x05, 0x01,  # Usage Page (Generic Desktop Ctrls)
+//|       0x09, 0x02,  # Usage (Mouse)
+//|       0xA1, 0x01,  # Collection (Application)
+//|       0x09, 0x01,  # Usage (Pointer)
+//|       0xA1, 0x00,  #  Collection (Physical)
+//|       0x85, 0x--,  #  Report ID  [set at runtime, will be omitted if sole device]
+//|       0x05, 0x09,  #     Usage Page (Button)
+//|       0x19, 0x01,  #     Usage Minimum (0x01)
+//|       0x29, 0x05,  #     Usage Maximum (0x05)
+//|       0x15, 0x00,  #     Logical Minimum (0)
+//|       0x25, 0x01,  #     Logical Maximum (1)
+//|       0x95, 0x05,  #     Report Count (5)
+//|       0x75, 0x01,  #     Report Size (1)
+//|       0x81, 0x02,  #     Input (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
+//|       0x95, 0x01,  #     Report Count (1)
+//|       0x75, 0x03,  #     Report Size (3)
+//|       0x81, 0x01,  #     Input (Const,Array,Abs,No Wrap,Linear,Preferred State,No Null Position)
+//|       0x05, 0x01,  #     Usage Page (Generic Desktop Ctrls)
+//|       0x09, 0x30,  #     Usage (X)
+//|       0x09, 0x31,  #     Usage (Y)
+//|       0x15, 0x81,  #     Logical Minimum (-127)
+//|       0x25, 0x7F,  #     Logical Maximum (127)
+//|       0x75, 0x08,  #     Report Size (8)
+//|       0x95, 0x02,  #     Report Count (2)
+//|       0x81, 0x06,  #     Input (Data,Var,Rel,No Wrap,Linear,Preferred State,No Null Position)
+//|       0x09, 0x38,  #     Usage (Wheel)
+//|       0x15, 0x81,  #     Logical Minimum (-127)
+//|       0x25, 0x7F,  #     Logical Maximum (127)
+//|       0x75, 0x08,  #     Report Size (8)
+//|       0x95, 0x01,  #     Report Count (1)
+//|       0x81, 0x06,  #     Input (Data,Var,Rel,No Wrap,Linear,Preferred State,No Null Position)
+//|       0xC0,        #   End Collection
+//|       0xC0,        # End Collection
+//|
+//|     The boot mouse report descriptor is pre-defined in the USB standard and is similar to the
+//|     descriptor above, except it only has three mouse buttons and no wheel. The X and Y
+//|     ranges are also -127 to 127.
+//|     The pre-defined descriptor is used *instead* of the descriptor above.
+//|     See page 61 in the `Device Class Definition for Human Interface Devices (HID) <https://www.usb.org/sites/default/files/hid1_11.pdf>`_.
+//|     """
 //|
 //|     CONSUMER_CONTROL: Device
-//|     """Consumer Control device supporting sent values from 1-652, with no rollover."""
+//|     """Consumer Control device supporting sent values from 1-652, with no rollover.
+//|     The `Device` values are shown below.
+//|
+//|     .. code-block::
+//|
+//|       CONSUMER_CONTROL = Device(descriptor=<see below>, usage_page=0x0C, usage=0x01,
+//|                                 in_report_length=4, out_report_length=0, report_id_index=7,
+//|                                 boot=False)
+//|
+//|       Consumer Control report descriptor:
+//|
+//|        0x05, 0x0C,        # Usage Page (Consumer)
+//|        0x09, 0x01,        # Usage (Consumer Control)
+//|        0xA1, 0x01,        # Collection (Application)
+//|        0x85, 0x--,        #   Report ID  [set at runtime, will be omitted if sole device]
+//|        0x75, 0x10,        #   Report Size (16)
+//|        0x95, 0x01,        #   Report Count (1)
+//|        0x15, 0x01,        #   Logical Minimum (1)
+//|        0x26, 0x8C, 0x02,  #   Logical Maximum (652)
+//|        0x19, 0x01,        #   Usage Minimum (Consumer Control)
+//|        0x2A, 0x8C, 0x02,  #   Usage Maximum (AC Send)
+//|        0x81, 0x00,        #   Input (Data,Array,Abs,No Wrap,Linear,Preferred State,No Null Position)
+//|        0xC0,              # End Collection
+//|      """
 //|
 
 STATIC mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     usb_hid_device_obj_t *self = m_new_obj(usb_hid_device_obj_t);
     self->base.type = &usb_hid_device_type;
-    enum { ARG_report_descriptor, ARG_usage_page, ARG_usage, ARG_in_report_length, ARG_out_report_length, ARG_report_id_index };
+    enum { ARG_report_descriptor, ARG_usage_page, ARG_usage, ARG_in_report_length, ARG_out_report_length, ARG_report_id_index, ARG_boot };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_report_descriptor, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_usage_page, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT },
@@ -71,6 +192,7 @@ STATIC mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type, size_t n_args
         { MP_QSTR_in_report_length, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT },
         { MP_QSTR_out_report_length, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_int = 0 } },
         { MP_QSTR_report_id_index, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = mp_const_none } },
+        { MP_QSTR_boot, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false } },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -114,8 +236,13 @@ STATIC mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type, size_t n_args
         report_id_index = report_id_index_int;
     }
 
-    common_hal_usb_hid_device_construct(
-        self, descriptor, usage_page, usage, in_report_length, out_report_length, report_id_index);
+    const bool boot = args[ARG_boot].u_bool;
+    if (boot && !(usage_page == 1 && (usage == 6 || usage == 2))) {
+        mp_raise_ValueError(translate("device must be a keyboard or mouse if boot is True"));
+    }
+    common_hal_usb_hid_device_construct(self, descriptor, usage_page, usage,
+        in_report_length, out_report_length, report_id_index,
+        boot);
     return (mp_obj_t)self;
 }
 
@@ -134,6 +261,25 @@ STATIC mp_obj_t usb_hid_device_send_report(mp_obj_t self_in, mp_obj_t buffer) {
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_2(usb_hid_device_send_report_obj, usb_hid_device_send_report);
+
+//|     interface: bytes
+//|     """The interface number in which this device is present."""
+//|
+STATIC mp_obj_t usb_hid_device_obj_get_interface(mp_obj_t self_in) {
+    usb_hid_device_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    if (self->out_report_buffer == 0) {
+        return mp_const_none;
+    }
+    return MP_OBJ_NEW_SMALL_INT(common_hal_usb_hid_device_get_interface(self));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(usb_hid_device_get_interface_obj, usb_hid_device_obj_get_interface);
+
+const mp_obj_property_t usb_hid_device_interface_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&usb_hid_device_get_interface_obj,
+              MP_ROM_NONE,
+              MP_ROM_NONE},
+};
 
 //|     last_received_report: bytes
 //|     """The HID OUT report as a `bytes`. (read-only). `None` if nothing received."""
@@ -192,6 +338,7 @@ const mp_obj_property_t usb_hid_device_usage_obj = {
 
 STATIC const mp_rom_map_elem_t usb_hid_device_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_send_report),          MP_ROM_PTR(&usb_hid_device_send_report_obj) },
+    { MP_ROM_QSTR(MP_QSTR_interface),            MP_ROM_PTR(&usb_hid_device_interface_obj) },
     { MP_ROM_QSTR(MP_QSTR_last_received_report), MP_ROM_PTR(&usb_hid_device_last_received_report_obj) },
     { MP_ROM_QSTR(MP_QSTR_usage_page),           MP_ROM_PTR(&usb_hid_device_usage_page_obj) },
     { MP_ROM_QSTR(MP_QSTR_usage),                MP_ROM_PTR(&usb_hid_device_usage_obj) },

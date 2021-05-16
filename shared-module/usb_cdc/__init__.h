@@ -36,7 +36,7 @@ bool usb_cdc_data_enabled(void);
 
 void usb_cdc_set_defaults(void);
 
-size_t usb_cdc_descriptor_length(void);
-size_t usb_cdc_add_descriptor(uint8_t *descriptor_buf, descriptor_counts_t *descriptor_counts, uint8_t *current_interface_string, bool console);
+size_t usb_cdc_descriptors_length(void);
+size_t usb_cdc_add_descriptors(uint8_t *descriptors_buf, descriptor_counts_t *descriptor_counts, uint8_t *current_interface_string, bool console);
 
 #endif /* SHARED_MODULE_USB_CDC___INIT___H */

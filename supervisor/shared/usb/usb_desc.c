@@ -51,7 +51,7 @@
 #include "shared-bindings/microcontroller/Processor.h"
 
 
-// Table for collecting interface strings (interface names) as descriptor is built.
+// Table for collecting interface strings (interface names) as descriptors are built.
 // We reuse the same table after collection, replacing the char string pointers with le16 string pointers.
 #define MAX_INTERFACE_STRINGS 16
 // slot 0 is always the Language ID
@@ -139,40 +139,40 @@ static void usb_build_device_descriptor(uint16_t vid, uint16_t pid) {
 }
 
 static void usb_build_configuration_descriptor(void) {
-    size_t total_descriptor_length = sizeof(configuration_descriptor_template);
+    size_t total_descriptors_length = sizeof(configuration_descriptor_template);
 
     // CDC should be first, for compatibility with Adafruit Windows 7 drivers.
     // In the past, the order has been CDC, MSC, MIDI, HID, so preserve that order.
     #if CIRCUITPY_USB_CDC
     if (usb_cdc_console_enabled()) {
-        total_descriptor_length += usb_cdc_descriptor_length();
+        total_descriptors_length += usb_cdc_descriptors_length();
     }
     if (usb_cdc_data_enabled()) {
-        total_descriptor_length += usb_cdc_descriptor_length();
+        total_descriptors_length += usb_cdc_descriptors_length();
     }
     #endif
 
     #if CIRCUITPY_USB_MSC
     if (storage_usb_enabled()) {
-        total_descriptor_length += storage_usb_descriptor_length();
+        total_descriptors_length += storage_usb_descriptors_length();
     }
     #endif
 
     #if CIRCUITPY_USB_HID
     if (usb_hid_enabled()) {
-        total_descriptor_length += usb_hid_descriptor_length();
+        total_descriptors_length += usb_hid_descriptors_length();
     }
     #endif
 
     #if CIRCUITPY_USB_MIDI
     if (usb_midi_enabled()) {
-        total_descriptor_length += usb_midi_descriptor_length();
+        total_descriptors_length += usb_midi_descriptors_length();
     }
     #endif
 
     // Now we now how big the configuration descriptor will be, so we can allocate space for it.
     configuration_descriptor_allocation =
-        allocate_memory(align32_size(total_descriptor_length),
+        allocate_memory(align32_size(total_descriptors_length),
             /*high_address*/ false, /*movable*/ false);
     uint8_t *configuration_descriptor = (uint8_t *)configuration_descriptor_allocation->ptr;
 
@@ -180,8 +180,8 @@ static void usb_build_configuration_descriptor(void) {
 
     memcpy(configuration_descriptor, configuration_descriptor_template, sizeof(configuration_descriptor_template));
 
-    configuration_descriptor[CONFIG_TOTAL_LENGTH_LO_INDEX] = total_descriptor_length & 0xFF;
-    configuration_descriptor[CONFIG_TOTAL_LENGTH_HI_INDEX] = (total_descriptor_length >> 8) & 0xFF;
+    configuration_descriptor[CONFIG_TOTAL_LENGTH_LO_INDEX] = total_descriptors_length & 0xFF;
+    configuration_descriptor[CONFIG_TOTAL_LENGTH_HI_INDEX] = (total_descriptors_length >> 8) & 0xFF;
 
     // Number interfaces and endpoints.
     // Endpoint 0 is already used for USB control,
@@ -200,13 +200,13 @@ static void usb_build_configuration_descriptor(void) {
     #if CIRCUITPY_USB_CDC
     if (usb_cdc_console_enabled()) {
         // Concatenate and fix up the CDC REPL descriptor.
-        descriptor_buf_remaining += usb_cdc_add_descriptor(
+        descriptor_buf_remaining += usb_cdc_add_descriptors(
             descriptor_buf_remaining, &descriptor_counts, &current_interface_string, true /*console*/);
 
     }
     if (usb_cdc_data_enabled()) {
         // Concatenate and fix up the CDC data descriptor.
-        descriptor_buf_remaining += usb_cdc_add_descriptor(
+        descriptor_buf_remaining += usb_cdc_add_descriptors(
             descriptor_buf_remaining, &descriptor_counts, &current_interface_string, false /*console*/);
     }
     #endif
@@ -214,14 +214,14 @@ static void usb_build_configuration_descriptor(void) {
     #if CIRCUITPY_USB_MSC
     if (storage_usb_enabled()) {
         // Concatenate and fix up the MSC descriptor.
-        descriptor_buf_remaining += storage_usb_add_descriptor(
+        descriptor_buf_remaining += storage_usb_add_descriptors(
             descriptor_buf_remaining, &descriptor_counts, &current_interface_string);
     }
     #endif
 
     #if CIRCUITPY_USB_HID
     if (usb_hid_enabled()) {
-        descriptor_buf_remaining += usb_hid_add_descriptor(
+        descriptor_buf_remaining += usb_hid_add_descriptors(
             descriptor_buf_remaining, &descriptor_counts, &current_interface_string,
             usb_hid_report_descriptor_length());
     }
@@ -230,7 +230,7 @@ static void usb_build_configuration_descriptor(void) {
     #if CIRCUITPY_USB_MIDI
     if (usb_midi_enabled()) {
         // Concatenate and fix up the MIDI descriptor.
-        descriptor_buf_remaining += usb_midi_add_descriptor(
+        descriptor_buf_remaining += usb_midi_add_descriptors(
             descriptor_buf_remaining, &descriptor_counts, &current_interface_string);
     }
     #endif

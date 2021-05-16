@@ -2885,6 +2885,10 @@ msgstr ""
 msgid "destination_length must be an int >= 0"
 msgstr ""
 
+#: shared-bindings/usb_hid/Device.c
+msgid "device must be a keyboard or mouse if boot is True"
+msgstr ""
+
 #: py/objdict.c
 msgid "dict update sequence has wrong length"
 msgstr ""

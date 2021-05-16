@@ -39,7 +39,7 @@
 #error CFG_TUD_CDC must be exactly 2
 #endif
 
-static const uint8_t usb_cdc_descriptor_template[] = {
+static const uint8_t usb_cdc_descriptors_template[] = {
     // CDC IAD Descriptor
     0x08,        //  0 bLength
     0x0B,        //  1 bDescriptorType: IAD Descriptor
@@ -169,38 +169,38 @@ bool usb_cdc_data_enabled(void) {
     return usb_cdc_data_is_enabled;
 }
 
-size_t usb_cdc_descriptor_length(void) {
-    return sizeof(usb_cdc_descriptor_template);
+size_t usb_cdc_descriptors_length(void) {
+    return sizeof(usb_cdc_descriptors_template);
 }
 
-size_t usb_cdc_add_descriptor(uint8_t *descriptor_buf, descriptor_counts_t *descriptor_counts, uint8_t *current_interface_string, bool console) {
-    memcpy(descriptor_buf, usb_cdc_descriptor_template, sizeof(usb_cdc_descriptor_template));
+size_t usb_cdc_add_descriptors(uint8_t *descriptors_buf, descriptor_counts_t *descriptor_counts, uint8_t *current_interface_string, bool console) {
+    memcpy(descriptors_buf, usb_cdc_descriptors_template, sizeof(usb_cdc_descriptors_template));
 
     // Store comm interface number.
-    descriptor_buf[CDC_FIRST_INTERFACE_INDEX] = descriptor_counts->current_interface;
-    descriptor_buf[CDC_COMM_INTERFACE_INDEX] = descriptor_counts->current_interface;
-    descriptor_buf[CDC_UNION_MASTER_INTERFACE_INDEX] = descriptor_counts->current_interface;
+    descriptors_buf[CDC_FIRST_INTERFACE_INDEX] = descriptor_counts->current_interface;
+    descriptors_buf[CDC_COMM_INTERFACE_INDEX] = descriptor_counts->current_interface;
+    descriptors_buf[CDC_UNION_MASTER_INTERFACE_INDEX] = descriptor_counts->current_interface;
     descriptor_counts->current_interface++;
 
     // Now store data interface number.
-    descriptor_buf[CDC_CALL_MANAGEMENT_DATA_INTERFACE_INDEX] = descriptor_counts->current_interface;
-    descriptor_buf[CDC_UNION_SLAVE_INTERFACE_INDEX] = descriptor_counts->current_interface;
-    descriptor_buf[CDC_DATA_INTERFACE_INDEX] = descriptor_counts->current_interface;
+    descriptors_buf[CDC_CALL_MANAGEMENT_DATA_INTERFACE_INDEX] = descriptor_counts->current_interface;
+    descriptors_buf[CDC_UNION_SLAVE_INTERFACE_INDEX] = descriptor_counts->current_interface;
+    descriptors_buf[CDC_DATA_INTERFACE_INDEX] = descriptor_counts->current_interface;
     descriptor_counts->current_interface++;
 
-    descriptor_buf[CDC_CONTROL_IN_ENDPOINT_INDEX] = 0x80 | (
+    descriptors_buf[CDC_CONTROL_IN_ENDPOINT_INDEX] = 0x80 | (
         console
         ? (USB_CDC_EP_NUM_NOTIFICATION ? USB_CDC_EP_NUM_NOTIFICATION : descriptor_counts->current_endpoint)
         : (USB_CDC2_EP_NUM_NOTIFICATION ? USB_CDC2_EP_NUM_NOTIFICATION : descriptor_counts->current_endpoint));
     descriptor_counts->num_in_endpoints++;
     descriptor_counts->current_endpoint++;
 
-    descriptor_buf[CDC_DATA_IN_ENDPOINT_INDEX] = 0x80 | (
+    descriptors_buf[CDC_DATA_IN_ENDPOINT_INDEX] = 0x80 | (
         console
         ? (USB_CDC_EP_NUM_DATA_IN ? USB_CDC_EP_NUM_DATA_IN : descriptor_counts->current_endpoint)
         : (USB_CDC2_EP_NUM_DATA_IN ? USB_CDC2_EP_NUM_DATA_IN : descriptor_counts->current_endpoint));
     descriptor_counts->num_in_endpoints++;
-    descriptor_buf[CDC_DATA_OUT_ENDPOINT_INDEX] =
+    descriptors_buf[CDC_DATA_OUT_ENDPOINT_INDEX] =
         console
         ? (USB_CDC_EP_NUM_DATA_OUT ? USB_CDC_EP_NUM_DATA_OUT : descriptor_counts->current_endpoint)
         : (USB_CDC2_EP_NUM_DATA_OUT ? USB_CDC2_EP_NUM_DATA_OUT : descriptor_counts->current_endpoint);
@@ -209,15 +209,15 @@ size_t usb_cdc_add_descriptor(uint8_t *descriptor_buf, descriptor_counts_t *desc
 
     usb_add_interface_string(*current_interface_string,
         console ? console_cdc_comm_interface_name : data_cdc_comm_interface_name);
-    descriptor_buf[CDC_COMM_INTERFACE_STRING_INDEX] = *current_interface_string;
+    descriptors_buf[CDC_COMM_INTERFACE_STRING_INDEX] = *current_interface_string;
     (*current_interface_string)++;
 
     usb_add_interface_string(*current_interface_string,
         console ? console_cdc_data_interface_name : data_cdc_data_interface_name);
-    descriptor_buf[CDC_DATA_INTERFACE_STRING_INDEX] = *current_interface_string;
+    descriptors_buf[CDC_DATA_INTERFACE_STRING_INDEX] = *current_interface_string;
     (*current_interface_string)++;
 
-    return sizeof(usb_cdc_descriptor_template);
+    return sizeof(usb_cdc_descriptors_template);
 }
 
 bool common_hal_usb_cdc_disable(void) {

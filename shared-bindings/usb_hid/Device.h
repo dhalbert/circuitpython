@@ -33,9 +33,12 @@
 
 extern const mp_obj_type_t usb_hid_device_type;
 
-void common_hal_usb_hid_device_construct(usb_hid_device_obj_t *self, mp_obj_t descriptor, uint8_t usage_page, uint8_t usage, uint8_t in_report_length, uint8_t out_report_length, uint8_t report_id_index);
+void common_hal_usb_hid_device_construct(usb_hid_device_obj_t *self, mp_obj_t descriptor, uint8_t usage_page, uint8_t usage, uint8_t in_report_length, uint8_t out_report_length, uint8_t report_id_index, bool boot);
 void common_hal_usb_hid_device_send_report(usb_hid_device_obj_t *self, uint8_t *report, uint8_t len);
+bool common_hal_usb_hid_device_get_boot(usb_hid_device_obj_t *self);
+uint8_t common_hal_usb_hid_device_get_interface(usb_hid_device_obj_t *self);
 uint8_t common_hal_usb_hid_device_get_usage_page(usb_hid_device_obj_t *self);
 uint8_t common_hal_usb_hid_device_get_usage(usb_hid_device_obj_t *self);
+
 
 #endif  // MICROPY_INCLUDED_SHARED_BINDINGS_USB_HID_DEVICE_H

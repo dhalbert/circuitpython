@@ -157,11 +157,6 @@ endif
 # It gets added automatically.
 USB_WEBUSB_URL ?= "circuitpython.org"
 
-ifeq ($(CIRCUITPY_USB_CDC),1)
-# Inform TinyUSB there will be up to two CDC devices.
-CFLAGS += -DCFG_TUD_CDC=2
-endif
-
 USB_HIGHSPEED ?= 0
 CFLAGS += -DUSB_HIGHSPEED=$(USB_HIGHSPEED)
 

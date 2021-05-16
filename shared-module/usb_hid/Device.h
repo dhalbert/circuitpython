@@ -45,6 +45,7 @@ typedef struct  {
     uint8_t report_id;
     uint8_t in_report_length;
     uint8_t out_report_length;
+    bool boot;
 } usb_hid_device_obj_t;
 
 extern const usb_hid_device_obj_t usb_hid_device_keyboard_obj;

@@ -43,7 +43,7 @@
 #if CIRCUITPY_USB_MSC
 #include "tusb.h"
 
-static const uint8_t usb_msc_descriptor_template[] = {
+static const uint8_t usb_msc_descriptors_template[] = {
     // MSC Interface Descriptor
     0x09,        //  0 bLength
     0x04,        //  1 bDescriptorType (Interface)
@@ -87,30 +87,30 @@ bool storage_usb_enabled(void) {
     return storage_usb_is_enabled;
 }
 
-size_t storage_usb_descriptor_length(void) {
-    return sizeof(usb_msc_descriptor_template);
+size_t storage_usb_descriptors_length(void) {
+    return sizeof(usb_msc_descriptors_template);
 }
 
 static const char storage_interface_name[] = USB_INTERFACE_NAME " Mass Storage";
 
-size_t storage_usb_add_descriptor(uint8_t *descriptor_buf, descriptor_counts_t *descriptor_counts, uint8_t *current_interface_string) {
-    memcpy(descriptor_buf, usb_msc_descriptor_template, sizeof(usb_msc_descriptor_template));
-    descriptor_buf[MSC_INTERFACE_INDEX] = descriptor_counts->current_interface;
+size_t storage_usb_add_descriptors(uint8_t *descriptors_buf, descriptor_counts_t *descriptor_counts, uint8_t *current_interface_string) {
+    memcpy(descriptors_buf, usb_msc_descriptors_template, sizeof(usb_msc_descriptors_template));
+    descriptors_buf[MSC_INTERFACE_INDEX] = descriptor_counts->current_interface;
     descriptor_counts->current_interface++;
 
-    descriptor_buf[MSC_IN_ENDPOINT_INDEX] =
+    descriptors_buf[MSC_IN_ENDPOINT_INDEX] =
         0x80 | (USB_MSC_EP_NUM_IN ? USB_MSC_EP_NUM_IN : descriptor_counts->current_endpoint);
     descriptor_counts->num_in_endpoints++;
-    descriptor_buf[MSC_OUT_ENDPOINT_INDEX] =
+    descriptors_buf[MSC_OUT_ENDPOINT_INDEX] =
         USB_MSC_EP_NUM_OUT ? USB_MSC_EP_NUM_OUT : descriptor_counts->current_endpoint;
     descriptor_counts->num_out_endpoints++;
     descriptor_counts->current_endpoint++;
 
     usb_add_interface_string(*current_interface_string, storage_interface_name);
-    descriptor_buf[MSC_INTERFACE_STRING_INDEX] = *current_interface_string;
+    descriptors_buf[MSC_INTERFACE_STRING_INDEX] = *current_interface_string;
     (*current_interface_string)++;
 
-    return sizeof(usb_msc_descriptor_template);
+    return sizeof(usb_msc_descriptors_template);
 }
 
 static bool usb_drive_set_enabled(bool enabled) {

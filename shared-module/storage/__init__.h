@@ -33,8 +33,8 @@
 #if CIRCUITPY_USB
 bool storage_usb_enabled(void);
 void storage_usb_set_defaults(void);
-size_t storage_usb_descriptor_length(void);
-size_t storage_usb_add_descriptor(uint8_t *descriptor_buf, descriptor_counts_t *descriptor_counts, uint8_t *current_interface_string);
+size_t storage_usb_descriptors_length(void);
+size_t storage_usb_add_descriptors(uint8_t *descriptors_buf, descriptor_counts_t *descriptor_counts, uint8_t *current_interface_string);
 #endif
 
 #endif // SHARED_MODULE_STORAGE___INIT___H
