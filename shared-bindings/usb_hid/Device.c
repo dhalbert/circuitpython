@@ -262,21 +262,21 @@ STATIC mp_obj_t usb_hid_device_send_report(mp_obj_t self_in, mp_obj_t buffer) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(usb_hid_device_send_report_obj, usb_hid_device_send_report);
 
-//|     interface: bytes
+//|     interface_number: int
 //|     """The interface number in which this device is present."""
 //|
-STATIC mp_obj_t usb_hid_device_obj_get_interface(mp_obj_t self_in) {
+STATIC mp_obj_t usb_hid_device_obj_get_interface_number(mp_obj_t self_in) {
     usb_hid_device_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->out_report_buffer == 0) {
         return mp_const_none;
     }
-    return MP_OBJ_NEW_SMALL_INT(common_hal_usb_hid_device_get_interface(self));
+    return MP_OBJ_NEW_SMALL_INT(common_hal_usb_hid_device_get_interface_number(self));
 }
-MP_DEFINE_CONST_FUN_OBJ_1(usb_hid_device_get_interface_obj, usb_hid_device_obj_get_interface);
+MP_DEFINE_CONST_FUN_OBJ_1(usb_hid_device_get_interface_number_obj, usb_hid_device_obj_get_interface_number);
 
-const mp_obj_property_t usb_hid_device_interface_obj = {
+const mp_obj_property_t usb_hid_device_interface_number_obj = {
     .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&usb_hid_device_get_interface_obj,
+    .proxy = {(mp_obj_t)&usb_hid_device_get_interface_number_obj,
               MP_ROM_NONE,
               MP_ROM_NONE},
 };
@@ -338,7 +338,7 @@ const mp_obj_property_t usb_hid_device_usage_obj = {
 
 STATIC const mp_rom_map_elem_t usb_hid_device_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_send_report),          MP_ROM_PTR(&usb_hid_device_send_report_obj) },
-    { MP_ROM_QSTR(MP_QSTR_interface),            MP_ROM_PTR(&usb_hid_device_interface_obj) },
+    { MP_ROM_QSTR(MP_QSTR_interface_number),     MP_ROM_PTR(&usb_hid_device_interface_number_obj) },
     { MP_ROM_QSTR(MP_QSTR_last_received_report), MP_ROM_PTR(&usb_hid_device_last_received_report_obj) },
     { MP_ROM_QSTR(MP_QSTR_usage_page),           MP_ROM_PTR(&usb_hid_device_usage_page_obj) },
     { MP_ROM_QSTR(MP_QSTR_usage),                MP_ROM_PTR(&usb_hid_device_usage_obj) },

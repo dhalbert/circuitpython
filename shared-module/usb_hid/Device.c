@@ -186,6 +186,10 @@ void common_hal_usb_hid_device_construct(usb_hid_device_obj_t *self, mp_obj_t re
     self->boot = boot;
 }
 
+uint8_t common_hal_usb_hid_device_get_interface_number(usb_hid_device_obj_t *self) {
+    return self->interface_number;
+}
+
 uint8_t common_hal_usb_hid_device_get_usage_page(usb_hid_device_obj_t *self) {
     return self->usage_page;
 }

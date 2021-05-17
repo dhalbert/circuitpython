@@ -40,6 +40,8 @@
 //| """Tuple of all active HID device interfaces.
 //| The default set of devices is ``Device.KEYBOARD, Device.MOUSE, Device.CONSUMER_CONTROL``,
 //| On boards where `usb_hid` is disabled by default, `devices` is an empty tuple.
+//| All the devices from multiple HID interfaces are returned in a single tuple.
+//| To find out which interface a device is assigned to, use the `Device.interface_index` property.
 //| """
 //|
 
@@ -60,12 +62,17 @@ STATIC mp_obj_t usb_hid_disable(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(usb_hid_disable_obj, usb_hid_disable);
 
-//| def enable(devices: Optional[Sequence[Device]]) -> None:
+//| def enable(*devices: Sequence[Device]) -> None:
 //|     """Specify which USB HID devices that will be available.
+//|     Specify up to two Sequences of devices. Each uses a separate HID
+//|     interface descriptor. Any devices that may be used boot-protocol devices should
+//|     be in a sequence of length 1.
+//|
 //|     Can be called in ``boot.py``, before USB is connected.
 //|
-//|     :param Sequence devices: `Device` objects.
-//|       If `devices` is empty, HID is disabled. The order of the ``Devices``
+//|     :param *Sequence devices: `Device` objects.
+//|       If no ``Sequences`` are given, or all `devices` arguments are empty,
+//|       HID is disabled. The order of the ``Devices``
 //|       may matter to the host. For instance, for MacOS, put the mouse device
 //|       before any Gamepad or Digitizer HID device or else it will not work.
 //|
@@ -76,22 +83,28 @@ MP_DEFINE_CONST_FUN_OBJ_0(usb_hid_disable_obj, usb_hid_disable);
 //|     """
 //|     ...
 //|
-STATIC mp_obj_t usb_hid_enable(mp_obj_t devices) {
-    const mp_int_t len = mp_obj_get_int(mp_obj_len(devices));
-    for (mp_int_t i = 0; i < len; i++) {
-        mp_obj_t item = mp_obj_subscr(devices, MP_OBJ_NEW_SMALL_INT(i), MP_OBJ_SENTINEL);
-        if (!mp_obj_is_type(item, &usb_hid_device_type)) {
-            mp_raise_ValueError_varg(translate("non-Device in %q"), MP_QSTR_devices);
+STATIC mp_obj_t usb_hid_enable(size_t n_args, const mp_obj_t *args) {
+    // n_args is already validated to be <= CFG_TUD_HID.
+
+    size_t total_devices = 0;
+    for (size_t arg_idx = 0; arg_idx < n_args; arg_idx++) {
+        const mp_int_t len = mp_obj_get_int(mp_obj_len(args[0]));
+        for (mp_int_t device_idx = 0; device_idx < len; device_idx++) {
+            mp_obj_t item = mp_obj_subscr(args[arg_idx], MP_OBJ_NEW_SMALL_INT(device_idx), MP_OBJ_SENTINEL);
+            total_devices++;
+            if (!mp_obj_is_type(item, &usb_hid_device_type)) {
+                mp_raise_ValueError_varg(translate("non-Device in %q"), MP_QSTR_devices);
+            }
         }
     }
 
-    if (!common_hal_usb_hid_enable(devices)) {
+    if (!common_hal_usb_hid_enable(n_args, args)) {
         mp_raise_RuntimeError(translate("Cannot change USB devices now"));
     }
 
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_1(usb_hid_enable_obj, usb_hid_enable);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(usb_hid_enable_obj, 0, CIRCUITPY_USB_HID_MAX_INTERFACES, usb_hid_enable);
 
 // usb_hid.devices is set once the usb devices are determined, after boot.py runs.
 STATIC mp_map_elem_t usb_hid_module_globals_table[] = {

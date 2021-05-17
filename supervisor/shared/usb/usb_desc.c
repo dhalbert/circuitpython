@@ -221,9 +221,11 @@ static void usb_build_configuration_descriptor(void) {
 
     #if CIRCUITPY_USB_HID
     if (usb_hid_enabled()) {
-        descriptor_buf_remaining += usb_hid_add_descriptors(
-            descriptor_buf_remaining, &descriptor_counts, &current_interface_string,
-            usb_hid_report_descriptor_length());
+        for (uint8_t i = 0; i < CIRCUITPY_USB_HID_MAX_INTERFACES; i++) {
+            descriptor_buf_remaining += usb_hid_add_descriptors(
+                descriptor_buf_remaining, &descriptor_counts, &current_interface_string,
+                usb_hid_report_descriptor_length(), i);
+        }
     }
     #endif
 
