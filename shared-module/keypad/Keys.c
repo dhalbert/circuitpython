@@ -31,6 +31,39 @@
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #include "py/runtime.h"
 
+// Lock this for exclusive access to keypad_keys_list.
+volatile bool keypad_keys_list_lock;
+
+static mp_obj_list_t *keypad_keys_in_use;
+
+void keypad_keys_init(void) {
+    keypad_keys_list_lock = false;
+    mp_obj_list_init(&MP_STATE_PORT(keypad_keys_list), 0);
+}
+
+void keypad_keys_tick(void) {
+    if (keypad_keys_list_lock) {
+        // Someone else is using the list. Skip scanning.
+        return;
+    }
+    keypad_keys_list_lock = true;
+
+    size_t num_objs;
+    mp_obj_t *objs;
+    mp_obj_list_get(&MP_STATE_PORT(keypad_keys_list), &num_objs, &objs);
+
+    for (size_t i = 0; i < num_objs; i++) {
+        keypad_keys_obj_t *keys = MP_OBJ_TO_PTR(objs[i]);
+        keys->already_pressed[key_num] = keys->currently_pressed[key_num]
+            keys->currently_pressed[key_num] |=
+            common_hal_digitalio_digitalinout_get_value(keys->digitalinouts->items[key_num]) ==
+            keys->value_when_pressed;
+    }
+
+    keypad_keys_list_lock = false;
+}
+
+
 void common_hal_keypad_keys_construct(keypad_keys_obj_t *self, mp_uint_t num_pins, mcu_pin_obj_t *pins[], bool value_when_pressed, bool pull) {
     mp_obj_t dios[num_pins];
 
@@ -99,15 +132,6 @@ void common_hal_keypad_keys_keys_with_state(keypad_keys_obj_t *self, int state, 
 
 size_t common_hal_keypad_keys_length(keypad_keys_obj_t *self) {
     return self->digitalinouts->len;
-}
-
-void common_hal_keypad_keys_scan(keypad_keys_obj_t *self) {
-    for (mp_uint_t key_num = 0; key_num < common_hal_keypad_keys_length(self); key_num++) {
-        self->previously_pressed[key_num] = self->currently_pressed[key_num];
-        self->currently_pressed[key_num] =
-            common_hal_digitalio_digitalinout_get_value(self->digitalinouts->items[key_num]) ==
-            self->value_when_pressed;
-    }
 }
 
 mp_int_t common_hal_keypad_keys_state(keypad_keys_obj_t *self, mp_uint_t key_num) {

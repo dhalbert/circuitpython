@@ -533,8 +533,22 @@ extern const struct _mp_obj_module_t ipaddress_module;
 #if CIRCUITPY_KEYPAD
 extern const struct _mp_obj_module_t keypad_module;
 #define KEYPAD_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_keypad), (mp_obj_t)&keypad_module },
+#define KEYPAD_ROOT_POINTERS \
+    mp_obj_t keypad_keys_list; \
+    mp_obj_t keypad_key_matrix_list; \
+    mp_obj_t keypad_keys_shift_register_list;
+
+#Ticks are 1024ths of a second. We'll scan every 16 ticks (16.384 msec).
+#CIRCUITPY_KEYPAD_TICKS_PER_SCAN must be a power of two.
+#ifndef CIRCUITPY_KEYPAD_TICKS_PER_SCAN
+#define CIRCUITPY_KEYPAD_TICKS_PER_SCAN (16)
+#endif
+#if CIRCUITPY_KEYPAD_TICKS_PER_SCAN & (CIRCUITPY_KEYPAD_TICKS_PER_SCAN - 1) != 0
+#error CIRCUITPY_KEYPAD_TICKS_PER_SCAN must be a power of two
+#endif
 #else
 #define KEYPAD_MODULE
+#define KEYPAD_ROOT_POINTERS
 #endif
 
 #if CIRCUITPY_MATH
@@ -962,6 +976,7 @@ struct _supervisor_allocation_node;
     vstr_t *repl_line; \
     mp_obj_t rtc_time_source; \
     GAMEPAD_ROOT_POINTERS \
+    KEYPAD_ROOT_POINTERS \
     mp_obj_t pew_singleton; \
     BOARD_UART_ROOT_POINTER \
     FLASH_ROOT_POINTERS \

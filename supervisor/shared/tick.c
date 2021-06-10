@@ -108,9 +108,18 @@ void supervisor_tick(void) {
     #if CIRCUITPY_FILESYSTEM_FLUSH_INTERVAL_MS > 0
     filesystem_tick();
     #endif
+
     #ifdef CIRCUITPY_AUTORELOAD_DELAY_MS
     autoreload_tick();
     #endif
+
+    #if CIRCUITPY_KEYPAD
+    // CIRCUITPY_KEYPAD_TICKS_PER_SCAN is guaranteed to be a power of two.
+    if (!port_get_raw_ticks(NULL) & (CIRCUITPY_KEYPAD_TICKS_PER_SCAN - 1)) {
+        keypad_tick();
+    }
+    #endif
+
     #ifdef CIRCUITPY_GAMEPAD_TICKS
     if (!(port_get_raw_ticks(NULL) & CIRCUITPY_GAMEPAD_TICKS)) {
         #if CIRCUITPY_GAMEPAD
@@ -121,6 +130,7 @@ void supervisor_tick(void) {
         #endif
     }
     #endif
+
     background_callback_add(&tick_callback, supervisor_background_tasks, NULL);
 }
 

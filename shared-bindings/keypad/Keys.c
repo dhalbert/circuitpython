@@ -83,20 +83,6 @@ STATIC mp_obj_t keypad_keys_make_new(const mp_obj_type_t *type, size_t n_args, c
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|     def scan(self) -> None:
-//|         """Scan the keys and record which are newly pressed, still pressed,
-//|         newly released, and still released. For convenient activity checking,
-//|         """
-//|         ...
-//|
-STATIC mp_obj_t keypad_keys_scan(mp_obj_t self_in) {
-    keypad_keys_obj_t *self = MP_OBJ_TO_PTR(self_in);
-
-    common_hal_keypad_keys_scan(self);
-    return MP_ROM_NONE;
-}
-MP_DEFINE_CONST_FUN_OBJ_1(keypad_keys_scan_obj, keypad_keys_scan);
-
 //|     def state(self, key_num: int) -> keypad.State:
 //|         """Return the state for the given ``key_num``, based
 //|         on the results of the most recent `scan()`.
@@ -161,7 +147,6 @@ MP_DEFINE_CONST_FUN_OBJ_3(keypad_keys_keys_with_state_obj, keypad_keys_keys_with
 
 STATIC const mp_rom_map_elem_t keypad_keys_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_keys_with_state),  MP_ROM_PTR(&keypad_keys_keys_with_state_obj) },
-    { MP_ROM_QSTR(MP_QSTR_scan),             MP_ROM_PTR(&keypad_keys_scan_obj) },
     { MP_ROM_QSTR(MP_QSTR_state),            MP_ROM_PTR(&keypad_keys_state_obj) },
 };
 
