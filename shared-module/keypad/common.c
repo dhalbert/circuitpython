@@ -57,15 +57,53 @@ void common_hal_keypad_keys_construct(keypad_keys_obj_t *self, mp_uint_t num_pin
     self->scan = common_hal_keypad_scan_construct(num_pins);
 }
 
-mp_obj_t common_hal_keypad_keys_get_scan(keypad_keys_obj_t *self) {
-    return self->scan;
+void common_hal_keypad_keys_keys_with_state(keypad_keys_obj_t *self, int state, mp_obj_list_t *list_into) {
+    const size_t list_length = list_into->len;
+
+    size_t next_list_slot = 0;
+
+    for (mp_uint_t key_num = 0; key_num < common_hal_keypad_keys_length(self); key_num++) {
+        if (next_list_slot >= list_length) {
+            // List is full.
+            break;
+        }
+
+        bool store_key = false;
+        switch (state) {
+            case STATE_JUST_PRESSED:
+                store_key = !self->previously_pressed[key_num] && self->currently_pressed[key_num];
+                break;
+            case STATE_STILL_PRESSED:
+                store_key = self->previously_pressed[key_num] && self->currently_pressed[key_num];
+                break;
+            case STATE_PRESSED:
+                store_key = self->currently_pressed[key_num];
+                break;
+            case STATE_JUST_RELEASED:
+                store_key = self->previously_pressed[key_num] && !self->currently_pressed[key_num];
+                break;
+            case STATE_STILL_RELEASED:
+                store_key = !self->previously_pressed[key_num] && !self->currently_pressed[key_num];
+                break;
+            case STATE_RELEASED:
+                store_key = !self->currently_pressed[key_num];
+                break;
+        }
+
+        if (store_key) {
+            mp_obj_list_store(list_into, MP_OBJ_NEW_SMALL_INT(next_list_slot),
+                MP_OBJ_NEW_SMALL_INT(key_num));
+            next_list_slot++;
+        }
+
+        for (size_t unused_slot = next_list_slot; unused_slot < list_length; unused_slot++) {
+            mp_obj_list_store(list_into, MP_OBJ_NEW_SMALL_INT(unused_slot),
+                MP_ROM_NONE);
+        }
+    }
 }
 
-void common_hal_keypad_keys_record_scan(keypad_keys_obj_t *self) {
-    common_hal_keypad_scan_set_key_states(self->scan, self->states);
-}
-
-keypad_keys_scan_once(keypad_keys_obj_t * self) {
+bool common_hal_keypad_keys_scan(keypad_keys_obj_t *self) {
     uint64_t now = port_get_raw_ticks(NULL);
     if (now - self->last_scan_ticks < DEBOUNCE_TICKS) {
         // Too soon.
@@ -81,4 +119,20 @@ keypad_keys_scan_once(keypad_keys_obj_t * self) {
             self->value_when_pressed;
     }
     return true;
+}
+
+mp_int_t common_hal_keypad_keys_state(keypad_keys_obj_t *self, mp_uint_t key_num) {
+    if (self->currently_pressed[key_num]) {
+        if (self->previously_pressed[key_num]) {
+            return STATE_STILL_PRESSED;
+        } else {
+            return STATE_JUST_PRESSED;
+        }
+    } else {
+        if (self->previously_pressed[key_num]) {
+            return STATE_JUST_RELEASED;
+        } else {
+            return STATE_STILL_RELEASED;
+        }
+    }
 }

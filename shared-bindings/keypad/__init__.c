@@ -34,14 +34,15 @@
 //| """Support for scanning keys and key matrices
 //|
 //| The `keypad` module provides native support to scan sets of keys or buttons,
-//| connected independently to individual pins, or connected in a row-and-column matrix.
+//| connected in a variety of ways.
 //| """
 //|
 
 STATIC mp_map_elem_t keypad_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__),  MP_OBJ_NEW_QSTR(MP_QSTR_keypad) },
-//    { MP_ROM_QSTR(MP_QSTR_KeyMatrix), MP_OBJ_FROM_PTR(&keypad_key_matrix_type) },
+    { MP_ROM_QSTR(MP_QSTR_KeyMatrix), MP_OBJ_FROM_PTR(&keypad_key_matrix_type) },
     { MP_ROM_QSTR(MP_QSTR_Keys),      MP_OBJ_FROM_PTR(&keypad_keys_type) },
+    { MP_ROM_QSTR(MP_QSTR_Scan),      MP_OBJ_FROM_PTR(&keypad_scan_type) },
     { MP_ROM_QSTR(MP_QSTR_State),     MP_OBJ_FROM_PTR(&keypad_state_type) },
 };
 

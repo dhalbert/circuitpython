@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -24,16 +24,28 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_KEYPAD_KEYS_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_KEYPAD_KEYS_H
 
-#include "py/objlist.h"
-#include "shared-module/keypad/Keys.h"
+#include "py/runtime.h"
+#include "shared-bindings/keypad/KeyStates.h"
 
-extern const mp_obj_type_t keypad_keys_type;
+keypad_keystates_obj_t *common_hal_keypad_new_keystates(keypad_scan_obj_t *scan, keypad_state_t state) {
+    keypad_keystates_obj_t *self = m_new_obj(keypad_keystates_obj_t);
+    self->base.type = &keypad_keystates_type;
+    self->scan = scan;
+    self->state = state;
+    self->last_key_num_match = -1;
+    return self;
+}
 
-void common_hal_keypad_keys_construct(keypad_keys_obj_t *self, mp_uint_t num_pins, mcu_pin_obj_t *pins[], bool value_when_pressed,  bool pull);
-mp_obj_t common_hal_keypad_keys_get_scan(keypad_keys_obj_t *self);
-void common_hal_keypad_keys_record_scan(keypad_keys_obj_t *self);
+// Returns sentinel value -1 when there are no more matches.
+// Otherwise returns the key_num of the next key that matches.
+mp_obj_t common_hal_keypad_keystates_next(keypad_keystates_obj_t *self) {
+    size_t len = common_hal_keypad_scan_length(self->scan);
 
-#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_KEYPAD_KEYS_H
+    while (++self->last_key_num_match < len) {
+        if (common_hal_keypad_key_has_state(scan, self->last_key_num_match, self->state)) {
+            return self->last_key_num_match;
+        }
+    }
+    return -1;
+}

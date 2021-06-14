@@ -24,16 +24,20 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_KEYPAD_KEYS_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_KEYPAD_KEYS_H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_KEYPAD_KEYMATRIX_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_KEYPAD_KEYMATRIX_H
 
 #include "py/objlist.h"
 #include "shared-module/keypad/Keys.h"
 
-extern const mp_obj_type_t keypad_keys_type;
+extern const mp_obj_type_t keypad_keymatrix_type;
 
-void common_hal_keypad_keys_construct(keypad_keys_obj_t *self, mp_uint_t num_pins, mcu_pin_obj_t *pins[], bool value_when_pressed,  bool pull);
-mp_obj_t common_hal_keypad_keys_get_scan(keypad_keys_obj_t *self);
-void common_hal_keypad_keys_record_scan(keypad_keys_obj_t *self);
+void common_hal_keypad_keymatrix_construct(keypad_keymatrix_obj_t *self, mp_uint_t num_row_pins, mcu_pin_obj_t *row_pins[], mp_uint_t num_col_pins, mcu_pin_obj_t *col_pins[]);
+void common_hal_keypad_keymatrix_keys_with_state(keypad_keymatrix_obj_t *self, mp_int_t state, mp_obj_list_t *into);
+size_t common_hal_keypad_keymatrix_row_length(keypad_keymatrix_obj_t *self);
+size_t common_hal_keypad_keymatrix_col_length(keypad_keymatrix_obj_t *self);
+mp_int_t common_hal_keypad_keymatrix_key_num(mp_int_t row, mp_int_t col);
+bool common_hal_keypad_keymatrix_scan(keypad_keymatrix_obj_t *self);
+mp_int_t common_hal_keypad_keymatrix_state(keypad_keymatrix_obj_t *self, mp_uint_t key_num);
 
-#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_KEYPAD_KEYS_H
+#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_KEYPAD_KEYMATRIX_H

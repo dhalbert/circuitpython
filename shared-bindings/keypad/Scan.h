@@ -24,16 +24,20 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_KEYPAD_KEYS_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_KEYPAD_KEYS_H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_KEYPAD_SCAN_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_KEYPAD_SCAN_H
 
 #include "py/objlist.h"
-#include "shared-module/keypad/Keys.h"
+#include "shared-module/keypad/KeyStates.h"
+#include "shared-module/keypad/Scan.h"
+#include "shared-module/keypad/State.h"
 
-extern const mp_obj_type_t keypad_keys_type;
+extern const mp_obj_type_t keypad_scan_type;
 
-void common_hal_keypad_keys_construct(keypad_keys_obj_t *self, mp_uint_t num_pins, mcu_pin_obj_t *pins[], bool value_when_pressed,  bool pull);
-mp_obj_t common_hal_keypad_keys_get_scan(keypad_keys_obj_t *self);
-void common_hal_keypad_keys_record_scan(keypad_keys_obj_t *self);
+void common_hal_keypad_scan_construct(keypad_scan_obj_t *self, size_t num_keys);
+bool common_hal_keypad_scan_key_has_state(keypad_scan_obj_t *self, keypad_state_t state);
+keypad_state_t common_hal_keypad_key_state(keypad_scan_obj_t *self, mp_uint_t key_num);
+keypad_keystates_obj_t *common_hal_keypad_scan_keys_with_state(keypad_scan_obj_t *self, keypad_state_t state);
+size_t common_hal_keypad_scan_num_keys(keypad_scan_obj_t *self);
 
-#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_KEYPAD_KEYS_H
+#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_KEYPAD_SCAN_H

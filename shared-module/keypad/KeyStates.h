@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -24,16 +24,23 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_KEYPAD_KEYS_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_KEYPAD_KEYS_H
+#ifndef MICROPY_INCLUDED_SHARED_MODULE_KEYPAD_KEYSTATES_H
+#define MICROPY_INCLUDED_SHARED_MODULE_KEYPAD_KEYSTATES_H
 
-#include "py/objlist.h"
-#include "shared-module/keypad/Keys.h"
+#include <stdint.h>
 
-extern const mp_obj_type_t keypad_keys_type;
+#include "shared-module/keypad/KeyStates.h"
+#include "shared-module/keypad/Scan.h"
 
-void common_hal_keypad_keys_construct(keypad_keys_obj_t *self, mp_uint_t num_pins, mcu_pin_obj_t *pins[], bool value_when_pressed,  bool pull);
-mp_obj_t common_hal_keypad_keys_get_scan(keypad_keys_obj_t *self);
-void common_hal_keypad_keys_record_scan(keypad_keys_obj_t *self);
 
-#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_KEYPAD_KEYS_H
+typedef struct {
+    mp_obj_base_t base;
+    keypad_scan_obj_t *scan;
+    keypad_state_t state;
+    mp_int_t last_key_num_match;
+} keypad_keystates_obj_t;
+
+keypad_keystates_obj_t *common_hal_keypad_new_keystates(keypad_scan_obj_t *scan, keypad_state_t state);
+mp_obj_t common_hal_keypad_keystates_next(keypad_keystates_obj_t *self)
+
+#endif // MICROPY_INCLUDED_SHARED_MODULE_KEYPAD_KEYSTATES_H

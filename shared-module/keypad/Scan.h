@@ -24,16 +24,22 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_KEYPAD_KEYS_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_KEYPAD_KEYS_H
+#ifndef MICROPY_INCLUDED_SHARED_MODULE_KEYPAD_KEYS_H
+#define MICROPY_INCLUDED_SHARED_MODULE_KEYPAD_KEYS_H
 
-#include "py/objlist.h"
-#include "shared-module/keypad/Keys.h"
+#include "common-hal/digitalio/DigitalInOut.h"
 
-extern const mp_obj_type_t keypad_keys_type;
+#include "py/obj.h"
+#include "py/objtuple.h"
 
-void common_hal_keypad_keys_construct(keypad_keys_obj_t *self, mp_uint_t num_pins, mcu_pin_obj_t *pins[], bool value_when_pressed,  bool pull);
-mp_obj_t common_hal_keypad_keys_get_scan(keypad_keys_obj_t *self);
-void common_hal_keypad_keys_record_scan(keypad_keys_obj_t *self);
+typedef struct {
+    mp_obj_base_t base;
+    mp_obj_tuple_t *digitalinouts;
+    uint64_t last_scan_ticks;
+    bool value_when_pressed;
+    bool *previously_pressed;
+    bool *currently_pressed;
+} keypad_keys_obj_t;
 
-#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_KEYPAD_KEYS_H
+
+#endif  // MICROPY_INCLUDED_SHARED_MODULE_KEYPAD_KEYS_H

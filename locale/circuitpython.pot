@@ -116,7 +116,8 @@ msgid "%q must be a tuple of length 2"
 msgstr ""
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-#: shared-bindings/canio/Match.c shared-bindings/keypad/Keys.c
+#: shared-bindings/canio/Match.c shared-bindings/keypad/KeyMatrix.c
+#: shared-bindings/keypad/Scan.c
 msgid "%q out of range"
 msgstr ""
 
@@ -905,8 +906,8 @@ msgstr ""
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c py/enum.c
 #: shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
-#: shared-bindings/busio/SPI.c shared-bindings/keypad/Keys.c
-#: shared-bindings/microcontroller/Pin.c
+#: shared-bindings/busio/SPI.c shared-bindings/keypad/KeyMatrix.c
+#: shared-bindings/keypad/Scan.c shared-bindings/microcontroller/Pin.c
 #: shared-bindings/neopixel_write/__init__.c
 #: shared-bindings/terminalio/Terminal.c
 msgid "Expected a %q"
@@ -2400,6 +2401,10 @@ msgstr ""
 
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
 msgid "Writes not supported on Characteristic"
+msgstr ""
+
+#: shared-bindings/keypad/Scan.c
+msgid "Wrong number of states"
 msgstr ""
 
 #: supervisor/shared/safe_mode.c
