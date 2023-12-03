@@ -65,7 +65,7 @@ static const uint8_t usb_hid_descriptor_template[] = {
 #define HID_IN_ENDPOINT_INDEX (20)
     0x03,        // 21 bmAttributes (Interrupt)
     0x40, 0x00,  // 22,23  wMaxPacketSize 64
-    0x08,        // 24 bInterval 8 (unit depends on device speed)
+    0x01,        // 24 bInterval 1 (unit depends on device speed)
 
     0x07,        // 25 bLength
     0x05,        // 26 bDescriptorType (Endpoint)
