@@ -153,6 +153,9 @@ endif
 ifeq ($(CIRCUITPY_BOARD),1)
 SRC_PATTERNS += board/%
 endif
+ifeq ($(CIRCUITPY_BT_HID),1)
+SRC_PATTERNS += bt_hid/%
+endif
 ifeq ($(CIRCUITPY_BUSDEVICE),1)
 SRC_PATTERNS += adafruit_bus_device/%
 endif
@@ -453,6 +456,8 @@ SRC_COMMON_HAL_ALL = \
 	audiopwmio/PWMAudioOut.c \
 	audiopwmio/__init__.c \
 	board/__init__.c \
+	btio/HID.c \
+	bito/__init__.c \
 	busio/I2C.c \
 	busio/SPI.c \
 	busio/UART.c \

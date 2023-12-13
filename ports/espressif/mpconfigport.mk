@@ -51,6 +51,8 @@ ifeq ($(IDF_TARGET),esp32)
 # Modules
 CIRCUITPY_RGBMATRIX = 0
 CIRCUITPY_BLEIO = 0
+# Bluetooth Classic only available on ESP32.
+CIRCUITPY_BT_HID = 1
 # Features
 CIRCUITPY_USB = 0
 
@@ -88,7 +90,7 @@ CIRCUITPY_ESP_USB_SERIAL_JTAG ?= 1
 else ifeq ($(IDF_TARGET),esp32h2)
 # Modules
 CIRCUITPY_ALARM = 0
-# Turn off analogio because calibration is currently supported.
+# Turn off analogio because calibration is not currently supported.
 # https://github.com/espressif/esp-idf/issues/11038
 CIRCUITPY_ANALOGIO = 0
 CIRCUITPY_AUDIOBUSIO = 0

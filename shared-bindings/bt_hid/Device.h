@@ -1,5 +1,5 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -26,10 +26,15 @@
 
 #pragma once
 
-#include "common-hal/btio/HID.h"
+#include "py/objarray.h"
 
-extern const mp_obj_type_t btio_hid_type;
+#include "shared-module/btio/Device.h"
 
-extern mp_obj_t common_hal_btio_hid_get_devices(btio_hid_obj_t *self);
-extern bool common_hal_btio_hid_start(btio_hid_obj_t *self, const mp_obj_t devices_seq);
-extern bool common_hal_btio_hid_stop(btio_hid_obj_t *self);
+extern const mp_obj_type_t bt_hid_device_type;
+
+void common_hal_bt_hid_device_construct(bt_hid_device_obj_t *self, mp_obj_t report_descriptor, uint16_t usage_page, uint16_t usage, size_t report_ids_count, uint8_t *report_ids, uint8_t *in_report_lengths, uint8_t *out_report_lengths);
+void common_hal_bt_hid_device_send_report(bt_hid_device_obj_t *self, uint8_t *report, uint8_t len, uint8_t report_id);
+mp_obj_t common_hal_bt_hid_device_get_last_received_report(bt_hid_device_obj_t *self, uint8_t report_id);
+uint16_t common_hal_bt_hid_device_get_usage_page(bt_hid_device_obj_t *self);
+uint16_t common_hal_bt_hid_device_get_usage(bt_hid_device_obj_t *self);
+uint8_t common_hal_bt_hid_device_validate_report_id(bt_hid_device_obj_t *self, mp_int_t report_id);
