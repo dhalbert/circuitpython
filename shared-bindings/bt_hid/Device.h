@@ -28,7 +28,7 @@
 
 #include "py/objarray.h"
 
-#include "shared-module/btio/Device.h"
+#include "common-hal/bt_hid/Device.h"
 
 extern const mp_obj_type_t bt_hid_device_type;
 

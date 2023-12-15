@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#include "shared-bindings/btio/__init__.h"
-#include "shared-bindings/btio/HID.h"
+#include "shared-bindings/bt_hid/__init__.h"
+#include "shared-bindings/bt_hid/HID.h"
 
 //| """
 //| The `bt_hid` module supports Bluetooth Classic (BR/EDR)
@@ -43,6 +43,11 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(bt_hid___init___obj, bt_hid___init__);
 //| devices: Tuple[Device, ...]
 //| """Tuple of all available Bluetooth Classic HID device interfaces.
 //| The default set of devices is ``Device.KEYBOARD, Device.MOUSE, Device.CONSUMER_CONTROL``,
+//|
+//| If a boot device is enabled by `bt_hid.start()`, *and* the host has requested a boot device,
+//| the `devices` tuple is **replaced** with a single-element tuple
+//| containing a `Device` that describes the boot device chosen (keyboard or mouse).
+//| The request for a boot device overrides any other HID devices.
 //| """
 //|
 
@@ -57,9 +62,10 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(bt_hid___init___obj, bt_hid___init__);
 //|     """
 //|     ...
 STATIC mp_obj_t bt_hid_start(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_devices };
+    enum { ARG_devices, ARG_boot_device };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_devices, MP_ARG_OBJ, { .obj = default_bt_hid_devices_tuple }  },
+        { MP_QSTR_devices, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_boot_device, MP_ARG_INT, {.u_int = 0} },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -73,7 +79,10 @@ STATIC mp_obj_t bt_hid_start(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
         mp_arg_validate_type(item, &bt_hid_device_type, MP_QSTR___class__);
     }
 
-    common_hal_bt_hid_start(devices);
+    uint8_t boot_device =
+        (uint8_t)mp_arg_validate_int_range(args[ARG_boot_device].u_int, 0, 2, MP_QSTR_boot_device);
+
+    common_hal_bt_hid_start(devices, boot_device);
 
     return mp_const_none;
 }
@@ -88,6 +97,25 @@ STATIC mp_obj_t bt_hid_stop(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(bt_hid_stop_obj, bt_hid_stop);
 
+//| def get_boot_device() -> int:
+//|     """
+//|     :return: the boot device requested by the host, if any.
+//|       Returns 0 if the host did not request a boot device, or if `bt_hid.start()`
+//|       was called with ``boot_device=0``, the default, which disables boot device support.
+//|       If the host did request a boot device,
+//|       returns the value of ``boot_device`` set in `bt_hid.enable()`:
+//|       ``1`` for a boot keyboard, or ``2`` for boot mouse.
+//|       However, the standard devices provided by CircuitPython, `Device.KEYBOARD` and `Device.MOUSE`,
+//|       describe reports that match the boot device reports, so you don't need to check this
+//|       if you are using those devices.
+//|     :rtype int:
+//|     """
+//|
+STATIC mp_obj_t bt_hid_get_boot_device(void) {
+    return MP_OBJ_NEW_SMALL_INT(common_hal_bt_hid_get_boot_device());
+}
+MP_DEFINE_CONST_FUN_OBJ_0(bt_hid_get_boot_device_obj, bt_hid_get_boot_device);
+
 STATIC const mp_rom_map_elem_t bt_hid_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__),    MP_ROM_QSTR(MP_QSTR_bt_hid) },
     { MP_ROM_QSTR(MP_QSTR___init__),    MP_ROM_PTR(&bt_hid___init___obj) },
@@ -95,6 +123,7 @@ STATIC const mp_rom_map_elem_t bt_hid_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_devices),       MP_ROM_PTR(&bt_hid_devices_obj) },
     { MP_ROM_QSTR(MP_QSTR_start),         MP_ROM_PTR(&bt_hid_start_obj) },
     { MP_ROM_QSTR(MP_QSTR_stop),          MP_ROM_PTR(&bt_hid_stop_obj) },
+    { MP_ROM_QSTR(MP_QSTR_get_boot_device), MP_ROM_PTR(&bt_hid_get_boot_device_obj) },
 };
 STATIC MP_DEFINE_MUTABLE_DICT(bt_hid_module_globals, bt_hid_module_globals_table);
 

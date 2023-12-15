@@ -133,7 +133,8 @@ msgstr ""
 msgid "%q is read-only for this board"
 msgstr ""
 
-#: py/argcheck.c shared-bindings/usb_hid/Device.c
+#: py/argcheck.c shared-bindings/bt_hid/Device.c
+#: shared-bindings/usb_hid/Device.c
 msgid "%q length must be %d"
 msgstr ""
 
@@ -257,7 +258,7 @@ msgstr ""
 msgid "%q() without %q()"
 msgstr ""
 
-#: shared-bindings/usb_hid/Device.c
+#: shared-bindings/bt_hid/Device.c shared-bindings/usb_hid/Device.c
 msgid "%q, %q, and %q must all be the same length"
 msgstr ""
 
@@ -612,6 +613,10 @@ msgid ""
 "disable.\n"
 msgstr ""
 
+#: ports/espressif/common-hal/bt_hid/Device.c
+msgid "BT error"
+msgstr ""
+
 #: ports/espressif/common-hal/canio/CAN.c
 msgid "Baudrate not supported by peripheral"
 msgstr ""
@@ -894,10 +899,6 @@ msgstr ""
 
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Deep sleep pins must use a rising edge with pulldown"
-msgstr ""
-
-#: shared-module/jpegio/JpegDecoder.c
-msgid "Destination bitmap too small to contain image"
 msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
@@ -3877,10 +3878,6 @@ msgstr ""
 
 #: py/emitinlinethumb.c
 msgid "parameters must be registers in sequence r0 to r3"
-msgstr ""
-
-#: shared-bindings/bitmaptools/__init__.c
-msgid "pixel coordinates out of bounds"
 msgstr ""
 
 #: extmod/vfs_posix_file.c

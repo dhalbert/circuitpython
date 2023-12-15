@@ -37,7 +37,7 @@
 
 //| devices: Tuple[Device, ...]
 //| """Tuple of all active HID device interfaces.
-//| The default set of devices is ``Device.KEYBOARD, Device.MOUSE, Device.CONSUMER_CONTROL``,
+//| The default set of devices is ``Device.KEYBOARD, Device.MOUSE, Device.CONSUMER_CONTROL``.
 //| On boards where `usb_hid` is disabled by default, `devices` is an empty tuple.
 //|
 //| If a boot device is enabled by `usb_hid.enable()`, *and* the host has requested a boot device,
@@ -46,23 +46,6 @@
 //| The request for a boot device overrides any other HID devices.
 //| """
 //|
-
-//| def disable() -> None:
-//|     """Do not present any USB HID devices to the host computer.
-//|     Can be called in ``boot.py``, before USB is connected.
-//|     The HID composite device is normally enabled by default,
-//|     but on some boards with limited endpoints, including STM32F4,
-//|     it is disabled by default. You must turn off another USB device such
-//|     as `usb_cdc` or `storage` to free up endpoints for use by `usb_hid`.
-//|     """
-//|
-STATIC mp_obj_t usb_hid_disable(void) {
-    if (!common_hal_usb_hid_disable()) {
-        mp_raise_RuntimeError(MP_ERROR_TEXT("Cannot change USB devices now"));
-    }
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_0(usb_hid_disable_obj, usb_hid_disable);
 
 //| def enable(devices: Optional[Sequence[Device]], boot_device: int = 0) -> None:
 //|     """Specify which USB HID devices that will be available.
@@ -135,6 +118,23 @@ STATIC mp_obj_t usb_hid_enable(size_t n_args, const mp_obj_t *pos_args, mp_map_t
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(usb_hid_enable_obj, 1, usb_hid_enable);
+
+//| def disable() -> None:
+//|     """Do not present any USB HID devices to the host computer.
+//|     Can be called in ``boot.py``, before USB is connected.
+//|     The HID composite device is normally enabled by default,
+//|     but on some boards with limited endpoints, including STM32F4,
+//|     it is disabled by default. You must turn off another USB device such
+//|     as `usb_cdc` or `storage` to free up endpoints for use by `usb_hid`.
+//|     """
+//|
+STATIC mp_obj_t usb_hid_disable(void) {
+    if (!common_hal_usb_hid_disable()) {
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Cannot change USB devices now"));
+    }
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_0(usb_hid_disable_obj, usb_hid_disable);
 
 //| def get_boot_device() -> int:
 //|     """

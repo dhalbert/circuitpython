@@ -26,13 +26,29 @@
 
 #pragma once
 
-#include "common-hal/bt_hid/__init__.h"
+#include <stdint.h>
+#include <stdbool.h>
 
-extern mp_obj_tuple_t common_hal_bt_hid_devices;
+#include "py/obj.h"
 
-void bt_hid_set_devices(mp_obj_t devices);
+typedef struct  {
+    mp_obj_base_t base;
+    // Python buffer object whose contents are the descriptor.
+    const uint8_t *report_descriptor;
+    uint8_t *in_report_buffers[CIRCUITPY_BT_HID_MAX_REPORT_IDS_PER_DESCRIPTOR];
+    uint8_t *out_report_buffers[CIRCUITPY_BT_HID_MAX_REPORT_IDS_PER_DESCRIPTOR];
+    uint8_t out_report_buffers_updated[CIRCUITPY_BT_HID_MAX_REPORT_IDS_PER_DESCRIPTOR];
+    uint16_t report_descriptor_length;
+    uint8_t report_ids[CIRCUITPY_BT_HID_MAX_REPORT_IDS_PER_DESCRIPTOR];
+    uint8_t in_report_lengths[CIRCUITPY_BT_HID_MAX_REPORT_IDS_PER_DESCRIPTOR];
+    uint8_t out_report_lengths[CIRCUITPY_BT_HID_MAX_REPORT_IDS_PER_DESCRIPTOR];
+    uint16_t usage_page;
+    uint16_t usage;
+    uint8_t num_report_ids;
+} bt_hid_device_obj_t;
 
-void common_hal_bt_hid_int(void);
-bool common_hal_bt_hid_start(const mp_obj_t devices_seq, uint8_t boot_device);
-bool common_hal_bt_hid_stop(void);
-uint8_t common_hal_bt_hid_get_boot_device(void);
+extern const bt_hid_device_obj_t bt_hid_device_keyboard_obj;
+extern const bt_hid_device_obj_t bt_hid_device_mouse_obj;
+extern const bt_hid_device_obj_t bt_hid_device_consumer_control_obj;
+
+void bt_hid_device_create_report_buffers(bt_hid_device_obj_t *self);

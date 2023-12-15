@@ -24,15 +24,24 @@
  * THE SOFTWARE.
  */
 
-#pragma once
+#pragama once
 
-#include "common-hal/bt_hid/__init__.h"
+#include "common-hal/bt_hid/Device.h"
 
-extern mp_obj_tuple_t common_hal_bt_hid_devices;
+extern bt_hid_device_obj_t bt_hid_devices[];
 
-void bt_hid_set_devices(mp_obj_t devices);
+bool bt_hid_enabled(void);
+void bt_hid_set_defaults(void);
+uint8_t usb_hid_boot_device(void);
 
-void common_hal_bt_hid_int(void);
-bool common_hal_bt_hid_start(const mp_obj_t devices_seq, uint8_t boot_device);
-bool common_hal_bt_hid_stop(void);
-uint8_t common_hal_bt_hid_get_boot_device(void);
+size_t bt_hid_add_descriptor(uint8_t *descriptor_buf, descriptor_counts_t *descriptor_counts, uint8_t *current_interface_string, uint16_t report_descriptor_length, uint8_t boot_device);
+size_t bt_hid_descriptor_length(void);
+size_t bt_hid_report_descriptor_length(void);
+
+void bt_hid_setup_devices(void);
+size_t bt_hid_report_descriptor_length(void);
+void bt_hid_build_report_descriptor(void);
+
+bool bt_hid_get_device_with_report_id(uint8_t report_id, bt_hid_device_obj_t **device_out, size_t *id_idx_out);
+
+void bt_hid_gc_collect(void);
