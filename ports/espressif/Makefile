@@ -306,6 +306,11 @@ ifneq ($(CIRCUITPY_BLEIO),0)
 SRC_C += common-hal/_bleio/ble_events.c
 endif
 
+ifneq ($(CIRCUITPY_BT_HID),0)
+CGLAGS += -isystem esp-idf/components/bt/host/bluedroid/api/include/api
+CFLAGS += -isystem esp-idf/components/esp_hid/include
+endif
+
 ifneq ($(CIRCUITPY_DOTCLOCKFRAMEBUFFER),0)
 CFLAGS += -isystem esp-idf/components/esp_lcd/include
 CFLAGS += -isystem esp-idf/components/esp_lcd/interface

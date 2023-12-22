@@ -91,6 +91,8 @@ ALWAYS_INCLUDE = FLASH_MODE_SETTINGS + FLASH_FREQ_SETTINGS + PSRAM_FREQ_SETTINGS
 
 BLE_SETTINGS = ["CONFIG_BT_", "CONFIG_BLUEDROID_", "CONFIG_NIMBLE_", "CONFIG_SW_COEXIST_ENABLE"]
 
+BT_SETTINGS = ["CONFIG_BT_", "CONFIG_BLUEDROID_", "CONFIG_SW_COEXIST_ENABLE"]
+
 # boards/lilygo_ttgo_t8_s2_st7789/sdkconfig
 # CONFIG_LWIP_DNS_SUPPORT_MDNS_QUERIES=y
 
@@ -165,6 +167,7 @@ def update(debug, board, update_all):
     psram_size = "0"
     uf2_bootloader = None
     ble_enabled = None
+    bt_enabled = None
     for line in board_make.read_text().split("\n"):
         if "=" not in line or line.startswith("#"):
             continue
@@ -180,6 +183,9 @@ def update(debug, board, update_all):
                     "esp32",
                     "esp32s2",
                 )  # ESP32 is disabled by us. S2 doesn't support it.
+            if bt_enabled is None:
+                # Classic Blueooth is only available on ESP32.
+                bt_enabled = target in ("esp32",)
         elif key == "CIRCUITPY_ESP_FLASH_SIZE":
             flash_size = value
         elif key == "CIRCUITPY_ESP_FLASH_MODE":
@@ -196,6 +202,8 @@ def update(debug, board, update_all):
             uf2_bootloader = not (value == "0")
         elif key == "CIRCUITPY_BLEIO":
             ble_enabled = not (value == "0")
+        elif key == "CIRCUITPY_BT_HID":
+            bt_enabled = not (value == "0")
 
     os.environ["IDF_TARGET"] = target
     os.environ[
@@ -243,6 +251,9 @@ def update(debug, board, update_all):
     if ble_enabled:
         ble_config = pathlib.Path(f"esp-idf-config/sdkconfig-ble.defaults")
         sdkconfigs.append(ble_config)
+    if bt_enabled:
+        bt_config = pathlib.Path(f"esp-idf-config/sdkconfig-bt.defaults")
+        sdkconfigs.append(bt_config)
     board_config = pathlib.Path(f"boards/{board}/sdkconfig")
     # Don't include the board file in cp defaults. The board may have custom
     # overrides.
@@ -268,6 +279,8 @@ def update(debug, board, update_all):
     last_target_group = None
     ble_settings = []
     last_ble_group = None
+    bt_settings = []
+    last_bt_group = None
     default_settings = []
     last_default_group = None
 
@@ -445,6 +458,10 @@ def update(debug, board, update_all):
                     print("  " * (len(current_group) + 1), "ble")
                     last_ble_group = add_group(ble_settings, last_ble_group, current_group)
                     ble_settings.append(config_string)
+                elif matches_group(config_string, BT_SETTINGS):
+                    print("  " * (len(current_group) + 1), "bt")
+                    last_bt_group = add_group(ble_settings, last_bt_group, current_group)
+                    bt_settings.append(config_string)
                 else:
                     print("  " * (len(current_group) + 1), "all")
                     last_default_group = add_group(
@@ -472,6 +489,7 @@ def update(debug, board, update_all):
     add_group(psram_settings, last_psram_group, current_group)
     add_group(target_settings, last_target_group, current_group)
     add_group(ble_settings, last_ble_group, current_group)
+    add_group(bt_settings, last_bt_group, current_group)
     add_group(default_settings, last_default_group, current_group)
 
     board_config.write_text("\n".join(board_settings))
@@ -495,6 +513,8 @@ def update(debug, board, update_all):
         target_config.write_text("\n".join(target_settings))
         if ble_settings:
             ble_config.write_text("\n".join(ble_settings))
+        if bt_settings:
+            bt_config.write_text("\n".join(bt_settings))
 
 
 if __name__ == "__main__":

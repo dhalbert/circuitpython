@@ -26,59 +26,18 @@
 
 #include <string.h>
 
+#include "components/bt/host/bluedroid/api/include/api/esp_bt_device.h"
+#include "components/bt/host/bluedroid/api/include/api/esp_gap_bt_api.h"
+#include "components/esp_hid/include/esp_hidd.h"
+
 #include "py/gc.h"
+#include "py/mphal.h"
+#include "py/mpstate.h"
 #include "py/runtime.h"
 #include "shared-bindings/bt_hid/__init__.h"
 #include "shared-bindings/bt_hid/Device.h"
 #include "supervisor/port.h"
-
-static const uint8_t bt_hid_descriptor_template[] = {
-    0x09,        //  0 bLength
-    0x04,        //  1 bDescriptorType (Interface)
-    0xFF,        //  2 bInterfaceNumber 3
-#define HID_DESCRIPTOR_INTERFACE_INDEX (2)
-    0x00,        //  3 bAlternateSetting
-    0x02,        //  4 bNumEndpoints 2
-    0x03,        //  5 bInterfaceClass: HID
-    0x00,        //  6 bInterfaceSubClass: NOBOOT
-#define HID_DESCRIPTOR_SUBCLASS_INDEX (6)
-    0x00,        //  7 bInterfaceProtocol: NONE
-#define HID_DESCRIPTOR_INTERFACE_PROTOCOL_INDEX (7)
-    0xFF,        //  8 iInterface (String Index)  [SET AT RUNTIME]
-#define HID_DESCRIPTOR_INTERFACE_STRING_INDEX (8)
-
-    0x09,        //  9 bLength
-    0x21,        // 10 bDescriptorType (HID)
-    0x11, 0x01,  // 11,12 bcdHID 1.11
-    0x00,        // 13 bCountryCode
-    0x01,        // 14 bNumDescriptors
-    0x22,        // 15 bDescriptorType[0] (HID)
-    0xFF, 0xFF,  // 16,17 wDescriptorLength[0]   [SET AT RUNTIME: lo, hi]
-#define HID_DESCRIPTOR_LENGTH_INDEX (16)
-
-    0x07,        // 18 bLength
-    0x05,        // 19 bDescriptorType (Endpoint)
-    0xFF,        // 20 bEndpointAddress (IN/D2H) [SET AT RUNTIME: 0x80 | endpoint]
-#define HID_IN_ENDPOINT_INDEX (20)
-    0x03,        // 21 bmAttributes (Interrupt)
-    0x40, 0x00,  // 22,23  wMaxPacketSize 64
-    0x01,        // 24 bInterval 1 (unit depends on device speed)
-
-    0x07,        // 25 bLength
-    0x05,        // 26 bDescriptorType (Endpoint)
-    0xFF,        // 27 bEndpointAddress (OUT/H2D)  [SET AT RUNTIME]
-#define HID_OUT_ENDPOINT_INDEX (27)
-    0x03,        // 28 bmAttributes (Interrupt)
-    0x40, 0x00,  // 29,30 wMaxPacketSize 64
-    0x08,        // 31 bInterval 8 (unit depends on device speed)
-};
-
-#define MAX_HID_DEVICES 8
-
-static uint8_t *hid_report_descriptor = NULL;
-static bt_hid_device_obj_t hid_devices[MAX_HID_DEVICES];
-// If 0, USB HID is disabled.
-static mp_int_t num_hid_devices;
+#include "supervisor/usb.h"
 
 // Which boot device is available? 0: no boot devices, 1: boot keyboard, 2: boot mouse.
 // This value is set by bt_hid.enable(), and used to build the HID interface descriptor.
@@ -88,10 +47,7 @@ static uint8_t hid_boot_device;
 // Whether a boot device was requested by a SET_PROTOCOL request from the host.
 static bool hid_boot_device_requested;
 
-// This tuple is store in bt_hid.devices.
-static mp_obj_tuple_t *hid_devices_tuple;
-
-static mp_obj_tuple_t default_hid_devices_tuple = {
+static mp_obj_tuple_t default_bt_hid_devices_tuple = {
     .base = {
         .type = &mp_type_tuple,
     },
@@ -107,40 +63,120 @@ static mp_obj_tuple_t default_hid_devices_tuple = {
 // When the host requests a boot device, replace whatever HID devices were enabled with a tuple
 // containing just one of these, since the host is uninterested in other devices.
 // The driver code will then use the proper report length and send_report() will not send a report ID.
-static const bt_hid_device_obj_t boot_keyboard_obj = {
-    .base = {
-        .type = &bt_hid_device_type,
-    },
-    .report_descriptor = NULL,
-    .report_descriptor_length = 0,
-    .usage_page = 0x01,
-    .usage = 0x06,
-    .num_report_ids = 1,
-    .report_ids = { 0, },
-    .in_report_lengths = { 8, },
-    .out_report_lengths = { 1, },
-};
+// static const bt_hid_device_obj_t boot_keyboard_obj = {
+//     .base = {
+//         .type = &bt_hid_device_type,
+//     },
+//     .report_descriptor = NULL,
+//     .report_descriptor_length = 0,
+//     .usage_page = 0x01,
+//     .usage = 0x06,
+//     .num_report_ids = 1,
+//     .report_ids = { 0, },
+//     .in_report_lengths = { 8, },
+//     .out_report_lengths = { 1, },
+// };
 
-static const bt_hid_device_obj_t boot_mouse_obj = {
-    .base = {
-        .type = &bt_hid_device_type,
-    },
-    .report_descriptor = NULL,
-    .report_descriptor_length = 0,
-    .usage_page = 0x01,
-    .usage = 0x02,
-    .num_report_ids = 1,
-    .report_ids = { 0, },
-    .in_report_lengths = { 4, },
-    .out_report_lengths = { 0, },
-};
+// static const bt_hid_device_obj_t boot_mouse_obj = {
+//     .base = {
+//         .type = &bt_hid_device_type,
+//     },
+//     .report_descriptor = NULL,
+//     .report_descriptor_length = 0,
+//     .usage_page = 0x01,
+//     .usage = 0x02,
+//     .num_report_ids = 1,
+//     .report_ids = { 0, },
+//     .in_report_lengths = { 4, },
+//     .out_report_lengths = { 0, },
+// };
 
-bool bt_hid_enabled(void) {
-    return num_hid_devices > 0;
+// typedef struct
+// {
+//     TaskHandle_t task_hdl;
+//     esp_hidd_dev_t *hid_dev;
+//     uint8_t protocol_mode;
+//     uint8_t *buffer;
+// } local_param_t;
+
+// static local_param_t s_bt_hid_param = {0};
+
+// Set by esp_hidd_dev_init().
+static esp_hidd_dev_t *hid_dev;
+
+static void bt_hidd_event_callback(void *handler_args, esp_event_base_t base, int32_t id, void *event_data) {
+    esp_hidd_event_t event = (esp_hidd_event_t)id;
+    esp_hidd_event_data_t *param = (esp_hidd_event_data_t *)event_data;
+
+    switch (event) {
+        case ESP_HIDD_START_EVENT: {
+            if (param->start.status == ESP_OK) {
+                esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, ESP_BT_GENERAL_DISCOVERABLE);
+            } else {
+                // START failed
+            }
+            break;
+        }
+        case ESP_HIDD_CONNECT_EVENT: {
+            if (param->connect.status == ESP_OK) {
+                esp_bt_gap_set_scan_mode(ESP_BT_NON_CONNECTABLE, ESP_BT_NON_DISCOVERABLE);
+            } else {
+                // CONNECT failed
+            }
+            break;
+        }
+        case ESP_HIDD_PROTOCOL_MODE_EVENT: {
+            // if (param->protocol_mode.protocol_mode > 0) {
+            //     // Will be 1 (keyboard) or 2 (mouse).
+
+            //     memcpy(&hid_devices[0],
+            //         hid_boot_device == 1 ? &boot_keyboard_obj : &boot_mouse_obj,
+            //         sizeof(bt_hid_device_obj_t));
+            //     num_hid_devices = 1;
+            // }
+            break;
+
+            // ESP_LOGI(TAG, "PROTOCOL MODE[%u]: %s", param->protocol_mode.map_index, param->protocol_mode.protocol_mode ? "REPORT" : "BOOT");
+            break;
+        }
+        case ESP_HIDD_OUTPUT_EVENT: {
+            // TODO OUTPUT EVENT
+            // ESP_LOGI(TAG, "OUTPUT[%u]: %8s ID: %2u, Len: %d, Data:", param->output.map_index, esp_hid_usage_str(param->output.usage), param->output.report_id, param->output.length);
+            // ESP_LOG_BUFFER_HEX(TAG, param->output.data, param->output.length);
+            break;
+        }
+        case ESP_HIDD_FEATURE_EVENT: {
+            // TODO FEATURE EVENT
+            // ESP_LOGI(TAG, "FEATURE[%u]: %8s ID: %2u, Len: %d, Data:", param->feature.map_index, esp_hid_usage_str(param->feature.usage), param->feature.report_id, param->feature.length);
+            // ESP_LOG_BUFFER_HEX(TAG, param->feature.data, param->feature.length);
+            break;
+        }
+        case ESP_HIDD_DISCONNECT_EVENT: {
+            if (param->disconnect.status == ESP_OK) {
+                esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, ESP_BT_GENERAL_DISCOVERABLE);
+            } else {
+                // DISCONNECT failed
+            }
+            break;
+        }
+        case ESP_HIDD_STOP_EVENT: {
+            // STOP
+            break;
+        }
+        default:
+            break;
+    }
+    return;
 }
+
+static bool bt_hid_running;
 
 uint8_t bt_hid_boot_device(void) {
     return hid_boot_device;
+}
+
+void bt_hid_reset(void) {
+    bt_hid_running = false;
 }
 
 // Returns 1 or 2 if host requested a boot device and boot protocol was enabled in the interface descriptor.
@@ -148,172 +184,74 @@ uint8_t common_hal_bt_hid_get_boot_device(void) {
     return hid_boot_device_requested ? hid_boot_device : 0;
 }
 
-void bt_hid_set_defaults(void) {
-    hid_boot_device = 0;
-    hid_boot_device_requested = false;
-    common_hal_bt_hid_enable(
-        CIRCUITPY_BT_HID_ENABLED_DEFAULT ? &default_hid_devices_tuple : mp_const_empty_tuple, 0);
+bool common_hal_bt_hid_stop(void) {
+    MP_STATE_VM(bt_hid_devices_tuple) = mp_const_empty_tuple;
+    bt_hid_set_devices(MP_STATE_VM(bt_hid_devices_tuple));
+
+    return esp_hidd_dev_deinit(hid_dev) == ESP_OK;
 }
 
-// This is the interface descriptor, not the report descriptor.
-size_t bt_hid_descriptor_length(void) {
-    return sizeof(bt_hid_descriptor_template);
-}
+bool common_hal_bt_hid_start(const mp_obj_t devices_in, uint8_t boot_device) {
+    mp_obj_t devices_seq = (devices_in == mp_const_none) ? &default_bt_hid_devices_tuple : devices_in;
 
-static const char bt_hid_interface_name[] = USB_INTERFACE_NAME " HID";
-
-// This is the interface descriptor, not the report descriptor.
-size_t bt_hid_add_descriptor(uint8_t *descriptor_buf, descriptor_counts_t *descriptor_counts, uint8_t *current_interface_string, uint16_t report_descriptor_length, uint8_t boot_device) {
-    memcpy(descriptor_buf, bt_hid_descriptor_template, sizeof(bt_hid_descriptor_template));
-
-    descriptor_buf[HID_DESCRIPTOR_INTERFACE_INDEX] = descriptor_counts->current_interface;
-    descriptor_counts->current_interface++;
-
-    if (boot_device > 0) {
-        descriptor_buf[HID_DESCRIPTOR_SUBCLASS_INDEX] = 1; // BOOT protocol (device) available.
-        descriptor_buf[HID_DESCRIPTOR_INTERFACE_PROTOCOL_INDEX] = boot_device; // 1: keyboard, 2: mouse
-    }
-
-    usb_add_interface_string(*current_interface_string, bt_hid_interface_name);
-    descriptor_buf[HID_DESCRIPTOR_INTERFACE_STRING_INDEX] = *current_interface_string;
-    (*current_interface_string)++;
-
-    descriptor_buf[HID_DESCRIPTOR_LENGTH_INDEX] = report_descriptor_length & 0xFF;
-    descriptor_buf[HID_DESCRIPTOR_LENGTH_INDEX + 1] = (report_descriptor_length >> 8);
-
-    descriptor_buf[HID_IN_ENDPOINT_INDEX] =
-        0x80 | (BT_HID_EP_NUM_IN ? BT_HID_EP_NUM_IN : descriptor_counts->current_endpoint);
-    descriptor_counts->num_in_endpoints++;
-    descriptor_buf[HID_OUT_ENDPOINT_INDEX] =
-        BT_HID_EP_NUM_OUT ? BT_HID_EP_NUM_OUT : descriptor_counts->current_endpoint;
-    descriptor_counts->num_out_endpoints++;
-    descriptor_counts->current_endpoint++;
-
-    return sizeof(bt_hid_descriptor_template);
-}
-
-// Make up a fresh tuple containing the device objects saved in the static
-// devices table. Save the tuple in bt_hid.devices.
-static void bt_hid_set_devices_from_hid_devices(void) {
-    mp_obj_t tuple_items[num_hid_devices];
-    for (mp_int_t i = 0; i < num_hid_devices; i++) {
-        tuple_items[i] = &hid_devices[i];
-    }
-
-    // Remember tuple for gc purposes.
-    hid_devices_tuple = mp_obj_new_tuple(num_hid_devices, tuple_items);
-    bt_hid_set_devices(hid_devices_tuple);
-}
-
-bool common_hal_bt_hid_disable(void) {
-    return common_hal_bt_hid_enable(mp_const_empty_tuple, 0);
-}
-
-bool common_hal_bt_hid_start(const mp_obj_t devices, uint8_t boot_device) {
-    const mp_int_t num_devices = MP_OBJ_SMALL_INT_VALUE(mp_obj_len(devices));
-    mp_arg_validate_length_max(num_devices, MAX_HID_DEVICES, MP_QSTR_devices);
-
-    num_hid_devices = num_devices;
+    const mp_int_t num_devices = MP_OBJ_SMALL_INT_VALUE(mp_obj_len(devices_seq));
 
     hid_boot_device = boot_device;
 
-    // Remember the devices in static storage so they live across VMs.
-    for (mp_int_t i = 0; i < num_hid_devices; i++) {
-        // devices has already been validated to contain only bt_hid_device_obj_t objects.
+    mp_obj_t tuple_items[num_devices];
+    esp_hid_raw_report_map_t esp_hid_raw_report_maps[num_devices];
+
+    esp_hid_device_config_t bt_hid_config = {
+        .vendor_id = 0x239a,
+        .product_id = 0x0001,
+        .version = 0x0100,
+        .device_name = "Bluetooth Classic HID",
+        .manufacturer_name = "CircuitPython",
+        .serial_number = "1234567890",
+        .report_maps = esp_hid_raw_report_maps,
+        .report_maps_len = 1,
+    };
+
+
+    for (mp_int_t i = 0; i < num_devices; i++) {
+        // Extract bt_hid.Device objects from the passed-in sequence, by subscripting.
+        // devices_seq has already been validated to contain only bt_hid_device_obj_t objects.
         bt_hid_device_obj_t *device =
-            MP_OBJ_TO_PTR(mp_obj_subscr(devices, MP_OBJ_NEW_SMALL_INT(i), MP_OBJ_SENTINEL));
-        memcpy(&hid_devices[i], device, sizeof(bt_hid_device_obj_t));
+            MP_OBJ_TO_PTR(mp_obj_subscr(devices_seq, MP_OBJ_NEW_SMALL_INT(i), MP_OBJ_SENTINEL));
+
+        // Save in a tuple for returning to Python.
+        tuple_items[i] = device;
+
+        // Also save for passing to ESP-IDF, which will handle making up the HID interface descriptor.
+        esp_hid_raw_report_maps[i].data = device->report_descriptor;
+        esp_hid_raw_report_maps[i].len = device->report_descriptor_length;
+
+        // Create report buffers on the heap.
+        bt_hid_device_create_report_buffers(device);
     }
 
-    bt_hid_set_devices_from_hid_devices();
+    // Remember tuple for gc purposes.
+    MP_STATE_VM(bt_hid_devices_tuple) = mp_obj_new_tuple(num_devices, tuple_items);
+    bt_hid_set_devices(MP_STATE_VM(bt_hid_devices_tuple));
 
-    return true;
-}
-
-// Called when HID devices are ready to be used, when code.py or the REPL starts running.
-void bt_hid_setup_devices(void) {
-
-    // If the host requested a boot device, replace the current list of devices
-    // with a single-element tuple containing the proper boot device.
-    if (hid_boot_device_requested) {
-        memcpy(&hid_devices[0],
-            // Will be 1 (keyboard) or 2 (mouse).
-            hid_boot_device == 1 ? &boot_keyboard_obj : &boot_mouse_obj,
-            sizeof(bt_hid_device_obj_t));
-        num_hid_devices = 1;
-    }
-
-    bt_hid_set_devices_from_hid_devices();
-
-    // Create report buffers on the heap.
-    for (mp_int_t i = 0; i < num_hid_devices; i++) {
-        bt_hid_device_create_report_buffers(&hid_devices[i]);
-    }
-}
-
-// Total length of the report descriptor, with all configured devices.
-size_t bt_hid_report_descriptor_length(void) {
-    size_t total_hid_report_descriptor_length = 0;
-    for (mp_int_t i = 0; i < num_hid_devices; i++) {
-        total_hid_report_descriptor_length += hid_devices[i].report_descriptor_length;
-    }
-
-    return total_hid_report_descriptor_length;
-}
-
-// Build the combined HID report descriptor in the given space.
-void bt_hid_build_report_descriptor(void) {
-    if (!bt_hid_enabled()) {
-        return;
-    }
-    size_t report_length = bt_hid_report_descriptor_length();
-    hid_report_descriptor = port_malloc(report_length, false);
-    if (hid_report_descriptor == NULL) {
-        return;
-    }
-
-    uint8_t *report_descriptor_start = hid_report_descriptor;
-
-    for (mp_int_t i = 0; i < num_hid_devices; i++) {
-        bt_hid_device_obj_t *device = &hid_devices[i];
-        // Copy the report descriptor for this device.
-        memcpy(report_descriptor_start, device->report_descriptor, device->report_descriptor_length);
-
-        // Advance to the next free chunk for the next report descriptor.x
-        report_descriptor_start += device->report_descriptor_length;
-
-        // Clear the heap pointer to the bytes of the descriptor.
-        // We don't need it any more and it will get lost when the heap goes away.
-        device->report_descriptor = NULL;
-    }
-}
-
-void bt_hid_gc_collect(void) {
-    gc_collect_ptr(hid_devices_tuple);
-
-    // Mark possible heap pointers in the static device list as in use.
-    for (mp_int_t device_idx = 0; device_idx < num_hid_devices; device_idx++) {
-
-        // Cast away the const for .report_descriptor. It could be in flash or on the heap.
-        // Constant report descriptors must be const so that they are used directly from flash
-        // and not copied into RAM.
-        gc_collect_ptr((void *)hid_devices[device_idx].report_descriptor);
-
-        // Collect all the report buffers for this device.
-        for (size_t id_idx = 0; id_idx < hid_devices[device_idx].num_report_ids; id_idx++) {
-            gc_collect_ptr(hid_devices[device_idx].in_report_buffers[id_idx]);
-            gc_collect_ptr(hid_devices[device_idx].out_report_buffers[id_idx]);
-        }
-    }
+    esp_bt_dev_set_device_name(bt_hid_config.device_name);
+    esp_bt_cod_t cod = {
+        .major = ESP_BT_COD_MAJOR_DEV_PERIPHERAL,
+    };
+    esp_bt_gap_set_cod(cod, ESP_BT_SET_COD_MAJOR_MINOR);
+    mp_hal_delay_ms(1);
+    // esp_hidd_dev_init copies the configs, so bt_hid_config does not need to contain static inof.
+    return esp_hidd_dev_init(&bt_hid_config, ESP_HID_TRANSPORT_BT, bt_hidd_event_callback, &hid_dev) == ESP_OK;
 }
 
 bool bt_hid_get_device_with_report_id(uint8_t report_id, bt_hid_device_obj_t **device_out, size_t *id_idx_out) {
-    for (uint8_t device_idx = 0; device_idx < num_hid_devices; device_idx++) {
-        bt_hid_device_obj_t *device = &hid_devices[device_idx];
-        for (size_t id_idx = 0; id_idx < device->num_report_ids; id_idx++) {
-            if (device->report_ids[id_idx] == report_id) {
+    const size_t num_devices = MP_STATE_VM(bt_hid_devices_tuple)->len;
+    for (uint8_t i = 0; i < num_devices; i++) {
+        bt_hid_device_obj_t *device = MP_STATE_VM(bt_hid_devices_tuple)->items[i];
+        for (size_t report_id_idx = 0; report_id_idx < device->num_report_ids; report_id_idx++) {
+            if (device->report_ids[report_id_idx] == report_id) {
                 *device_out = device;
-                *id_idx_out = id_idx;
+                *id_idx_out = report_id_idx;
                 return true;
             }
         }
@@ -321,15 +259,5 @@ bool bt_hid_get_device_with_report_id(uint8_t report_id, bt_hid_device_obj_t **d
     return false;
 }
 
-// Callback invoked when we receive a GET HID REPORT DESCRIPTOR
-// Application returns pointer to descriptor
-// Descriptor contents must exist long enough for transfer to complete
-uint8_t const *tud_hid_descriptor_report_cb(uint8_t itf) {
-    return (uint8_t *)hid_report_descriptor;
-}
-
-// Callback invoked when we receive a SET_PROTOCOL request.
-// Protocol is either HID_PROTOCOL_BOOT (0) or HID_PROTOCOL_REPORT (1)
-void tud_hid_set_protocol_cb(uint8_t instance, uint8_t protocol) {
-    hid_boot_device_requested = (protocol == HID_PROTOCOL_BOOT);
-}
+// This tuple is store in bt_hid.devices.
+MP_REGISTER_ROOT_POINTER(mp_obj_tuple_t * bt_hid_devices_tuple);

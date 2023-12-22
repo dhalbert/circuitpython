@@ -26,13 +26,16 @@
 
 #pragma once
 
+#include "py/objtuple.h"
 #include "common-hal/bt_hid/__init__.h"
 
 extern mp_obj_tuple_t common_hal_bt_hid_devices;
 
+void bt_hid_reset(void);
+
 void bt_hid_set_devices(mp_obj_t devices);
 
-void common_hal_bt_hid_int(void);
+void common_hal_bt_hid_init(void);
 bool common_hal_bt_hid_start(const mp_obj_t devices_seq, uint8_t boot_device);
 bool common_hal_bt_hid_stop(void);
 uint8_t common_hal_bt_hid_get_boot_device(void);

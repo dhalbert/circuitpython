@@ -47,7 +47,7 @@
 //| """
 //|
 
-//| def enable(devices: Optional[Sequence[Device]], boot_device: int = 0) -> None:
+//| def enable(devices: Sequence[Device], boot_device: int = 0) -> None:
 //|     """Specify which USB HID devices that will be available.
 //|     Can be called in ``boot.py``, before USB is connected.
 //|

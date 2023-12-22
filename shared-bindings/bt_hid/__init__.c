@@ -24,8 +24,12 @@
  * THE SOFTWARE.
  */
 
+#include "py/obj.h"
+#include "py/mphal.h"
+#include "py/runtime.h"
+
 #include "shared-bindings/bt_hid/__init__.h"
-#include "shared-bindings/bt_hid/HID.h"
+#include "shared-bindings/bt_hid/Device.h"
 
 //| """
 //| The `bt_hid` module supports Bluetooth Classic (BR/EDR)
@@ -52,19 +56,54 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(bt_hid___init___obj, bt_hid___init__);
 //|
 
 //| def start(
-//|     devices: Sequence[Device] = (Device.KEYBOARD, Device.Mouse, Device.ConsumerControl)
+//|     devices: Sequence[Device] = (Device.KEYBOARD, Device.Mouse, Device.ConsumerControl),
+//|     boot_device: int = 0,
 //| ) -> None:
 //|     """Specify which HID devices that will be available,
 //|     and start making them available to Bluetooth Classic hosts.
 //|
 //|     :param Sequence devices: `Device` objects.
 //|       If `devices` is not given, it defaults to a standard set of devices.
+//|     :param int boot_device: If non-zero, inform the host that support for a
+//|       a boot HID device is available.
+//|       If ``boot_device=1``, a boot keyboard is available.
+//|       If ``boot_device=2``, a boot mouse is available. No other values are allowed.
+//|       See below.
+//|
+//|     If you enable too many devices at once, you will run out of USB endpoints.
+//|     The number of available endpoints varies by microcontroller.
+//|     CircuitPython will go into safe mode after running ``boot.py`` to inform you if
+//|     not enough endpoints are available.
+//|
+//|     **Boot Devices**
+//|
+//|     Boot devices implement a fixed, predefined report descriptor, defined in
+//|     https://www.usb.org/sites/default/files/hid1_12.pdf, Appendix B. A host
+//|     can request to use the boot device if the Bluetooth HID device says it is available.
+//|     Usually only a BIOS or other kind of limited-functionality
+//|     host needs boot keyboard support.
+//|     Many Bluetooth Classic hosts do not support boot devices.
+//|
+//|     For example, to make a boot keyboard available, you can use this code::
+//|
+//|       bt_hid.enable((Device.KEYBOARD), boot_device=1)  # 1 for a keyboard
+//|
+//|     If the host requests the boot keyboard, the report descriptor provided by `Device.KEYBOARD`
+//|     will be ignored, and the predefined report descriptor will be used.
+//|     But if the host does not request the boot keyboard,
+//|     the descriptor provided by `Device.KEYBOARD` will be used.
+//|
+//|     The HID boot device must usually be the first or only device presented by CircuitPython.
+//|     The HID device will be USB interface number 0.
+//|     To make sure it is the first device, disable other USB devices, including CDC and MSC (CIRCUITPY).
+//|     If you specify a non-zero ``boot_device``, and it is not the first device, CircuitPython
+//|     will raise an exception.
 //|     """
 //|     ...
 STATIC mp_obj_t bt_hid_start(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_devices, ARG_boot_device };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_devices, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_devices, MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_boot_device, MP_ARG_INT, {.u_int = 0} },
     };
 
@@ -73,27 +112,36 @@ STATIC mp_obj_t bt_hid_start(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
 
     mp_obj_t devices = args[ARG_devices].u_obj;
 
-    const mp_int_t len = mp_obj_get_int(mp_obj_len(devices));
-    for (mp_int_t i = 0; i < len; i++) {
-        mp_obj_t item = mp_obj_subscr(devices, MP_OBJ_NEW_SMALL_INT(i), MP_OBJ_SENTINEL);
-        mp_arg_validate_type(item, &bt_hid_device_type, MP_QSTR___class__);
+    if (devices != mp_const_none) {
+        const mp_int_t len = mp_obj_get_int(mp_obj_len(devices));
+        for (mp_int_t i = 0; i < len; i++) {
+            mp_obj_t item = mp_obj_subscr(devices, MP_OBJ_NEW_SMALL_INT(i), MP_OBJ_SENTINEL);
+            mp_arg_validate_type(item, &bt_hid_device_type, MP_QSTR___class__);
+        }
     }
 
     uint8_t boot_device =
         (uint8_t)mp_arg_validate_int_range(args[ARG_boot_device].u_int, 0, 2, MP_QSTR_boot_device);
 
-    common_hal_bt_hid_start(devices, boot_device);
+    // If devices is None, use the default device tuple.
+    if (!common_hal_bt_hid_start(devices, boot_device)) {
+        mp_raise_RuntimeError_varg(MP_ERROR_TEXT("%q failed"), MP_QSTR_start);
+    }
 
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_KW(bt_hid_start_obj, 1, bt_hid_start);
+MP_DEFINE_CONST_FUN_OBJ_KW(bt_hid_start_obj, 0, bt_hid_start);
 
 //|     def stop() -> None:
 //|         """Stop Bluetooth HID communication."""
 //|         ...
 //|
 STATIC mp_obj_t bt_hid_stop(void) {
-    common_hal_bt_hid_stop();
+    if (!common_hal_bt_hid_stop()) {
+        mp_raise_RuntimeError_varg(MP_ERROR_TEXT("%q failed"), MP_QSTR_stop);
+    }
+
+    return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_0(bt_hid_stop_obj, bt_hid_stop);
 
@@ -116,14 +164,14 @@ STATIC mp_obj_t bt_hid_get_boot_device(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(bt_hid_get_boot_device_obj, bt_hid_get_boot_device);
 
-STATIC const mp_rom_map_elem_t bt_hid_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__),    MP_ROM_QSTR(MP_QSTR_bt_hid) },
-    { MP_ROM_QSTR(MP_QSTR___init__),    MP_ROM_PTR(&bt_hid___init___obj) },
-    { MP_ROM_QSTR(MP_QSTR_Device),      MP_OBJ_FROM_PTR(&bt_hid_device_type) },
-    { MP_ROM_QSTR(MP_QSTR_devices),       MP_ROM_PTR(&bt_hid_devices_obj) },
-    { MP_ROM_QSTR(MP_QSTR_start),         MP_ROM_PTR(&bt_hid_start_obj) },
-    { MP_ROM_QSTR(MP_QSTR_stop),          MP_ROM_PTR(&bt_hid_stop_obj) },
-    { MP_ROM_QSTR(MP_QSTR_get_boot_device), MP_ROM_PTR(&bt_hid_get_boot_device_obj) },
+STATIC mp_map_elem_t bt_hid_module_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__),        MP_OBJ_NEW_QSTR(MP_QSTR_bt_hid) },
+    { MP_ROM_QSTR(MP_QSTR___init__),        MP_OBJ_FROM_PTR(&bt_hid___init___obj) },
+    { MP_ROM_QSTR(MP_QSTR_Device),          MP_OBJ_FROM_PTR(&bt_hid_device_type) },
+    { MP_ROM_QSTR(MP_QSTR_devices),         mp_const_none },
+    { MP_ROM_QSTR(MP_QSTR_start),           MP_OBJ_FROM_PTR(&bt_hid_start_obj) },
+    { MP_ROM_QSTR(MP_QSTR_stop),            MP_OBJ_FROM_PTR(&bt_hid_stop_obj) },
+    { MP_ROM_QSTR(MP_QSTR_get_boot_device), MP_OBJ_FROM_PTR(&bt_hid_get_boot_device_obj) },
 };
 STATIC MP_DEFINE_MUTABLE_DICT(bt_hid_module_globals, bt_hid_module_globals_table);
 

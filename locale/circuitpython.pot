@@ -94,6 +94,10 @@ msgstr ""
 msgid "%q contains duplicate pins"
 msgstr ""
 
+#: shared-bindings/bt_hid/__init__.c
+msgid "%q failed"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/sdioio/SDCard.c
 msgid "%q failure: %d"
 msgstr ""
@@ -611,6 +615,10 @@ msgstr ""
 msgid ""
 "Auto-reload is on. Simply save files over USB to run them or enter REPL to "
 "disable.\n"
+msgstr ""
+
+#: ports/espressif/common-hal/bt_hid/Device.c
+msgid "BT busy"
 msgstr ""
 
 #: ports/espressif/common-hal/bt_hid/Device.c

@@ -31,6 +31,16 @@
 
 #include "py/obj.h"
 
+// The most complicated device currently known of is the head and eye tracker, which requires 5
+// report ids.
+// https://usb.org/sites/default/files/hutrr74_-_usage_page_for_head_and_eye_trackers_0.pdf
+// The default descriptors only use 1, so that is the minimum.
+#ifndef CIRCUITPY_BT_HID_MAX_REPORT_IDS_PER_DESCRIPTOR
+#define CIRCUITPY_BT_HID_MAX_REPORT_IDS_PER_DESCRIPTOR (6)
+#elif CIRCUITPY_BT_HID_MAX_REPORT_IDS_PER_DESCRIPTOR < 1
+#error "CIRCUITPY_BT_HID_MAX_REPORT_IDS_PER_DESCRIPTOR must be at least 1"
+#endif
+
 typedef struct  {
     mp_obj_base_t base;
     // Python buffer object whose contents are the descriptor.

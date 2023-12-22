@@ -82,6 +82,10 @@
 #include "supervisor/shared/bluetooth/bluetooth.h"
 #endif
 
+#if CIRCUITPY_BT_HID
+#include "shared-bindings/bt_hid/__init__.h"
+#endif
+
 #if CIRCUITPY_BOARD
 #include "shared-module/board/__init__.h"
 #endif
@@ -372,6 +376,10 @@ STATIC void cleanup_after_vm(mp_obj_t exception) {
     // Disable user related BLE state that uses the micropython heap.
     #if CIRCUITPY_BLEIO
     bleio_user_reset();
+    #endif
+
+    #if CIRCUITPY_BT_HID
+    bt_hid_reset();
     #endif
 
     #if CIRCUITPY_CANIO

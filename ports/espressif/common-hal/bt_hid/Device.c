@@ -30,8 +30,8 @@
 #include "py/gc.h"
 #include "py/runtime.h"
 #include "shared-bindings/bt_hid/Device.h"
-#include "shared-module/bt_hid/__init__.h"
-#include "shared-module/bt_hid/Device.h"
+#include "common-hal/bt_hid/__init__.h"
+#include "common-hal/bt_hid/Device.h"
 #include "supervisor/shared/tick.h"
 
 static const uint8_t keyboard_report_descriptor[] = {
@@ -228,11 +228,12 @@ void common_hal_bt_hid_device_send_report(bt_hid_device_obj_t *self, uint8_t *re
         RUN_BACKGROUND_TASKS;
     }
 
-    if (false /*!tud_hid_ready()/*) {
+/////////////////// TODO
+    if (false /*!tud_hid_ready()*/) {
         mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("BT busy"));
     }
 
-    if (false/*!tud_hid_report(report_id, report, len)*/) {
+    if (false /*!tud_hid_report(report_id, report, len)*/) {
         mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("BT error"));
     }
 }
@@ -266,65 +267,65 @@ void bt_hid_device_create_report_buffers(bt_hid_device_obj_t *self) {
 
 
 // Callback invoked when we receive Get_Report request through control endpoint
-uint16_t tud_hid_get_report_cb(uint8_t itf, uint8_t report_id, hid_report_type_t report_type, uint8_t *buffer, uint16_t reqlen) {
-    (void)itf;
-    // Support Input Report and Feature Report
-    if (report_type != HID_REPORT_TYPE_INPUT && report_type != HID_REPORT_TYPE_FEATURE) {
-        return 0;
-    }
+// uint16_t tud_hid_get_report_cb(uint8_t itf, uint8_t report_id, hid_report_type_t report_type, uint8_t *buffer, uint16_t reqlen) {
+//     (void)itf;
+//     // Support Input Report and Feature Report
+//     if (report_type != HID_REPORT_TYPE_INPUT && report_type != HID_REPORT_TYPE_FEATURE) {
+//         return 0;
+//     }
 
-    // fill buffer with current report
+//     // fill buffer with current report
 
-    bt_hid_device_obj_t *hid_device;
-    size_t id_idx;
-    // Find device with this report id, and get the report id index.
-    if (bt_hid_get_device_with_report_id(report_id, &hid_device, &id_idx)) {
-        // Make sure buffer exists before trying to copy into it.
-        if (hid_device->in_report_buffers[id_idx]) {
-            memcpy(buffer, hid_device->in_report_buffers[id_idx], reqlen);
-            return reqlen;
-        }
-    }
-    return 0;
-}
+//     bt_hid_device_obj_t *hid_device;
+//     size_t id_idx;
+//     // Find device with this report id, and get the report id index.
+//     if (bt_hid_get_device_with_report_id(report_id, &hid_device, &id_idx)) {
+//         // Make sure buffer exists before trying to copy into it.
+//         if (hid_device->in_report_buffers[id_idx]) {
+//             memcpy(buffer, hid_device->in_report_buffers[id_idx], reqlen);
+//             return reqlen;
+//         }
+//     }
+//     return 0;
+// }
 
 // Callback invoked when we receive Set_Report request through control endpoint
-void tud_hid_set_report_cb(uint8_t itf, uint8_t report_id, hid_report_type_t report_type, uint8_t const *buffer, uint16_t bufsize) {
-    (void)itf;
+// void tud_hid_set_report_cb(uint8_t itf, uint8_t report_id, hid_report_type_t report_type, uint8_t const *buffer, uint16_t bufsize) {
+//     (void)itf;
 
-    bt_hid_device_obj_t *hid_device = NULL;
-    size_t id_idx;
+//     bt_hid_device_obj_t *hid_device = NULL;
+//     size_t id_idx;
 
-    if (report_id == 0 && report_type == HID_REPORT_TYPE_INVALID) {
-        // This could be a report with a non-zero report ID in the first byte, or
-        // it could be for report ID 0.
-        // Heuristic: see if there's a device with report ID 0, and if its report length matches
-        // the size of the incoming buffer. In that case, assume the first byte is not the report ID,
-        // but is data. Otherwise use the first byte as the report id.
-        if (bt_hid_get_device_with_report_id(0, &hid_device, &id_idx) &&
-            hid_device &&
-            hid_device->out_report_buffers[id_idx] &&
-            hid_device->out_report_lengths[id_idx] == bufsize) {
-            // Use as is, with report_id 0.
-        } else {
-            // No matching report ID 0, so use the first byte as the report ID.
-            report_id = buffer[0];
-            buffer++;
-            bufsize--;
-        }
-    } else if (report_type != HID_REPORT_TYPE_OUTPUT && report_type != HID_REPORT_TYPE_FEATURE) {
-        return;
-    }
+//     if (report_id == 0 && report_type == HID_REPORT_TYPE_INVALID) {
+//         // This could be a report with a non-zero report ID in the first byte, or
+//         // it could be for report ID 0.
+//         // Heuristic: see if there's a device with report ID 0, and if its report length matches
+//         // the size of the incoming buffer. In that case, assume the first byte is not the report ID,
+//         // but is data. Otherwise use the first byte as the report id.
+//         if (bt_hid_get_device_with_report_id(0, &hid_device, &id_idx) &&
+//             hid_device &&
+//             hid_device->out_report_buffers[id_idx] &&
+//             hid_device->out_report_lengths[id_idx] == bufsize) {
+//             // Use as is, with report_id 0.
+//         } else {
+//             // No matching report ID 0, so use the first byte as the report ID.
+//             report_id = buffer[0];
+//             buffer++;
+//             bufsize--;
+//         }
+//     } else if (report_type != HID_REPORT_TYPE_OUTPUT && report_type != HID_REPORT_TYPE_FEATURE) {
+//         return;
+//     }
 
-    // report_id might be changed due to parsing above, so test again.
-    if ((report_id == 0 && report_type == HID_REPORT_TYPE_INVALID) ||
-        // Fetch the matching device if we don't already have the report_id 0 device.
-        (bt_hid_get_device_with_report_id(report_id, &hid_device, &id_idx) &&
-         hid_device &&
-         hid_device->out_report_buffers[id_idx] &&
-         hid_device->out_report_lengths[id_idx] == bufsize)) {
-        // If a report of the correct size has been read, save it in the proper OUT report buffer.
-        memcpy(hid_device->out_report_buffers[id_idx], buffer, bufsize);
-        hid_device->out_report_buffers_updated[id_idx] = true;
-    }
-}
+//     // report_id might be changed due to parsing above, so test again.
+//     if ((report_id == 0 && report_type == HID_REPORT_TYPE_INVALID) ||
+//         // Fetch the matching device if we don't already have the report_id 0 device.
+//         (bt_hid_get_device_with_report_id(report_id, &hid_device, &id_idx) &&
+//          hid_device &&
+//          hid_device->out_report_buffers[id_idx] &&
+//          hid_device->out_report_lengths[id_idx] == bufsize)) {
+//         // If a report of the correct size has been read, save it in the proper OUT report buffer.
+//         memcpy(hid_device->out_report_buffers[id_idx], buffer, bufsize);
+//         hid_device->out_report_buffers_updated[id_idx] = true;
+//     }
+// }

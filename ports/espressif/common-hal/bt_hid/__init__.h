@@ -24,15 +24,16 @@
  * THE SOFTWARE.
  */
 
-#pragama once
+#pragma once
 
 #include "common-hal/bt_hid/Device.h"
+#include "supervisor/usb.h"
 
 extern bt_hid_device_obj_t bt_hid_devices[];
 
 bool bt_hid_enabled(void);
 void bt_hid_set_defaults(void);
-uint8_t usb_hid_boot_device(void);
+uint8_t bt_hid_boot_device(void);
 
 size_t bt_hid_add_descriptor(uint8_t *descriptor_buf, descriptor_counts_t *descriptor_counts, uint8_t *current_interface_string, uint16_t report_descriptor_length, uint8_t boot_device);
 size_t bt_hid_descriptor_length(void);
