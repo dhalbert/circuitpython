@@ -159,12 +159,12 @@ ifeq ($(DEBUG), 1)
 		OPTIMIZATION_FLAGS ?= -Og
 		CFLAGS += -DDEBUG
 	endif
-	# You may want to enable these flags to make setting breakpoints easier.
-	# CFLAGS += -fno-inline -fno-ipa-sra
+#       You may want to enable these flags to make setting breakpoints easier.
+#       CFLAGS += -fno-inline -fno-ipa-sra
 else
 	CFLAGS += -DNDEBUG
-	# RISC-V is larger than xtensa
-	# Use -Os for RISC-V when it overflows
+#	RISC-V is larger than xtensa
+#	Use -Os for RISC-V when it overflows
 	ifeq ($(IDF_TARGET_ARCH),riscv)
 		OPTIMIZATION_FLAGS ?= -Os
 	else
@@ -307,7 +307,7 @@ SRC_C += common-hal/_bleio/ble_events.c
 endif
 
 ifneq ($(CIRCUITPY_BT_HID),0)
-CGLAGS += -isystem esp-idf/components/bt/host/bluedroid/api/include/api
+CFLAGS += -isystem esp-idf/components/bt/host/bluedroid/api/include/api
 CFLAGS += -isystem esp-idf/components/esp_hid/include
 endif
 
@@ -417,6 +417,10 @@ SDKCONFIGS := esp-idf-config/sdkconfig.defaults;$(DEBUG_SDKCONFIG);$(FLASH_SIZE_
 ifneq ($(CIRCUITPY_BLEIO),0)
 	SDKCONFIGS := esp-idf-config/sdkconfig-ble.defaults;$(SDKCONFIGS)
 endif
+ifneq ($(CIRCUITPY_BT_HID),0)
+	SDKCONFIGS := esp-idf-config/sdkconfig-bt.defaults;$(SDKCONFIGS)
+endif
+
 # create the config headers
 .PHONY: do-sdkconfig
 do-sdkconfig: $(BUILD)/esp-idf/config/sdkconfig.h
@@ -485,6 +489,11 @@ ifneq ($(CIRCUITPY_BLEIO),0)
 	BINARY_BLOBS += esp-idf/components/esp_phy/lib/$(IDF_TARGET)/libbtbb.a \
 					esp-idf/components/bt/controller/lib_$(IDF_TARGET)/$(IDF_TARGET)-bt-lib/libble_app.a
 	endif
+endif
+# Classic Bluetooth only works on ESP32
+ifneq ($(CIRCUITPY_BT_HID),0)
+	ESP_IDF_COMPONENTS_LINK += bt esp_hid
+	BINARY_BLOBS += esp-idf/components/bt/controller/lib_esp32/$(IDF_TARGET)/libbtdm_app.a
 endif
 ifneq ($(CIRCUITPY_ESPULP),0)
 	ESP_IDF_COMPONENTS_LINK += ulp

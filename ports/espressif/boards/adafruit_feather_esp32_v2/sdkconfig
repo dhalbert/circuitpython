@@ -1,0 +1,54 @@
+#
+# Espressif IoT Development Framework Configuration
+#
+#
+# Component config
+#
+#
+# Bluetooth
+#
+# CONFIG_BT_ENABLED is not set
+# end of Bluetooth
+
+###############################################
+#
+# Espressif IoT Development Framework Configuration
+#
+#
+# Component config
+#
+#
+# Bluetooth
+#
+CONFIG_BT_ENABLED=y
+CONFIG_BTDM_CTRL_MODE_BLE_ONLY=n
+CONFIG_BTDM_CTRL_MODE_BR_EDR_ONLY=y
+CONFIG_BTDM_CTRL_MODE_BTDM=n
+CONFIG_BT_CLASSIC_ENABLED=y
+CONFIG_BT_HID_ENABLED=y
+CONFIG_BT_HID_DEVICE_ENABLED=y
+
+# end of Bluetooth
+######################################
+# end of Component config
+
+# end of Espressif IoT Development Framework Configuration
+
+#
+# ESP System Settings
+#
+# CONFIG_ESP_SYSTEM_CHECK_INT_LEVEL_5 is not set
+CONFIG_ESP_SYSTEM_CHECK_INT_LEVEL_4=y
+# end of ESP System Settings
+
+#
+# Wi-Fi
+#
+#CONFIG_ESP_WIFI_IRAM_OPT=y
+#CONFIG_ESP_WIFI_RX_IRAM_OPT=y
+# CONFIG_ESP_WIFI_STA_DISCONNECTED_PM_ENABLE is not set
+# end of Wi-Fi
+
+# end of Component config
+
+# end of Espressif IoT Development Framework Configuration

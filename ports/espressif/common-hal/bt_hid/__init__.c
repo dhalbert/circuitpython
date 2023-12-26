@@ -26,9 +26,13 @@
 
 #include <string.h>
 
-#include "components/bt/host/bluedroid/api/include/api/esp_bt_device.h"
+#include "esp_bt.h"
+#include "esp_bt_main.h"
+#include "esp_bt_device.h"
 #include "components/bt/host/bluedroid/api/include/api/esp_gap_bt_api.h"
 #include "components/esp_hid/include/esp_hidd.h"
+
+#include "esp_log.h"
 
 #include "py/gc.h"
 #include "py/mphal.h"
@@ -58,6 +62,9 @@ static mp_obj_tuple_t default_bt_hid_devices_tuple = {
         MP_OBJ_FROM_PTR(&bt_hid_device_consumer_control_obj),
     },
 };
+
+void common_hal_bt_hid_init(void) {
+}
 
 // These describe the standard descriptors used for boot keyboard and mouse, which don't use report IDs.
 // When the host requests a boot device, replace whatever HID devices were enabled with a tuple
@@ -212,7 +219,6 @@ bool common_hal_bt_hid_start(const mp_obj_t devices_in, uint8_t boot_device) {
         .report_maps_len = 1,
     };
 
-
     for (mp_int_t i = 0; i < num_devices; i++) {
         // Extract bt_hid.Device objects from the passed-in sequence, by subscripting.
         // devices_seq has already been validated to contain only bt_hid_device_obj_t objects.
@@ -234,12 +240,43 @@ bool common_hal_bt_hid_start(const mp_obj_t devices_in, uint8_t boot_device) {
     MP_STATE_VM(bt_hid_devices_tuple) = mp_obj_new_tuple(num_devices, tuple_items);
     bt_hid_set_devices(MP_STATE_VM(bt_hid_devices_tuple));
 
+    esp_err_t ret;
+
+    esp_bt_controller_config_t bt_cfg = BT_CONTROLLER_INIT_CONFIG_DEFAULT();
+    if ((ret = esp_bt_controller_init(&bt_cfg)) != ESP_OK) {
+        ESP_LOGE("common_hal_bt_hid_start", "initialize controller failed: %s\n", esp_err_to_name(ret));
+        return false;
+    }
+
+    if ((ret = esp_bt_controller_enable(ESP_BT_MODE_CLASSIC_BT)) != ESP_OK) {
+        ESP_LOGE("common_hal_bt_hid_start", "enable controller failed: %s\n", esp_err_to_name(ret));
+        return false;
+    }
+
+    if ((ret = esp_bluedroid_init()) != ESP_OK) {
+        ESP_LOGE("common_hal_bt_hid_start", "initialize bluedroid failed: %s\n", esp_err_to_name(ret));
+        return false;
+    }
+
+    if ((ret = esp_bluedroid_enable()) != ESP_OK) {
+        ESP_LOGE("common_hal_bt_hid_start", "enable bluedroid failed: %s\n", esp_err_to_name(ret));
+        return false;
+    }
+
+    // TODO seems to only be needed for pairing
+    // if ((ret = esp_bt_gap_register_callback(esp_bt_gap_cb)) != ESP_OK) {
+    //     ESP_LOGE("common_hal_bt_hid_start", "gap register failed: %s\n", esp_err_to_name(ret));
+    //     return false;
+    // }
+
     esp_bt_dev_set_device_name(bt_hid_config.device_name);
     esp_bt_cod_t cod = {
         .major = ESP_BT_COD_MAJOR_DEV_PERIPHERAL,
     };
     esp_bt_gap_set_cod(cod, ESP_BT_SET_COD_MAJOR_MINOR);
-    mp_hal_delay_ms(1);
+
+    // 1ms or 2ms delay included in ESP-IDF examples, not sure why.
+    mp_hal_delay_ms(2);
     // esp_hidd_dev_init copies the configs, so bt_hid_config does not need to contain static inof.
     return esp_hidd_dev_init(&bt_hid_config, ESP_HID_TRANSPORT_BT, bt_hidd_event_callback, &hid_dev) == ESP_OK;
 }
