@@ -29,8 +29,9 @@
 #include "esp_bt.h"
 #include "esp_bt_main.h"
 #include "esp_bt_device.h"
-#include "components/bt/host/bluedroid/api/include/api/esp_gap_bt_api.h"
-#include "components/esp_hid/include/esp_hidd.h"
+#include "esp_gap_bt_api.h"
+#include "esp_hidd.h"
+#include "nvs_flash.h"
 
 #include "esp_log.h"
 
@@ -205,7 +206,6 @@ bool common_hal_bt_hid_start(const mp_obj_t devices_in, uint8_t boot_device) {
 
     hid_boot_device = boot_device;
 
-    mp_obj_t tuple_items[num_devices];
     esp_hid_raw_report_map_t esp_hid_raw_report_maps[num_devices];
 
     esp_hid_device_config_t bt_hid_config = {
@@ -219,7 +219,16 @@ bool common_hal_bt_hid_start(const mp_obj_t devices_in, uint8_t boot_device) {
         .report_maps_len = 1,
     };
 
+    ESP_LOGI("common_hal_bt_hid_start", "device loop"); //////////
+    mp_hal_delay_ms(100);
+
+    mp_obj_t tuple_items[num_devices];
+
+    ESP_LOGI("common_hal_bt_hid_start", "num_devices: %d", num_devices); //////////
+    mp_hal_delay_ms(100);
     for (mp_int_t i = 0; i < num_devices; i++) {
+        ESP_LOGI("common_hal_bt_hid_start", "i: %d", i); //////////
+        mp_hal_delay_ms(100);
         // Extract bt_hid.Device objects from the passed-in sequence, by subscripting.
         // devices_seq has already been validated to contain only bt_hid_device_obj_t objects.
         bt_hid_device_obj_t *device =
@@ -236,28 +245,48 @@ bool common_hal_bt_hid_start(const mp_obj_t devices_in, uint8_t boot_device) {
         bt_hid_device_create_report_buffers(device);
     }
 
+    esp_err_t ret;
+
+    ret = nvs_flash_init();
+    if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+        // Need to erase and reinitialize.
+        if (nvs_flash_erase() != ESP_OK) {
+            if (nvs_flash_init() != ESP_OK) {
+                return false;
+            }
+        }
+    }
+
+    ESP_LOGI("common_hal_bt_hid_start", "bit_hid_set_devices"); //////////
+    mp_hal_delay_ms(100);
     // Remember tuple for gc purposes.
     MP_STATE_VM(bt_hid_devices_tuple) = mp_obj_new_tuple(num_devices, tuple_items);
     bt_hid_set_devices(MP_STATE_VM(bt_hid_devices_tuple));
 
-    esp_err_t ret;
-
+    ESP_LOGI("common_hal_bt_hid_start", "esp_bt_controller_init"); //////////
     esp_bt_controller_config_t bt_cfg = BT_CONTROLLER_INIT_CONFIG_DEFAULT();
     if ((ret = esp_bt_controller_init(&bt_cfg)) != ESP_OK) {
         ESP_LOGE("common_hal_bt_hid_start", "initialize controller failed: %s\n", esp_err_to_name(ret));
+        mp_hal_delay_ms(100);
         return false;
     }
 
+    ESP_LOGI("common_hal_bt_hid_start", "esp_bt_controller_enable"); //////////
+    mp_hal_delay_ms(100);
     if ((ret = esp_bt_controller_enable(ESP_BT_MODE_CLASSIC_BT)) != ESP_OK) {
         ESP_LOGE("common_hal_bt_hid_start", "enable controller failed: %s\n", esp_err_to_name(ret));
         return false;
     }
 
+    ESP_LOGI("common_hal_bt_hid_start", "esp_bluedroid_init"); //////////
+    mp_hal_delay_ms(100);
     if ((ret = esp_bluedroid_init()) != ESP_OK) {
         ESP_LOGE("common_hal_bt_hid_start", "initialize bluedroid failed: %s\n", esp_err_to_name(ret));
         return false;
     }
 
+    ESP_LOGI("common_hal_bt_hid_start", "esp_bluedroid_enable"); //////////
+    mp_hal_delay_ms(100);
     if ((ret = esp_bluedroid_enable()) != ESP_OK) {
         ESP_LOGE("common_hal_bt_hid_start", "enable bluedroid failed: %s\n", esp_err_to_name(ret));
         return false;
@@ -269,6 +298,8 @@ bool common_hal_bt_hid_start(const mp_obj_t devices_in, uint8_t boot_device) {
     //     return false;
     // }
 
+    ESP_LOGI("common_hal_bt_hid_start", "esp_bt_dev_set_device_name"); //////////
+    mp_hal_delay_ms(100);
     esp_bt_dev_set_device_name(bt_hid_config.device_name);
     esp_bt_cod_t cod = {
         .major = ESP_BT_COD_MAJOR_DEV_PERIPHERAL,
@@ -278,6 +309,8 @@ bool common_hal_bt_hid_start(const mp_obj_t devices_in, uint8_t boot_device) {
     // 1ms or 2ms delay included in ESP-IDF examples, not sure why.
     mp_hal_delay_ms(2);
     // esp_hidd_dev_init copies the configs, so bt_hid_config does not need to contain static inof.
+    ESP_LOGI("common_hal_bt_hid_start", "esp_hidd_dev_init"); //////////
+    mp_hal_delay_ms(100);
     return esp_hidd_dev_init(&bt_hid_config, ESP_HID_TRANSPORT_BT, bt_hidd_event_callback, &hid_dev) == ESP_OK;
 }
 

@@ -257,9 +257,10 @@ STATIC const mp_rom_map_elem_t bt_hid_device_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_usage_page),               MP_ROM_PTR(&bt_hid_device_usage_page_obj) },
     { MP_ROM_QSTR(MP_QSTR_usage),                    MP_ROM_PTR(&bt_hid_device_usage_obj) },
 
-    { MP_ROM_QSTR(MP_QSTR_KEYBOARD),                 MP_ROM_PTR(&bt_hid_device_keyboard_obj) },
-    { MP_ROM_QSTR(MP_QSTR_MOUSE),                    MP_ROM_PTR(&bt_hid_device_mouse_obj) },
-    { MP_ROM_QSTR(MP_QSTR_CONSUMER_CONTROL),         MP_ROM_PTR(&bt_hid_device_consumer_control_obj) },
+    // These are pointers to RAM objects that contain report buffers, etc.
+    { MP_ROM_QSTR(MP_QSTR_KEYBOARD),                 MP_OBJ_FROM_PTR(&bt_hid_device_keyboard_obj) },
+    { MP_ROM_QSTR(MP_QSTR_MOUSE),                    MP_OBJ_FROM_PTR(&bt_hid_device_mouse_obj) },
+    { MP_ROM_QSTR(MP_QSTR_CONSUMER_CONTROL),         MP_OBJ_FROM_PTR(&bt_hid_device_consumer_control_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(bt_hid_device_locals_dict, bt_hid_device_locals_dict_table);

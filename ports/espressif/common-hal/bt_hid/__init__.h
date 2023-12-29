@@ -29,8 +29,6 @@
 #include "common-hal/bt_hid/Device.h"
 #include "supervisor/usb.h"
 
-extern bt_hid_device_obj_t bt_hid_devices[];
-
 bool bt_hid_enabled(void);
 void bt_hid_set_defaults(void);
 uint8_t bt_hid_boot_device(void);

@@ -57,8 +57,8 @@ typedef struct  {
     uint8_t num_report_ids;
 } bt_hid_device_obj_t;
 
-extern const bt_hid_device_obj_t bt_hid_device_keyboard_obj;
-extern const bt_hid_device_obj_t bt_hid_device_mouse_obj;
-extern const bt_hid_device_obj_t bt_hid_device_consumer_control_obj;
+extern bt_hid_device_obj_t bt_hid_device_keyboard_obj;
+extern bt_hid_device_obj_t bt_hid_device_mouse_obj;
+extern bt_hid_device_obj_t bt_hid_device_consumer_control_obj;
 
 void bt_hid_device_create_report_buffers(bt_hid_device_obj_t *self);

@@ -70,7 +70,7 @@ static const uint8_t keyboard_report_descriptor[] = {
     0xC0,              // End Collection
 };
 
-const bt_hid_device_obj_t bt_hid_device_keyboard_obj = {
+bt_hid_device_obj_t bt_hid_device_keyboard_obj = {
     .base = {
         .type = &bt_hid_device_type,
     },
@@ -120,7 +120,7 @@ static const uint8_t mouse_report_descriptor[] = {
     0xC0,              // End Collection
 };
 
-const bt_hid_device_obj_t bt_hid_device_mouse_obj = {
+bt_hid_device_obj_t bt_hid_device_mouse_obj = {
     .base = {
         .type = &bt_hid_device_type,
     },
@@ -149,7 +149,7 @@ static const uint8_t consumer_control_report_descriptor[] = {
     0xC0,              // End Collection
 };
 
-const bt_hid_device_obj_t bt_hid_device_consumer_control_obj = {
+bt_hid_device_obj_t bt_hid_device_consumer_control_obj = {
     .base = {
         .type = &bt_hid_device_type,
     },
@@ -248,10 +248,13 @@ mp_obj_t common_hal_bt_hid_device_get_last_received_report(bt_hid_device_obj_t *
     return mp_obj_new_bytes(self->out_report_buffers[id_idx], self->out_report_lengths[id_idx]);
 }
 
+#include "esp_log.h"
 void bt_hid_device_create_report_buffers(bt_hid_device_obj_t *self) {
     for (size_t i = 0; i < self->num_report_ids; i++) {
+        ESP_LOGI("bt_hid_device_create_report_buffers", "i: %d", i);
         // The IN buffers are used only for tud_hid_get_report_cb(),
         // which is an unusual case. Normally we can just pass the data directly with tud_hid_report().
+        ESP_LOGI("bt_hid_device_create_report_buffers", "self->in_report_lengths[i]: %d", self->in_report_lengths[i]);
         self->in_report_buffers[i] =
             self->in_report_lengths[i] > 0
             ? gc_alloc(self->in_report_lengths[i], false)
