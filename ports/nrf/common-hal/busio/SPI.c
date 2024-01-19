@@ -34,22 +34,6 @@
 #include "nrfx_spim.h"
 #include "nrf_gpio.h"
 
-#ifndef NRFX_SPIM3_ENABLED
-#define NRFX_SPIM3_ENABLED (0)
-#endif
-
-#ifndef NRFX_SPIM2_ENABLED
-#define NRFX_SPIM2_ENABLED (0)
-#endif
-
-#ifndef NRFX_SPIM1_ENABLED
-#define NRFX_SPIM1_ENABLED (0)
-#endif
-
-#ifndef NRFX_SPIM0_ENABLED
-#define NRFX_SPIM0_ENABLED (0)
-#endif
-
 // These are in order from highest available frequency to lowest (32MHz first, then 8MHz).
 STATIC const spim_peripheral_t spim_peripherals[] = {
     #if NRFX_CHECK(NRFX_SPIM3_ENABLED)
@@ -90,7 +74,9 @@ void spi_reset(void) {
         if (never_reset[i]) {
             continue;
         }
-        nrfx_spim_uninit(&spim_peripherals[i].spim);
+        if (nrfx_spim_init_check(&spim_peripherals[i].spim)) {
+            nrfx_spim_uninit(&spim_peripherals[i].spim);
+        }
     }
 }
 
@@ -203,7 +189,9 @@ void common_hal_busio_spi_deinit(busio_spi_obj_t *self) {
         return;
     }
 
-    nrfx_spim_uninit(&self->spim_peripheral->spim);
+    if (nrfx_spim_init_check(&self->spim_peripheral->spim)) {
+        nrfx_spim_uninit(&self->spim_peripheral->spim);
+    }
 
     reset_pin_number(self->clock_pin_number);
     reset_pin_number(self->MOSI_pin_number);

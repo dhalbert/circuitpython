@@ -374,7 +374,9 @@ void common_hal_bleio_adapter_set_enabled(bleio_adapter_obj_t *self, bool enable
     if (enabled) {
         // The SD takes over the POWER module and will fail if the module is already in use.
         // Occurs when USB is initialized previously
-        nrfx_power_uninit();
+        if (nrfx_power_init_check()) {
+            nrfx_power_uninit();
+        }
 
         err_code = ble_stack_enable();
     } else {

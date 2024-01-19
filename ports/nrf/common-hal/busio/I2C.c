@@ -61,7 +61,9 @@ void i2c_reset(void) {
         if (never_reset[i]) {
             continue;
         }
-        nrfx_twim_uninit(&twim_peripherals[i].twim);
+        if (nrfx_twim_init_check(&twim_peripherals[i].twim)) {
+            nrfx_twim_uninit(&twim_peripherals[i].twim);
+        }
         twim_peripherals[i].in_use = false;
     }
 }
@@ -172,7 +174,9 @@ void common_hal_busio_i2c_deinit(busio_i2c_obj_t *self) {
         return;
     }
 
-    nrfx_twim_uninit(&self->twim_peripheral->twim);
+    if (nrfx_twim_init_check(&self->twim_peripheral->twim)) {
+        nrfx_twim_uninit(&self->twim_peripheral->twim);
+    }
 
     reset_pin_number(self->sda_pin_number);
     reset_pin_number(self->scl_pin_number);

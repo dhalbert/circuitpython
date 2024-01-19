@@ -84,7 +84,7 @@ uint32_t reset_reason_saved = 0;
 const nrfx_rtc_t rtc_instance = NRFX_RTC_INSTANCE(2);
 
 nrfx_rtc_config_t rtc_config = {
-    .prescaler = RTC_FREQ_TO_PRESCALER(0x8000),
+    .prescaler = NRF_RTC_FREQ_TO_PRESCALER(0x8000),
     .reliable = 0,
     .tick_latency = 0,
     .interrupt_priority = 6
@@ -164,7 +164,7 @@ safe_mode_t port_init(void) {
     nrfx_power_pofwarn_config_t power_failure_config;
     power_failure_config.handler = power_warning_handler;
     power_failure_config.thr = NRF_POWER_POFTHR_V27;
-    #if NRF_POWER_HAS_VDDH
+    #if NRF_POWER_HAS_POFCON_VDDH
     power_failure_config.thrvddh = NRF_POWER_POFTHRVDDH_V27;
     #endif
     nrfx_power_pof_init(&power_failure_config);

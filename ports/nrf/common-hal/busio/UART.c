@@ -100,8 +100,9 @@ static void uart_callback_irq(const nrfx_uarte_event_t *event, void *context) {
 
     switch (event->type) {
         case NRFX_UARTE_EVT_RX_DONE:
-            if (ringbuf_num_empty(&self->ringbuf) >= event->data.rxtx.bytes) {
-                ringbuf_put_n(&self->ringbuf, event->data.rxtx.p_data, event->data.rxtx.bytes);
+
+            if (ringbuf_num_empty(&self->ringbuf) >= event->data.rx.length) {
+                ringbuf_put_n(&self->ringbuf, event->data.rx.p_buffer, event->data.rx.length);
                 // keep receiving
                 (void)nrfx_uarte_rx(self->uarte, &self->rx_char, 1);
             } else {
@@ -120,7 +121,7 @@ static void uart_callback_irq(const nrfx_uarte_event_t *event, void *context) {
             // Possible Error source is Overrun, Parity, Framing, Break
             // uint32_t errsrc = event->data.error.error_mask;
 
-            ringbuf_put_n(&self->ringbuf, event->data.error.rxtx.p_data, event->data.error.rxtx.bytes);
+            ringbuf_put_n(&self->ringbuf, event->data.error.rx.p_buffer, event->data.error.rx.length);
 
             // Keep receiving
             (void)nrfx_uarte_rx(self->uarte, &self->rx_char, 1);
@@ -136,7 +137,9 @@ void uart_reset(void) {
         if (never_reset[i]) {
             continue;
         }
-        nrfx_uarte_uninit(&nrfx_uartes[i]);
+        if (nrfx_uarte_init_check(&nrfx_uartes[i])) {
+            nrfx_uarte_uninit(&nrfx_uartes[i]);
+        }
     }
 }
 
@@ -169,6 +172,12 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         mp_raise_NotImplementedError(MP_ERROR_TEXT("RS485"));
     }
 
+    #ifdef NRF52840
+    if (parity == BUSIO_UART_PARITY_ODD) {
+        mp_raise_ValueError(MP_ERROR_TEXT("Odd parity is not supported"));
+    }
+    #endif
+
     // Find a free UART peripheral.
     self->uarte = NULL;
     for (size_t i = 0; i < MP_ARRAY_SIZE(nrfx_uartes); i++) {
@@ -186,24 +195,27 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
 
     mp_arg_validate_int_min(receiver_buffer_size, 1, MP_QSTR_receiver_buffer_size);
 
-    if (parity == BUSIO_UART_PARITY_ODD) {
-        mp_raise_ValueError(MP_ERROR_TEXT("Odd parity is not supported"));
-    }
-
     bool hwfc = rts != NULL || cts != NULL;
 
     nrfx_uarte_config_t config = {
-        .pseltxd = (tx == NULL) ? NRF_UARTE_PSEL_DISCONNECTED : tx->number,
-        .pselrxd = (rx == NULL) ? NRF_UARTE_PSEL_DISCONNECTED : rx->number,
-        .pselcts = (cts == NULL) ? NRF_UARTE_PSEL_DISCONNECTED : cts->number,
-        .pselrts = (rts == NULL) ? NRF_UARTE_PSEL_DISCONNECTED : rts->number,
+        .txd_pin = (tx == NULL) ? NRF_UARTE_PSEL_DISCONNECTED : tx->number,
+        .rxd_pin = (rx == NULL) ? NRF_UARTE_PSEL_DISCONNECTED : rx->number,
+        .rts_pin = (rts == NULL) ? NRF_UARTE_PSEL_DISCONNECTED : rts->number,
+        .cts_pin = (cts == NULL) ? NRF_UARTE_PSEL_DISCONNECTED : cts->number,
         .p_context = self,
+        // .tx_cache, .rx_cache, .p_rx_cache_scratch all not used, so NULL/zero.
         .baudrate = get_nrf_baud(baudrate),
-        .interrupt_priority = NRFX_UARTE_DEFAULT_CONFIG_IRQ_PRIORITY,
-        .hal_cfg = {
+        .config = {
             .hwfc = hwfc ? NRF_UARTE_HWFC_ENABLED : NRF_UARTE_HWFC_DISABLED,
-            .parity = (parity == BUSIO_UART_PARITY_NONE) ? NRF_UARTE_PARITY_EXCLUDED : NRF_UARTE_PARITY_INCLUDED
-        }
+            .parity = (parity == BUSIO_UART_PARITY_NONE) ? NRF_UARTE_PARITY_EXCLUDED : NRF_UARTE_PARITY_INCLUDED,
+            .stop = (stop == 2) ? NRF_UARTE_STOP_TWO : NRF_UARTE_STOP_ONE,
+            // Not available on nRF52840
+            #ifdef NRF52833
+            .paritytype = (parity == BUSIO_UART_PARITY_NONE) ? 0 :
+            ((parity = BUSIO_UART_PARITY_EVEN) ? NRF_UARTE_PARITYTYPE_EVEN : NRF_UARTE_PARITYTYPE_ODD),
+            #endif
+        },
+        .interrupt_priority = NRFX_UARTE_DEFAULT_CONFIG_IRQ_PRIORITY,
     };
 
     _VERIFY_ERR(nrfx_uarte_init(self->uarte, &config, uart_callback_irq));
@@ -215,6 +227,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
             ringbuf_init(&self->ringbuf, receiver_buffer, receiver_buffer_size);
         } else {
             if (!ringbuf_alloc(&self->ringbuf, receiver_buffer_size)) {
+                // Definitely already inited, above, so don't need nrf_uarte_init_check().
                 nrfx_uarte_uninit(self->uarte);
                 m_malloc_fail(receiver_buffer_size);
             }
@@ -260,7 +273,9 @@ bool common_hal_busio_uart_deinited(busio_uart_obj_t *self) {
 
 void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
     if (!common_hal_busio_uart_deinited(self)) {
-        nrfx_uarte_uninit(self->uarte);
+        if (nrfx_uarte_init_check(self->uarte)) {
+            nrfx_uarte_uninit(self->uarte);
+        }
         reset_pin_number(self->tx_pin_number);
         reset_pin_number(self->rx_pin_number);
         reset_pin_number(self->rts_pin_number);
@@ -357,7 +372,7 @@ size_t common_hal_busio_uart_write(busio_uart_obj_t *self, const uint8_t *data, 
         RUN_BACKGROUND_TASKS;
     }
 
-    (*errcode) = nrfx_uarte_tx(self->uarte, tx_buf, len);
+    (*errcode) = nrfx_uarte_tx(self->uarte, tx_buf, len, 0);
     _VERIFY_ERR(*errcode);
     (*errcode) = 0;
 

@@ -57,7 +57,9 @@ void common_hal_rgbmatrix_timer_enable(void *ptr) {
 
 void common_hal_rgbmatrix_timer_disable(void *ptr) {
     nrfx_timer_t *timer = nrf_peripherals_timer_from_reg(ptr);
-    nrfx_timer_uninit(timer);
+    if (nrfx_timer_init_check(timer)) {
+        nrfx_timer_uninit(timer);
+    }
 }
 
 void common_hal_rgbmatrix_timer_free(void *ptr) {

@@ -75,7 +75,7 @@ bool common_hal_alarm_pin_pinalarm_get_pull(alarm_pin_pinalarm_obj_t *self) {
 }
 
 
-static void pinalarm_gpiote_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action) {
+static void pinalarm_gpiote_handler(nrfx_gpiote_pin_t pin, nrfx_gpiote_trigger_t trigger, void *p_context) {
     ++_pinhandler_gpiote_count;
     sleepmem_wakeup_event = SLEEPMEM_WAKEUP_BY_PIN;
     sleepmem_wakeup_pin = pin & 0xFF;
@@ -130,9 +130,9 @@ void alarm_pin_pinalarm_reset(void) {
         if (!(high || low)) {
             continue;
         }
+
         reset_pin_number(i);
-        nrfx_gpiote_in_event_disable((nrfx_gpiote_pin_t)i);
-        nrfx_gpiote_in_uninit((nrfx_gpiote_pin_t)i);
+        nrfx_gpiote_pin_uninit((nrfx_gpiote_pin_t)i);
     }
 
     high_alarms = 0;
@@ -141,43 +141,48 @@ void alarm_pin_pinalarm_reset(void) {
 }
 
 static void configure_pins_for_sleep(void) {
+    nrfx_err_t err;
+
     _pinhandler_gpiote_count = 0;
 
-    nrfx_gpiote_in_config_t cfg = {
-        .sense = NRF_GPIOTE_POLARITY_TOGGLE,
-        .pull = NRF_GPIO_PIN_PULLUP,
-        .is_watcher = false,
-        .hi_accuracy = true,
-        .skip_gpio_setup = false
+    // Does not change per pin.
+    nrfx_gpiote_handler_config_t handler_config = {
+        .handler = &pinalarm_gpiote_handler,
     };
+
     for (size_t i = 0; i < 64; ++i) {
+        // Check each pin to see if it's designated as an alarm pin.
         uint64_t mask = 1ull << i;
+
         if (((high_alarms & mask) == 0) && ((low_alarms & mask) == 0)) {
+            // Not an alarm pin.
             continue;
         }
+
+        // These must be set up for each pin.
+        nrfx_gpiote_input_config_t input_config;
+        nrfx_gpiote_trigger_config_t trigger_config;
+
         if (((high_alarms & mask) != 0) && ((low_alarms & mask) == 0)) {
-            cfg.sense = NRF_GPIOTE_POLARITY_LOTOHI;
-            cfg.pull = ((pull_pins & mask) != 0) ?
+            // Trigger when going high.
+            input_config.pull = ((pull_pins & mask) != 0) ?
                 NRF_GPIO_PIN_PULLDOWN : NRF_GPIO_PIN_NOPULL;
+            trigger_config.trigger = NRFX_GPIOTE_TRIGGER_LOTOHI;
         } else
         if (((high_alarms & mask) == 0) && ((low_alarms & mask) != 0)) {
-            cfg.sense = NRF_GPIOTE_POLARITY_HITOLO;
-            cfg.pull = ((pull_pins & mask) != 0) ?
+            // Trigger when going low.
+            input_config.pull = ((pull_pins & mask) != 0) ?
                 NRF_GPIO_PIN_PULLUP : NRF_GPIO_PIN_NOPULL;
+            trigger_config.trigger = NRFX_GPIOTE_TRIGGER_HITOLO;
         } else {
-            cfg.sense = NRF_GPIOTE_POLARITY_TOGGLE;
-            cfg.pull = NRF_GPIO_PIN_NOPULL;
+            // Trigger when toggled in either direction.
+            input_config.pull = NRF_GPIO_PIN_NOPULL;
+            trigger_config.trigger = NRFX_GPIOTE_TRIGGER_TOGGLE;
         }
-        nrfx_err_t err = nrfx_gpiote_in_init((nrfx_gpiote_pin_t)i, &cfg,
-            pinalarm_gpiote_handler);
-        assert(err == NRFX_SUCCESS);
-        (void)err;  // In case the assert doesn't use err.
-        nrfx_gpiote_in_event_enable((nrfx_gpiote_pin_t)i, true);
-        if (((high_alarms & mask) != 0) && ((low_alarms & mask) == 0)) {
-            nrf_gpio_cfg_sense_set((uint32_t)i, NRF_GPIO_PIN_SENSE_HIGH);
-        }
-        if (((high_alarms & mask) == 0) && ((low_alarms & mask) != 0)) {
-            nrf_gpio_cfg_sense_set((uint32_t)i, NRF_GPIO_PIN_SENSE_LOW);
+
+        err = nrfx_gpiote_input_configure((nrfx_gpiote_pin_t)i, &input_config, &trigger_config, &handler_config);
+        if (err != NRFX_SUCCESS) {
+            mp_raise_RuntimeError(MP_ERROR_TEXT("Failed to configure pins for sleep"));
         }
     }
 }
