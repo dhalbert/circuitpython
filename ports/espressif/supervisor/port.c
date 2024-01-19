@@ -40,46 +40,79 @@
 #include "freertos/task.h"
 
 #include "bindings/espidf/__init__.h"
-#include "bindings/espnow/__init__.h"
-#include "bindings/espulp/__init__.h"
 #include "common-hal/microcontroller/Pin.h"
-#include "common-hal/analogio/AnalogOut.h"
-#include "common-hal/busio/I2C.h"
-#include "common-hal/busio/SPI.h"
-#include "common-hal/busio/UART.h"
-#include "common-hal/dualbank/__init__.h"
-#include "common-hal/ps2io/Ps2.h"
-#include "common-hal/pulseio/PulseIn.h"
-#include "common-hal/pwmio/PWMOut.h"
-#include "common-hal/watchdog/WatchDogTimer.h"
-#include "common-hal/socketpool/Socket.h"
-#include "common-hal/wifi/__init__.h"
 #include "supervisor/background_callback.h"
 #include "supervisor/shared/tick.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/RunMode.h"
-#include "shared-bindings/rtc/__init__.h"
-#include "shared-bindings/socketpool/__init__.h"
 #include "shared-module/os/__init__.h"
-
 #include "peripherals/rmt.h"
 #include "peripherals/timer.h"
 
-#if CIRCUITPY_COUNTIO || CIRCUITPY_ROTARYIO || CIRCUITPY_FREQUENCYIO
-#include "peripherals/pcnt.h"
-#endif
-
-#if CIRCUITPY_TOUCHIO_USE_NATIVE
-#include "peripherals/touch.h"
+#if CIRCUITPY_ANALOGIO
+#include "common-hal/analogio/AnalogOut.h"
 #endif
 
 #if CIRCUITPY_BLEIO
 #include "shared-bindings/_bleio/__init__.h"
 #endif
 
+#if CIRCUITPY_BUSIO
+#include "common-hal/busio/I2C.h"
+#include "common-hal/busio/SPI.h"
+#include "common-hal/busio/UART.h"
+#endif
+
+#if CIRCUITPY_COUNTIO || CIRCUITPY_ROTARYIO || CIRCUITPY_FREQUENCYIO
+#include "peripherals/pcnt.h"
+#endif
+
+#if CIRCUITPY_DUALBANK
+#include "common-hal/dualbank/__init__.h"
+#endif
+
 #if CIRCUITPY_ESPCAMERA
 #include "esp_camera.h"
 #endif
+
+#if CIRCUITPY_ESPNOW
+#include "bindings/espnow/__init__.h"
+#endif
+
+#if CIRCUITPY_ESPULP
+#include "bindings/espulp/__init__.h"
+#endif
+
+#if CIRCUITPY_PS2IO
+#include "common-hal/ps2io/Ps2.h"
+#endif
+
+#if CIRCUITPY_PULSEIO
+#include "common-hal/pulseio/PulseIn.h"
+#endif
+
+#if CIRCUITPY_PWMIO
+#include "common-hal/pwmio/PWMOut.h"
+#endif
+
+#if CIRCUITPY_RTC
+#include "shared-bindings/rtc/__init__.h"
+#endif
+
+#if CIRCUITPY_TOUCHIO_USE_NATIVE
+#include "peripherals/touch.h"
+#endif
+
+#if CIRCUITPY_WATCHDOG
+#include "common-hal/watchdog/WatchDogTimer.h"
+#endif
+
+#if CIRCUITPY_WIFI
+#include "shared-bindings/socketpool/__init__.h"
+#include "common-hal/socketpool/Socket.h"
+#include "common-hal/wifi/__init__.h"
+#endif
+
 
 #include "soc/efuse_reg.h"
 #if defined(SOC_LP_AON_SUPPORTED)
@@ -97,6 +130,7 @@
 #include "esp_efuse.h"
 #include "esp_ipc.h"
 #include "esp_rom_efuse.h"
+#include "esp_task.h"
 #include "esp_timer.h"
 
 #ifdef CONFIG_IDF_TARGET_ESP32

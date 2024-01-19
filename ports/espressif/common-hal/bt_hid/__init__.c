@@ -219,16 +219,9 @@ bool common_hal_bt_hid_start(const mp_obj_t devices_in, uint8_t boot_device) {
         .report_maps_len = 1,
     };
 
-    ESP_LOGI("common_hal_bt_hid_start", "device loop"); //////////
-    mp_hal_delay_ms(100);
-
     mp_obj_t tuple_items[num_devices];
 
-    ESP_LOGI("common_hal_bt_hid_start", "num_devices: %d", num_devices); //////////
-    mp_hal_delay_ms(100);
     for (mp_int_t i = 0; i < num_devices; i++) {
-        ESP_LOGI("common_hal_bt_hid_start", "i: %d", i); //////////
-        mp_hal_delay_ms(100);
         // Extract bt_hid.Device objects from the passed-in sequence, by subscripting.
         // devices_seq has already been validated to contain only bt_hid_device_obj_t objects.
         bt_hid_device_obj_t *device =
@@ -245,8 +238,13 @@ bool common_hal_bt_hid_start(const mp_obj_t devices_in, uint8_t boot_device) {
         bt_hid_device_create_report_buffers(device);
     }
 
+    // Remember tuple for gc purposes.
+    MP_STATE_VM(bt_hid_devices_tuple) = mp_obj_new_tuple(num_devices, tuple_items);
+    bt_hid_set_devices(MP_STATE_VM(bt_hid_devices_tuple));
+
     esp_err_t ret;
 
+    port_disable_tick(); ///////////
     ret = nvs_flash_init();
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
         // Need to erase and reinitialize.
@@ -257,37 +255,37 @@ bool common_hal_bt_hid_start(const mp_obj_t devices_in, uint8_t boot_device) {
         }
     }
 
-    ESP_LOGI("common_hal_bt_hid_start", "bit_hid_set_devices"); //////////
-    mp_hal_delay_ms(100);
-    // Remember tuple for gc purposes.
-    MP_STATE_VM(bt_hid_devices_tuple) = mp_obj_new_tuple(num_devices, tuple_items);
-    bt_hid_set_devices(MP_STATE_VM(bt_hid_devices_tuple));
+    ret = esp_bt_controller_mem_release(ESP_BT_MODE_BLE);
+    if (ret != ESP_OK) {
+        ESP_LOGI("common_hal_bt_hid_start", "esp_bt_controller_mem_release failed: %s\n", esp_err_to_name(ret));
+        return false;
+    }
 
     ESP_LOGI("common_hal_bt_hid_start", "esp_bt_controller_init"); //////////
     esp_bt_controller_config_t bt_cfg = BT_CONTROLLER_INIT_CONFIG_DEFAULT();
-    if ((ret = esp_bt_controller_init(&bt_cfg)) != ESP_OK) {
+    ret = esp_bt_controller_init(&bt_cfg);
+    if (ret != ESP_OK) {
         ESP_LOGE("common_hal_bt_hid_start", "initialize controller failed: %s\n", esp_err_to_name(ret));
-        mp_hal_delay_ms(100);
         return false;
     }
 
     ESP_LOGI("common_hal_bt_hid_start", "esp_bt_controller_enable"); //////////
-    mp_hal_delay_ms(100);
-    if ((ret = esp_bt_controller_enable(ESP_BT_MODE_CLASSIC_BT)) != ESP_OK) {
+    ret = esp_bt_controller_enable(ESP_BT_MODE_CLASSIC_BT);
+    if (ret != ESP_OK) {
         ESP_LOGE("common_hal_bt_hid_start", "enable controller failed: %s\n", esp_err_to_name(ret));
         return false;
     }
 
     ESP_LOGI("common_hal_bt_hid_start", "esp_bluedroid_init"); //////////
-    mp_hal_delay_ms(100);
-    if ((ret = esp_bluedroid_init()) != ESP_OK) {
+    ret = esp_bluedroid_init();
+    if (ret != ESP_OK) {
         ESP_LOGE("common_hal_bt_hid_start", "initialize bluedroid failed: %s\n", esp_err_to_name(ret));
         return false;
     }
 
     ESP_LOGI("common_hal_bt_hid_start", "esp_bluedroid_enable"); //////////
-    mp_hal_delay_ms(100);
-    if ((ret = esp_bluedroid_enable()) != ESP_OK) {
+    ret = esp_bluedroid_enable();
+    if (ret != ESP_OK) {
         ESP_LOGE("common_hal_bt_hid_start", "enable bluedroid failed: %s\n", esp_err_to_name(ret));
         return false;
     }
@@ -311,6 +309,7 @@ bool common_hal_bt_hid_start(const mp_obj_t devices_in, uint8_t boot_device) {
     // esp_hidd_dev_init copies the configs, so bt_hid_config does not need to contain static inof.
     ESP_LOGI("common_hal_bt_hid_start", "esp_hidd_dev_init"); //////////
     mp_hal_delay_ms(100);
+    port_enable_tick(); ///////////
     return esp_hidd_dev_init(&bt_hid_config, ESP_HID_TRANSPORT_BT, bt_hidd_event_callback, &hid_dev) == ESP_OK;
 }
 
