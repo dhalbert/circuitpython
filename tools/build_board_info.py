@@ -76,9 +76,15 @@ def get_version_info():
 
     if not version:
         # Get branch we are PR'ing into, if any.
-        branch = os.environ.get("GITHUB_BASE_REF", "").strip().replace("/", "_")
+        # Works for pull_request actions.
+        branch = os.environ.get("GITHUB_BASE_REF", "")
+        if not branch:
+            # Works for push actions (usually a PR merge).
+            branch = os.environ.get("GITHUB_REF_NAME", "")
         if not branch:
             branch = "no-branch"
+        # replace slashes with underscores to prevent path subdirs.
+        branch = branch.strip().replace("/", "_")
 
         # Get PR number, if any
         pull_request_maybe = os.environ.get("PULL", "")
