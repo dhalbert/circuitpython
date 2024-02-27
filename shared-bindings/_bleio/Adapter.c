@@ -233,10 +233,10 @@ STATIC mp_obj_t bleio_adapter_start_advertising(mp_uint_t n_args, const mp_obj_t
     }
 
     const mp_float_t interval = mp_obj_get_float(args[ARG_interval].u_obj);
-    if (interval < ADV_INTERVAL_MIN || interval > ADV_INTERVAL_MAX) {
-        mp_raise_ValueError_varg(MP_ERROR_TEXT("interval must be in range %s-%s"),
-            ADV_INTERVAL_MIN_STRING, ADV_INTERVAL_MAX_STRING);
-    }
+    // if (interval < ADV_INTERVAL_MIN || interval > ADV_INTERVAL_MAX) {
+    //     mp_raise_ValueError_varg(MP_ERROR_TEXT("interval must be in range %s-%s"),
+    //         ADV_INTERVAL_MIN_STRING, ADV_INTERVAL_MAX_STRING);
+    // }
 
     bool connectable = args[ARG_connectable].u_bool;
     bool anonymous = args[ARG_anonymous].u_bool;

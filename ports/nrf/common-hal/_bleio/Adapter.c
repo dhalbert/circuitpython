@@ -769,30 +769,40 @@ uint32_t _common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self,
     uint8_t adv_type;
     ble_gap_addr_t *peer = NULL;
     ble_gap_addr_t peer_address;
+    mp_printf(&mp_plat_print, "connectable: %d, anonymous: %d, directed_to: %x\n", connectable, anonymous, directed_to);
+    mp_printf(&mp_plat_print, "interval: %f, timeout: %f\n", (double)interval, (double)timeout);
     if (extended) {
         if (connectable) {
             adv_type = BLE_GAP_ADV_TYPE_EXTENDED_CONNECTABLE_NONSCANNABLE_UNDIRECTED;
+            mp_printf(&mp_plat_print, "BLE_GAP_ADV_TYPE_EXTENDED_CONNECTABLE_NONSCANNABLE_UNDIRECTED\n");
         } else if (scan_response_data_len > 0) {
             adv_type = BLE_GAP_ADV_TYPE_EXTENDED_NONCONNECTABLE_SCANNABLE_UNDIRECTED;
+            mp_printf(&mp_plat_print, "BLE_GAP_ADV_TYPE_EXTENDED_NONCONNECTABLE_SCANNABLE_UNDIRECTED\n");
         } else {
             adv_type = BLE_GAP_ADV_TYPE_EXTENDED_NONCONNECTABLE_NONSCANNABLE_UNDIRECTED;
+            mp_printf(&mp_plat_print, "BLE_GAP_ADV_TYPE_EXTENDED_NONCONNECTABLE_NONSCANNABLE_UNDIRECTED\n");
         }
     } else if (connectable) {
         if (directed_to == NULL) {
             adv_type = BLE_GAP_ADV_TYPE_CONNECTABLE_SCANNABLE_UNDIRECTED;
+            mp_printf(&mp_plat_print, "BLE_GAP_ADV_TYPE_CONNECTABLE_SCANNABLE_UNDIRECTED\n");
         } else if (interval <= 3.5 && timeout <= 1.3) {
             adv_type = BLE_GAP_ADV_TYPE_CONNECTABLE_NONSCANNABLE_DIRECTED_HIGH_DUTY_CYCLE;
+            mp_printf(&mp_plat_print, "BLE_GAP_ADV_TYPE_CONNECTABLE_NONSCANNABLE_DIRECTED_HIGH_DUTY_CYCLE\n");
             _convert_address(directed_to, &peer_address);
             peer = &peer_address;
         } else {
             adv_type = BLE_GAP_ADV_TYPE_CONNECTABLE_NONSCANNABLE_DIRECTED;
+            mp_printf(&mp_plat_print, "BLE_GAP_ADV_TYPE_CONNECTABLE_NONSCANNABLE_DIRECTED\n");
             _convert_address(directed_to, &peer_address);
             peer = &peer_address;
         }
     } else if (scan_response_data_len > 0) {
         adv_type = BLE_GAP_ADV_TYPE_NONCONNECTABLE_SCANNABLE_UNDIRECTED;
+        mp_printf(&mp_plat_print, "BLE_GAP_ADV_TYPE_NONCONNECTABLE_SCANNABLE_UNDIRECTED\n");
     } else {
         adv_type = BLE_GAP_ADV_TYPE_NONCONNECTABLE_NONSCANNABLE_UNDIRECTED;
+        mp_printf(&mp_plat_print, "BLE_GAP_ADV_TYPE_NONCONNECTABLE_NONSCANNABLE_UNDIRECTED\n");
     }
 
     if (anonymous) {
@@ -817,6 +827,7 @@ uint32_t _common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self,
         err_code = sd_ble_gap_privacy_set(&privacy);
     }
     if (err_code != NRF_SUCCESS) {
+        mp_printf(&mp_plat_print, "sd_ble_gap_privacy_set: %x\n", err_code);
         return err_code;
     }
 
@@ -835,16 +846,20 @@ uint32_t _common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self,
         .scan_rsp_data.p_data = scan_response_data_len > 0 ? (uint8_t *)scan_response_data : NULL,
         .scan_rsp_data.len = scan_response_data_len,
     };
+    mp_printf(&mp_plat_print, "advertising_data_len: %d, scan_response_data_len: %d\n",
+        advertising_data_len, scan_response_data_len);
 
     // Update the identities of central peers so they can use a private address
     // in the scan and connection initiation.
     err_code = _update_identities(false);
     if (err_code != NRF_SUCCESS) {
+        mp_printf(&mp_plat_print, "_update_identities: %x\n", err_code);
         return err_code;
     }
 
     err_code = sd_ble_gap_adv_set_configure(&adv_handle, &ble_gap_adv_data, &adv_params);
     if (err_code != NRF_SUCCESS) {
+        mp_printf(&mp_plat_print, "sd_ble_gap_adv_set_configure: %x\n", err_code);
         return err_code;
     }
 
@@ -852,10 +867,12 @@ uint32_t _common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self,
 
     err_code = sd_ble_gap_tx_power_set(BLE_GAP_TX_POWER_ROLE_ADV, adv_handle, tx_power);
     if (err_code != NRF_SUCCESS) {
+        mp_printf(&mp_plat_print, "sd_ble_gap_tx_power_set: %x\n", err_code);
         return err_code;
     }
     err_code = sd_ble_gap_adv_start(adv_handle, BLE_CONN_CFG_TAG_CUSTOM);
     if (err_code != NRF_SUCCESS) {
+        mp_printf(&mp_plat_print, "sd_ble_gap_adv_start err %x\n", err_code);
         return err_code;
     }
     self->current_advertising_data = advertising_data;
