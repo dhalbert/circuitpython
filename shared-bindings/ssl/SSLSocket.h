@@ -26,11 +26,7 @@
 
 #pragma once
 
-#if CIRCUITPY_SSL_MBEDTLS
 #include "shared-module/ssl/SSLSocket.h"
-#else
-#include "common-hal/ssl/SSLSocket.h"
-#endif
 
 extern const mp_obj_type_t ssl_sslsocket_type;
 

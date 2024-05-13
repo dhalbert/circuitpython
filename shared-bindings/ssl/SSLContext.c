@@ -45,7 +45,7 @@
 STATIC mp_obj_t ssl_sslcontext_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
 
-    ssl_sslcontext_obj_t *s = mp_obj_malloc(ssl_sslcontext_obj_t, &ssl_sslcontext_type);
+    ssl_sslcontext_obj_t *s = mp_obj_malloc_with_finaliser(ssl_sslcontext_obj_t, &ssl_sslcontext_type);
 
     common_hal_ssl_sslcontext_construct(s);
 
@@ -206,7 +206,17 @@ STATIC mp_obj_t ssl_sslcontext_wrap_socket(size_t n_args, const mp_obj_t *pos_ar
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(ssl_sslcontext_wrap_socket_obj, 1, ssl_sslcontext_wrap_socket);
 
+static mp_obj_t ssl_sslcontext___del__(mp_obj_t self_in) {
+    ssl_sslcontext_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
+    common_hal_ssl_sslcontext_deinit(self);
+
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(ssl_sslcontext___del___obj, ssl_sslcontext___del__);
+
 STATIC const mp_rom_map_elem_t ssl_sslcontext_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&ssl_sslcontext___del___obj) },
     { MP_ROM_QSTR(MP_QSTR_wrap_socket), MP_ROM_PTR(&ssl_sslcontext_wrap_socket_obj) },
     { MP_ROM_QSTR(MP_QSTR_load_cert_chain), MP_ROM_PTR(&ssl_sslcontext_load_cert_chain_obj) },
     { MP_ROM_QSTR(MP_QSTR_load_verify_locations), MP_ROM_PTR(&ssl_sslcontext_load_verify_locations_obj) },

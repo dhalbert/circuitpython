@@ -26,4 +26,7 @@
 
 #pragma once
 
+#include "py/mpconfig.h"
+
 void ssl_reset(void);
+NORETURN void mbedtls_raise_error(int err);

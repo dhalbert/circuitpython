@@ -26,12 +26,12 @@
  * THE SOFTWARE.
  */
 
+#include "shared-bindings/ssl/__init__.h"
 #include "shared-bindings/ssl/SSLSocket.h"
 #include "shared-bindings/ssl/SSLContext.h"
 
 #include "shared/runtime/interrupt_char.h"
 #include "shared/netutils/netutils.h"
-#include "py/mperrno.h"
 #include "py/mphal.h"
 #include "py/objstr.h"
 #include "py/runtime.h"
@@ -39,16 +39,6 @@
 #include "supervisor/shared/tick.h"
 
 #include "shared-bindings/socketpool/enum.h"
-
-#include "mbedtls/version.h"
-
-#if defined(MBEDTLS_ERROR_C)
-#include "../../lib/mbedtls_errors/mp_mbedtls_errors.c"
-#endif
-
-#if MBEDTLS_VERSION_MAJOR >= 3
-#include "shared-bindings/os/__init__.h"
-#endif
 
 #ifdef MBEDTLS_DEBUG_C
 #include "mbedtls/debug.h"
@@ -61,50 +51,6 @@ STATIC void mbedtls_debug(void *ctx, int level, const char *file, int line, cons
 #else
 #define DEBUG_PRINT(...) do {} while (0)
 #endif
-
-STATIC NORETURN void mbedtls_raise_error(int err) {
-    // _mbedtls_ssl_send and _mbedtls_ssl_recv (below) turn positive error codes from the
-    // underlying socket into negative codes to pass them through mbedtls. Here we turn them
-    // positive again so they get interpreted as the OSError they really are. The
-    // cut-off of -256 is a bit hacky, sigh.
-    if (err < 0 && err > -256) {
-        mp_raise_OSError(-err);
-    }
-
-    if (err == MBEDTLS_ERR_SSL_WANT_WRITE || err == MBEDTLS_ERR_SSL_WANT_READ) {
-        mp_raise_OSError(MP_EWOULDBLOCK);
-    }
-
-    #if defined(MBEDTLS_ERROR_C)
-    // Including mbedtls_strerror takes about 1.5KB due to the error strings.
-    // MBEDTLS_ERROR_C is the define used by mbedtls to conditionally include mbedtls_strerror.
-    // It is set/unset in the MBEDTLS_CONFIG_FILE which is defined in the Makefile.
-
-    // Try to allocate memory for the message
-    #define ERR_STR_MAX 80  // mbedtls_strerror truncates if it doesn't fit
-    mp_obj_str_t *o_str = m_new_obj_maybe(mp_obj_str_t);
-    byte *o_str_buf = m_new_maybe(byte, ERR_STR_MAX);
-    if (o_str == NULL || o_str_buf == NULL) {
-        mp_raise_OSError(err);
-    }
-
-    // print the error message into the allocated buffer
-    mbedtls_strerror(err, (char *)o_str_buf, ERR_STR_MAX);
-    size_t len = strlen((char *)o_str_buf);
-
-    // Put the exception object together
-    o_str->base.type = &mp_type_str;
-    o_str->data = o_str_buf;
-    o_str->len = len;
-    o_str->hash = qstr_compute_hash(o_str->data, o_str->len);
-    // raise
-    mp_obj_t args[2] = { MP_OBJ_NEW_SMALL_INT(err), MP_OBJ_FROM_PTR(o_str)};
-    nlr_raise(mp_obj_exception_make_new(&mp_type_OSError, 2, 0, args));
-    #else
-    // mbedtls is compiled without error strings so we simply return the err number
-    mp_raise_OSError(err); // err is typically a large negative number
-    #endif
-}
 
 // Because ssl_socket_send and ssl_socket_recv_into are callbacks from mbedtls code,
 // it is not OK to exit them by raising an exception (nlr_jump'ing through
@@ -188,7 +134,7 @@ static mp_obj_t ssl_socket_accept(ssl_sslsocket_obj_t *self) {
     return mp_call_method_n_kw(0, 0, self->accept_args);
 }
 
-STATIC int _mbedtls_ssl_send(void *ctx, const byte *buf, size_t len) {
+int ssl_socket_mbedtls_ssl_send(void *ctx, const byte *buf, size_t len) {
     ssl_sslsocket_obj_t *self = (ssl_sslsocket_obj_t *)ctx;
 
     mp_int_t out_sz = ssl_socket_send(self, buf, len);
@@ -203,7 +149,7 @@ STATIC int _mbedtls_ssl_send(void *ctx, const byte *buf, size_t len) {
     return out_sz;
 }
 
-STATIC int _mbedtls_ssl_recv(void *ctx, byte *buf, size_t len) {
+int ssl_socket_mbedtls_ssl_recv(void *ctx, byte *buf, size_t len) {
     ssl_sslsocket_obj_t *self = (ssl_sslsocket_obj_t *)ctx;
 
     mp_int_t out_sz = ssl_socket_recv_into(self, buf, len);
@@ -217,138 +163,6 @@ STATIC int _mbedtls_ssl_recv(void *ctx, byte *buf, size_t len) {
     return out_sz;
 }
 
-
-#if MBEDTLS_VERSION_MAJOR >= 3
-static int urandom_adapter(void *unused, unsigned char *buf, size_t n) {
-    int result = common_hal_os_urandom(buf, n);
-    if (result) {
-        return 0;
-    }
-    return MBEDTLS_ERR_SSL_INTERNAL_ERROR;
-}
-#endif
-
-ssl_sslsocket_obj_t *common_hal_ssl_sslcontext_wrap_socket(ssl_sslcontext_obj_t *self,
-    mp_obj_t socket, bool server_side, const char *server_hostname) {
-
-    mp_int_t socket_type = mp_obj_get_int(mp_load_attr(socket, MP_QSTR_type));
-    if (socket_type != SOCKETPOOL_SOCK_STREAM) {
-        mp_raise_RuntimeError(MP_ERROR_TEXT("Invalid socket for TLS"));
-    }
-
-    ssl_sslsocket_obj_t *o = m_new_obj_with_finaliser(ssl_sslsocket_obj_t);
-    o->base.type = &ssl_sslsocket_type;
-    o->ssl_context = self;
-    o->sock_obj = socket;
-
-    mp_load_method(socket, MP_QSTR_accept, o->accept_args);
-    mp_load_method(socket, MP_QSTR_bind, o->bind_args);
-    mp_load_method(socket, MP_QSTR_close, o->close_args);
-    mp_load_method(socket, MP_QSTR_connect, o->connect_args);
-    mp_load_method(socket, MP_QSTR_listen, o->listen_args);
-    mp_load_method(socket, MP_QSTR_recv_into, o->recv_into_args);
-    mp_load_method(socket, MP_QSTR_send, o->send_args);
-    mp_load_method(socket, MP_QSTR_settimeout, o->settimeout_args);
-    mp_load_method(socket, MP_QSTR_setsockopt, o->setsockopt_args);
-
-    mbedtls_ssl_init(&o->ssl);
-    mbedtls_ssl_config_init(&o->conf);
-    mbedtls_x509_crt_init(&o->cacert);
-    mbedtls_x509_crt_init(&o->cert);
-    mbedtls_pk_init(&o->pkey);
-    mbedtls_ctr_drbg_init(&o->ctr_drbg);
-    #ifdef MBEDTLS_DEBUG_C
-    // Debug level (0-4) 1=warning, 2=info, 3=debug, 4=verbose
-    mbedtls_debug_set_threshold(4);
-    #endif
-
-    mbedtls_entropy_init(&o->entropy);
-    const byte seed[] = "upy";
-    int ret = mbedtls_ctr_drbg_seed(&o->ctr_drbg, mbedtls_entropy_func, &o->entropy, seed, sizeof(seed));
-    if (ret != 0) {
-        goto cleanup;
-    }
-
-    ret = mbedtls_ssl_config_defaults(&o->conf,
-        server_side ? MBEDTLS_SSL_IS_SERVER : MBEDTLS_SSL_IS_CLIENT,
-        MBEDTLS_SSL_TRANSPORT_STREAM,
-        MBEDTLS_SSL_PRESET_DEFAULT);
-    if (ret != 0) {
-        goto cleanup;
-    }
-
-    if (self->crt_bundle_attach != NULL) {
-        mbedtls_ssl_conf_authmode(&o->conf, MBEDTLS_SSL_VERIFY_REQUIRED);
-        self->crt_bundle_attach(&o->conf);
-    } else if (self->cacert_buf && self->cacert_bytes) {
-        ret = mbedtls_x509_crt_parse(&o->cacert, self->cacert_buf, self->cacert_bytes);
-        if (ret != 0) {
-            goto cleanup;
-        }
-        mbedtls_ssl_conf_authmode(&o->conf, MBEDTLS_SSL_VERIFY_REQUIRED);
-        mbedtls_ssl_conf_ca_chain(&o->conf, &o->cacert, NULL);
-
-    } else {
-        mbedtls_ssl_conf_authmode(&o->conf, MBEDTLS_SSL_VERIFY_NONE);
-    }
-    mbedtls_ssl_conf_rng(&o->conf, mbedtls_ctr_drbg_random, &o->ctr_drbg);
-    #ifdef MBEDTLS_DEBUG_C
-    mbedtls_ssl_conf_dbg(&o->conf, mbedtls_debug, NULL);
-    #endif
-
-    ret = mbedtls_ssl_setup(&o->ssl, &o->conf);
-    if (ret != 0) {
-        goto cleanup;
-    }
-
-    if (server_hostname != NULL) {
-        ret = mbedtls_ssl_set_hostname(&o->ssl, server_hostname);
-        if (ret != 0) {
-            goto cleanup;
-        }
-    }
-
-    mbedtls_ssl_set_bio(&o->ssl, o, _mbedtls_ssl_send, _mbedtls_ssl_recv, NULL);
-
-    if (self->cert_buf.buf != NULL) {
-        #if MBEDTLS_VERSION_MAJOR >= 3
-        ret = mbedtls_pk_parse_key(&o->pkey, self->key_buf.buf, self->key_buf.len + 1, NULL, 0, urandom_adapter, NULL);
-        #else
-        ret = mbedtls_pk_parse_key(&o->pkey, self->key_buf.buf, self->key_buf.len + 1, NULL, 0);
-        #endif
-        if (ret != 0) {
-            goto cleanup;
-        }
-        ret = mbedtls_x509_crt_parse(&o->cert, self->cert_buf.buf, self->cert_buf.len + 1);
-        if (ret != 0) {
-            goto cleanup;
-        }
-
-        ret = mbedtls_ssl_conf_own_cert(&o->conf, &o->cert, &o->pkey);
-        if (ret != 0) {
-            goto cleanup;
-        }
-    }
-    return o;
-cleanup:
-    mbedtls_pk_free(&o->pkey);
-    mbedtls_x509_crt_free(&o->cert);
-    mbedtls_x509_crt_free(&o->cacert);
-    mbedtls_ssl_free(&o->ssl);
-    mbedtls_ssl_config_free(&o->conf);
-    mbedtls_ctr_drbg_free(&o->ctr_drbg);
-    mbedtls_entropy_free(&o->entropy);
-
-    if (ret == MBEDTLS_ERR_SSL_ALLOC_FAILED) {
-        mp_raise_type(&mp_type_MemoryError);
-    } else if (ret == MBEDTLS_ERR_PK_BAD_INPUT_DATA) {
-        mp_raise_ValueError(MP_ERROR_TEXT("invalid key"));
-    } else if (ret == MBEDTLS_ERR_X509_BAD_INPUT_DATA) {
-        mp_raise_ValueError(MP_ERROR_TEXT("invalid cert"));
-    } else {
-        mbedtls_raise_error(ret);
-    }
-}
 
 mp_uint_t common_hal_ssl_sslsocket_recv_into(ssl_sslsocket_obj_t *self, uint8_t *buf, uint32_t len) {
     int ret = mbedtls_ssl_read(&self->ssl, buf, len);
@@ -387,13 +201,7 @@ void common_hal_ssl_sslsocket_close(ssl_sslsocket_obj_t *self) {
     }
     self->closed = true;
     ssl_socket_close(self);
-    mbedtls_pk_free(&self->pkey);
-    mbedtls_x509_crt_free(&self->cert);
-    mbedtls_x509_crt_free(&self->cacert);
     mbedtls_ssl_free(&self->ssl);
-    mbedtls_ssl_config_free(&self->conf);
-    mbedtls_ctr_drbg_free(&self->ctr_drbg);
-    mbedtls_entropy_free(&self->entropy);
 }
 
 STATIC void do_handshake(ssl_sslsocket_obj_t *self) {
@@ -413,13 +221,8 @@ STATIC void do_handshake(ssl_sslsocket_obj_t *self) {
 
 cleanup:
     self->closed = true;
-    mbedtls_pk_free(&self->pkey);
-    mbedtls_x509_crt_free(&self->cert);
-    mbedtls_x509_crt_free(&self->cacert);
+
     mbedtls_ssl_free(&self->ssl);
-    mbedtls_ssl_config_free(&self->conf);
-    mbedtls_ctr_drbg_free(&self->ctr_drbg);
-    mbedtls_entropy_free(&self->entropy);
 
     if (ret == MBEDTLS_ERR_SSL_ALLOC_FAILED) {
         mp_raise_type(&mp_type_MemoryError);

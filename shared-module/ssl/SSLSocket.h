@@ -31,24 +31,11 @@
 
 #include "shared-module/ssl/SSLContext.h"
 
-#include "mbedtls/platform.h"
-#include "mbedtls/ssl.h"
-#include "mbedtls/x509_crt.h"
-#include "mbedtls/pk.h"
-#include "mbedtls/entropy.h"
-#include "mbedtls/ctr_drbg.h"
-
 typedef struct ssl_sslsocket_obj {
     mp_obj_base_t base;
     mp_obj_t sock_obj;
-    ssl_sslcontext_obj_t *ssl_context;
-    mbedtls_entropy_context entropy;
-    mbedtls_ctr_drbg_context ctr_drbg;
     mbedtls_ssl_context ssl;
-    mbedtls_ssl_config conf;
-    mbedtls_x509_crt cacert;
-    mbedtls_x509_crt cert;
-    mbedtls_pk_context pkey;
+    ssl_sslcontext_obj_t *ssl_context;
     bool closed;
     mp_obj_t accept_args[2];
     mp_obj_t bind_args[3];
@@ -60,3 +47,6 @@ typedef struct ssl_sslsocket_obj {
     mp_obj_t setsockopt_args[5];
     mp_obj_t settimeout_args[3];
 } ssl_sslsocket_obj_t;
+
+int ssl_socket_mbedtls_ssl_recv(void *ctx, byte *buf, size_t len);
+int ssl_socket_mbedtls_ssl_send(void *ctx, const byte *buf, size_t len);

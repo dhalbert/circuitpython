@@ -28,13 +28,31 @@
 #pragma once
 
 #include "py/obj.h"
+
+#include "mbedtls/ctr_drbg.h"
+#include "mbedtls/entropy.h"
+#include "mbedtls/pk.h"
+#include "mbedtls/platform.h"
 #include "mbedtls/ssl.h"
+#include "mbedtls/x509_crt.h"
+
+#include "lib/mbedtls_config/crt_bundle.h"
+
 
 typedef struct {
     mp_obj_base_t base;
-    bool check_name, use_global_ca_store;
+    mbedtls_entropy_context entropy;
+    mbedtls_ctr_drbg_context ctr_drbg;
+    mbedtls_ssl_config conf;
+    mbedtls_x509_crt cacert;
+    mbedtls_x509_crt cert;
+    mbedtls_pk_context pkey;
     const unsigned char *cacert_buf;
     size_t cacert_bytes;
     int (*crt_bundle_attach)(mbedtls_ssl_config *conf);
-    mp_buffer_info_t cert_buf, key_buf;
+    mp_buffer_info_t cert_buf;
+    mp_buffer_info_t key_buf;
+    bool initialized;
+    bool check_name;
+    bool use_global_ca_store;
 } ssl_sslcontext_obj_t;

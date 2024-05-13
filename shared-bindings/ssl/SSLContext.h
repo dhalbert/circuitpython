@@ -27,12 +27,7 @@
 #ifndef MICROPY_INCLUDED_SHARED_BINDINGS_SSL_SSLCONTEXT_H
 #define MICROPY_INCLUDED_SHARED_BINDINGS_SSL_SSLCONTEXT_H
 
-#if CIRCUITPY_SSL_MBEDTLS
 #include "shared-module/ssl/SSLContext.h"
-#else
-#include "common-hal/ssl/SSLContext.h"
-#endif
-
 #include "shared-bindings/ssl/SSLSocket.h"
 
 extern const mp_obj_type_t ssl_sslcontext_type;
@@ -51,4 +46,5 @@ bool common_hal_ssl_sslcontext_get_check_hostname(ssl_sslcontext_obj_t *self);
 void common_hal_ssl_sslcontext_set_check_hostname(ssl_sslcontext_obj_t *self, bool value);
 void common_hal_ssl_sslcontext_load_cert_chain(ssl_sslcontext_obj_t *self, mp_buffer_info_t *cert_buf, mp_buffer_info_t *key_buf);
 
+void common_hal_ssl_sslcontext_deinit(ssl_sslcontext_obj_t *self);
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_SSL_SSLCONTEXT_H

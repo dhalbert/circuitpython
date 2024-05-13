@@ -113,7 +113,7 @@ msgstr ""
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: ports/raspberrypi/common-hal/usb_host/Port.c
 #: shared-bindings/digitalio/DigitalInOut.c
-#: shared-bindings/microcontroller/Pin.c
+#: shared-bindings/microcontroller/Pin.c shared-module/max3421e/Max3421E.c
 msgid "%q in use"
 msgstr ""
 
@@ -1154,6 +1154,7 @@ msgstr ""
 #: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/atmel-samd/common-hal/countio/Counter.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
+#: ports/atmel-samd/common-hal/max3421e/Max3421E.c
 #: ports/atmel-samd/common-hal/ps2io/Ps2.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
@@ -1244,7 +1245,7 @@ msgstr ""
 msgid "Invalid size"
 msgstr ""
 
-#: shared-module/ssl/SSLSocket.c
+#: shared-module/ssl/SSLContext.c
 msgid "Invalid socket for TLS"
 msgstr ""
 
@@ -2138,6 +2139,7 @@ msgstr ""
 msgid "Unknown BLE error: %d"
 msgstr ""
 
+#: ports/espressif/common-hal/max3421e/Max3421E.c
 #: ports/raspberrypi/common-hal/wifi/__init__.c
 #, c-format
 msgid "Unknown error code %d"
@@ -3256,7 +3258,7 @@ msgstr ""
 msgid "invalid bits_per_pixel %d, must be, 1, 2, 4, 8, 16, 24, or 32"
 msgstr ""
 
-#: shared-module/ssl/SSLSocket.c
+#: shared-module/ssl/SSLContext.c shared-module/ssl/SSLSocket.c
 msgid "invalid cert"
 msgstr ""
 
@@ -3282,7 +3284,7 @@ msgstr ""
 msgid "invalid hostname"
 msgstr ""
 
-#: shared-module/ssl/SSLSocket.c
+#: shared-module/ssl/SSLContext.c shared-module/ssl/SSLSocket.c
 msgid "invalid key"
 msgstr ""
 
@@ -3809,7 +3811,7 @@ msgstr ""
 msgid "pop from empty %q"
 msgstr ""
 
-#: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
+#: shared-bindings/socketpool/Socket.c
 msgid "port must be >= 0"
 msgstr ""
 
