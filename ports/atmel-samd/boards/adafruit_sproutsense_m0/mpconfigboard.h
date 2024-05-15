@@ -4,7 +4,7 @@
 #define MICROPY_HW_NEOPIXEL (&pin_PA01)
 #define MICROPY_HW_NEOPIXEL_COUNT (1)
 
-#define IGNORE_PIN_PA02     1
+#define IGNORE_PIN_PA00     1
 
 #define IGNORE_PIN_PA05     1
 #define IGNORE_PIN_PA06     1
