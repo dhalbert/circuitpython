@@ -40,7 +40,9 @@ digitalinout_result_t common_hal_digitalio_digitalinout_construct(
     #endif
 
     // Set to input. No output value.
+    gpio_disable_pulls(pin->number);
     gpio_init(pin->number);
+    gpio_disable_pulls(pin->number);
     return DIGITALINOUT_OK;
 }
 
@@ -83,12 +85,11 @@ digitalinout_result_t common_hal_digitalio_digitalinout_switch_to_output(
     }
     #endif
     const uint8_t pin = self->pin->number;
+
     gpio_disable_pulls(pin);
 
     // Turn on "strong" pin driving (more current available).
-    hw_write_masked(&pads_bank0_hw->io[pin],
-        PADS_BANK0_GPIO0_DRIVE_VALUE_12MA << PADS_BANK0_GPIO0_DRIVE_LSB,
-            PADS_BANK0_GPIO0_DRIVE_BITS);
+    gpio_set_drive_strength(pin, GPIO_DRIVE_STRENGTH_12MA);
 
     self->output = true;
     self->open_drain = drive_mode == DRIVE_MODE_OPEN_DRAIN;
@@ -134,7 +135,21 @@ bool common_hal_digitalio_digitalinout_get_value(
         return cyw43_arch_gpio_get(self->pin->number);
     }
     #endif
-    return gpio_get(self->pin->number);
+
+    const uint8_t pin = self->pin->number;
+
+    #if defined(PICO_RP2350) && PICO_RP2350 && 0
+    // Workaround for erratum RP2350-E9. Do this last in case something else turns on GPIO.IE.
+    if (gpio_is_pulled_down(pin)) {
+        gpio_set_input_enabled(pin, true);
+        bool value = gpio_get(pin);
+        gpio_set_input_enabled(pin, false);
+        return value;
+    }
+    // If not pulled down, just fall through to regular gpio_get().
+    #endif
+
+    return gpio_get(pin);
 }
 
 digitalinout_result_t common_hal_digitalio_digitalinout_set_drive_mode(
@@ -179,8 +194,17 @@ digitalinout_result_t common_hal_digitalio_digitalinout_set_pull(
     }
     #endif
     const uint8_t pin = self->pin->number;
+
     gpio_set_pulls(pin, pull == PULL_UP, pull == PULL_DOWN);
     gpio_set_dir(pin, GPIO_IN);
+
+    #if defined(PICO_RP2350) && PICO_RP2350 && 0
+    // Workaround for erratum RP2350-E9.
+    // Clear GPIO.IE if pulled down. Otherwise enable GPIO.IE in case it was previously
+    // disabled due to a pull-down.
+    gpio_set_input_enabled(pin, !gpio_is_pulled_down(pin));
+    #endif
+
     self->output = false;
     return DIGITALINOUT_OK;
 }
