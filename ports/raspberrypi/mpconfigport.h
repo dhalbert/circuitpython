@@ -14,6 +14,9 @@
 
 #ifdef PICO_RP2350
 #define MICROPY_PY_SYS_PLATFORM             "RP2350"
+// RP2350-E9 erratum means we cannot we use a weak pulldown for generic touch.
+// So detect touch by using a weak pull-up and detect rise time rather than fall time.
+#define CIRCUITPY_TOUCHIO_TOUCHIN_SENSE_RISE (1)
 #endif
 
 // Setting a non-default value also requires a non-default link.ld

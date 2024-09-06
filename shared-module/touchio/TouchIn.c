@@ -30,16 +30,17 @@ static uint16_t get_raw_reading(touchio_touchin_obj_t *self) {
     uint16_t ticks = 0;
 
     for (uint16_t i = 0; i < N_SAMPLES; i++) {
-        // set pad to digital output high for 10us to charge it
-
-        common_hal_digitalio_digitalinout_switch_to_output(self->digitalinout, true, DRIVE_MODE_PUSH_PULL);
+        // set pad to digital output high or low for 10us to charge or discharge it.
+        common_hal_digitalio_digitalinout_switch_to_output(self->digitalinout,
+            !CIRCUITPY_TOUCHIO_TOUCHIN_SENSE_RISE, DRIVE_MODE_PUSH_PULL);
         mp_hal_delay_us(10);
 
         // set pad back to an input and take some samples
 
         common_hal_digitalio_digitalinout_switch_to_input(self->digitalinout, PULL_NONE);
 
-        while (common_hal_digitalio_digitalinout_get_value(self->digitalinout)) {
+        while (common_hal_digitalio_digitalinout_get_value(self->digitalinout) !=
+            (bool)CIRCUITPY_TOUCHIO_TOUCHIN_SENSE_RISE) {
             if (ticks >= TIMEOUT_TICKS) {
                 return TIMEOUT_TICKS;
             }
@@ -58,7 +59,11 @@ void common_hal_touchio_touchin_construct(touchio_touchin_obj_t *self, const mcu
     uint16_t raw_reading = get_raw_reading(self);
     if (raw_reading == TIMEOUT_TICKS) {
         common_hal_touchio_touchin_deinit(self);
-        mp_raise_ValueError(MP_ERROR_TEXT("No pulldown on pin; 1Mohm recommended"));
+        mp_raise_ValueError(
+            CIRCUITPY_TOUCHIO_TOUCHIN_SENSE_RISE
+            ? MP_ERROR_TEXT("No pullup on pin; 1Mohm recommended")
+            : MP_ERROR_TEXT("No pulldown on pin; 1Mohm recommended")
+            );
     }
     self->threshold = raw_reading * 1.05 + 100;
 }

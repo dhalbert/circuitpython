@@ -577,6 +577,12 @@ void background_callback_run_all(void);
 #define CIRCUITPY_DIGITALIO_HAVE_INVALID_DRIVE_MODE (0)
 #endif
 
+// Do generic touchio by measuring rise time with a weak pullup,
+// rather than fall time with a weak pulldown
+#ifndef CIRCUITPY_TOUCHIO_TOUCHIN_SENSE_RISE
+#define CIRCUITPY_TOUCHIO_TOUCHIN_SENSE_RISE (0)
+#endif
+
 // Align the internal sector buffer. Useful when it is passed into TinyUSB for
 // loads.
 #ifndef MICROPY_FATFS_WINDOW_ALIGNMENT
