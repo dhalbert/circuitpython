@@ -24,7 +24,7 @@ extern Protomatter_core *_PM_protoPtr;
 
 static void common_hal_rgbmatrix_rgbmatrix_construct1(rgbmatrix_rgbmatrix_obj_t *self, mp_obj_t framebuffer);
 
-void common_hal_rgbmatrix_rgbmatrix_construct(rgbmatrix_rgbmatrix_obj_t *self, int width, int bit_depth, uint8_t rgb_count, uint8_t *rgb_pins, uint8_t addr_count, uint8_t *addr_pins, uint8_t clock_pin, uint8_t latch_pin, uint8_t oe_pin, bool doublebuffer, mp_obj_t framebuffer, int8_t tile, bool serpentine, void *timer) {
+rgbmatrix_result_t common_hal_rgbmatrix_rgbmatrix_construct(rgbmatrix_rgbmatrix_obj_t *self, int width, int bit_depth, uint8_t rgb_count, uint8_t *rgb_pins, uint8_t addr_count, uint8_t *addr_pins, uint8_t clock_pin, uint8_t latch_pin, uint8_t oe_pin, bool doublebuffer, mp_buffer_info_t framebuffer_bufinfo, int8_t tile, bool serpentine, void *timer) {
     self->width = width;
     self->bit_depth = bit_depth;
     self->rgb_count = rgb_count;
@@ -40,18 +40,17 @@ void common_hal_rgbmatrix_rgbmatrix_construct(rgbmatrix_rgbmatrix_obj_t *self, i
 
     self->timer = timer ? timer : common_hal_rgbmatrix_timer_allocate(self);
     if (self->timer == NULL) {
-        mp_raise_ValueError(MP_ERROR_TEXT("No timer available"));
+        return RGBMATRIX_NO_TIMER_AVAILABLE;
     }
 
     self->width = width;
     self->bufsize = 2 * width * common_hal_rgbmatrix_rgbmatrix_get_height(self);
 
-    common_hal_rgbmatrix_rgbmatrix_construct1(self, framebuffer);
+    return common_hal_rgbmatrix_rgbmatrix_construct1(self, framebuffer);
 }
 
-static void common_hal_rgbmatrix_rgbmatrix_construct1(rgbmatrix_rgbmatrix_obj_t *self, mp_obj_t framebuffer) {
-    if (framebuffer != mp_const_none) {
-        mp_get_buffer_raise(self->framebuffer, &self->bufinfo, MP_BUFFER_READ);
+static rgbmatrix_result_t common_hal_rgbmatrix_rgbmatrix_construct1(rgbmatrix_rgbmatrix_obj_t *self, mp_buffer_info_t framebuffer) {
+    if (framebuffer_bufinfo != NULL) {
         if (mp_get_buffer(self->framebuffer, &self->bufinfo, MP_BUFFER_RW)) {
             self->bufinfo.typecode = 'H' | MP_OBJ_ARRAY_TYPECODE_FLAG_RW;
         } else {

@@ -214,9 +214,6 @@ static mp_obj_t rgbmatrix_rgbmatrix_make_new(const mp_obj_type_t *type, size_t n
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    rgbmatrix_rgbmatrix_obj_t *self = &allocate_display_bus_or_raise()->rgbmatrix;
-    self->base.type = &rgbmatrix_RGBMatrix_type;
-
     uint8_t rgb_count, addr_count;
     uint8_t rgb_pins[MP_ARRAY_SIZE(self->rgb_pins)];
     uint8_t addr_pins[MP_ARRAY_SIZE(self->addr_pins)];
@@ -246,7 +243,11 @@ static mp_obj_t rgbmatrix_rgbmatrix_make_new(const mp_obj_type_t *type, size_t n
 
     preflight_pins_or_throw(clock_pin, rgb_pins, rgb_count, true);
 
-    common_hal_rgbmatrix_rgbmatrix_construct(self,
+    // Allocate after all validation is done.
+    rgbmatrix_rgbmatrix_obj_t *self = &allocate_display_bus_or_raise()->rgbmatrix;
+    self->base.type = &rgbmatrix_RGBMatrix_type;
+
+    rgbmatrix_result_t result = common_hal_rgbmatrix_rgbmatrix_construct(self,
         width,
         bit_depth,
         rgb_count, rgb_pins,
@@ -255,182 +256,193 @@ static mp_obj_t rgbmatrix_rgbmatrix_make_new(const mp_obj_type_t *type, size_t n
         args[ARG_doublebuffer].u_bool,
         args[ARG_framebuffer].u_obj, tile, args[ARG_serpentine].u_bool, NULL);
 
-    claim_and_never_reset_pins(args[ARG_rgb_list].u_obj);
-    claim_and_never_reset_pins(args[ARG_addr_list].u_obj);
-    claim_and_never_reset_pin(args[ARG_clock_pin].u_obj);
-    claim_and_never_reset_pin(args[ARG_output_enable_pin].u_obj);
-    claim_and_never_reset_pin(args[ARG_latch_pin].u_obj);
+    if (result != RGBMATRIX_OK) {
+        ////clean up and then raise
+        switch (result) {
+            case RGBMATRIX_NO_TIMER_AVAILABLE:
+                mp_raise_ValueError(MP_ERROR_TEXT("No timer available"));
+                break;
 
-    return MP_OBJ_FROM_PTR(self);
-}
+                casemp_raise_TypeError(MP_ERROR_TEXT("object with buffer protocol required"));
+
+
+
+                claim_and_never_reset_pins(args[ARG_rgb_list].u_obj);
+                claim_and_never_reset_pins(args[ARG_addr_list].u_obj);
+                claim_and_never_reset_pin(args[ARG_clock_pin].u_obj);
+                claim_and_never_reset_pin(args[ARG_output_enable_pin].u_obj);
+                claim_and_never_reset_pin(args[ARG_latch_pin].u_obj);
+
+                return MP_OBJ_FROM_PTR(self);
+        }
 
 //|     def deinit(self) -> None:
 //|         """Free the resources (pins, timers, etc.) associated with this
 //|         rgbmatrix instance.  After deinitialization, no further operations
 //|         may be performed."""
 //|         ...
-static mp_obj_t rgbmatrix_rgbmatrix_deinit(mp_obj_t self_in) {
-    rgbmatrix_rgbmatrix_obj_t *self = (rgbmatrix_rgbmatrix_obj_t *)self_in;
-    common_hal_rgbmatrix_rgbmatrix_deinit(self);
-    return mp_const_none;
-}
+        static mp_obj_t rgbmatrix_rgbmatrix_deinit(mp_obj_t self_in) {
+            rgbmatrix_rgbmatrix_obj_t *self = (rgbmatrix_rgbmatrix_obj_t *)self_in;
+            common_hal_rgbmatrix_rgbmatrix_deinit(self);
+            return mp_const_none;
+        }
 
-static MP_DEFINE_CONST_FUN_OBJ_1(rgbmatrix_rgbmatrix_deinit_obj, rgbmatrix_rgbmatrix_deinit);
+        static MP_DEFINE_CONST_FUN_OBJ_1(rgbmatrix_rgbmatrix_deinit_obj, rgbmatrix_rgbmatrix_deinit);
 
-static void check_for_deinit(rgbmatrix_rgbmatrix_obj_t *self) {
-    if (!self->protomatter.rgbPins) {
-        raise_deinited_error();
-    }
-}
+        static void check_for_deinit(rgbmatrix_rgbmatrix_obj_t *self) {
+            if (!self->protomatter.rgbPins) {
+                raise_deinited_error();
+            }
+        }
 
 //|     brightness: float
 //|     """In the current implementation, 0.0 turns the display off entirely
 //|     and any other value up to 1.0 turns the display on fully."""
-static mp_obj_t rgbmatrix_rgbmatrix_get_brightness(mp_obj_t self_in) {
-    rgbmatrix_rgbmatrix_obj_t *self = (rgbmatrix_rgbmatrix_obj_t *)self_in;
-    check_for_deinit(self);
-    return mp_obj_new_float(common_hal_rgbmatrix_rgbmatrix_get_paused(self)? 0.0f : 1.0f);
-}
-MP_DEFINE_CONST_FUN_OBJ_1(rgbmatrix_rgbmatrix_get_brightness_obj, rgbmatrix_rgbmatrix_get_brightness);
+        static mp_obj_t rgbmatrix_rgbmatrix_get_brightness(mp_obj_t self_in) {
+            rgbmatrix_rgbmatrix_obj_t *self = (rgbmatrix_rgbmatrix_obj_t *)self_in;
+            check_for_deinit(self);
+            return mp_obj_new_float(common_hal_rgbmatrix_rgbmatrix_get_paused(self)? 0.0f : 1.0f);
+        }
+        MP_DEFINE_CONST_FUN_OBJ_1(rgbmatrix_rgbmatrix_get_brightness_obj, rgbmatrix_rgbmatrix_get_brightness);
 
-static mp_obj_t rgbmatrix_rgbmatrix_set_brightness(mp_obj_t self_in, mp_obj_t value_in) {
-    rgbmatrix_rgbmatrix_obj_t *self = (rgbmatrix_rgbmatrix_obj_t *)self_in;
-    check_for_deinit(self);
-    mp_float_t brightness = mp_obj_get_float(value_in);
-    if (brightness < 0.0f || brightness > 1.0f) {
-        mp_raise_ValueError_varg(MP_ERROR_TEXT("%q must be %d-%d"), MP_QSTR_brightness, 0, 1);
-    }
-    common_hal_rgbmatrix_rgbmatrix_set_paused(self, brightness <= 0);
+        static mp_obj_t rgbmatrix_rgbmatrix_set_brightness(mp_obj_t self_in, mp_obj_t value_in) {
+            rgbmatrix_rgbmatrix_obj_t *self = (rgbmatrix_rgbmatrix_obj_t *)self_in;
+            check_for_deinit(self);
+            mp_float_t brightness = mp_obj_get_float(value_in);
+            if (brightness < 0.0f || brightness > 1.0f) {
+                mp_raise_ValueError_varg(MP_ERROR_TEXT("%q must be %d-%d"), MP_QSTR_brightness, 0, 1);
+            }
+            common_hal_rgbmatrix_rgbmatrix_set_paused(self, brightness <= 0);
 
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_2(rgbmatrix_rgbmatrix_set_brightness_obj, rgbmatrix_rgbmatrix_set_brightness);
+            return mp_const_none;
+        }
+        MP_DEFINE_CONST_FUN_OBJ_2(rgbmatrix_rgbmatrix_set_brightness_obj, rgbmatrix_rgbmatrix_set_brightness);
 
-MP_PROPERTY_GETSET(rgbmatrix_rgbmatrix_brightness_obj,
-    (mp_obj_t)&rgbmatrix_rgbmatrix_get_brightness_obj,
-    (mp_obj_t)&rgbmatrix_rgbmatrix_set_brightness_obj);
+        MP_PROPERTY_GETSET(rgbmatrix_rgbmatrix_brightness_obj,
+            (mp_obj_t)&rgbmatrix_rgbmatrix_get_brightness_obj,
+            (mp_obj_t)&rgbmatrix_rgbmatrix_set_brightness_obj);
 
 //|     def refresh(self) -> None:
 //|         """Transmits the color data in the buffer to the pixels so that
 //|         they are shown."""
 //|         ...
-static mp_obj_t rgbmatrix_rgbmatrix_refresh(mp_obj_t self_in) {
-    rgbmatrix_rgbmatrix_obj_t *self = (rgbmatrix_rgbmatrix_obj_t *)self_in;
-    check_for_deinit(self);
-    common_hal_rgbmatrix_rgbmatrix_refresh(self);
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_1(rgbmatrix_rgbmatrix_refresh_obj, rgbmatrix_rgbmatrix_refresh);
+        static mp_obj_t rgbmatrix_rgbmatrix_refresh(mp_obj_t self_in) {
+            rgbmatrix_rgbmatrix_obj_t *self = (rgbmatrix_rgbmatrix_obj_t *)self_in;
+            check_for_deinit(self);
+            common_hal_rgbmatrix_rgbmatrix_refresh(self);
+            return mp_const_none;
+        }
+        MP_DEFINE_CONST_FUN_OBJ_1(rgbmatrix_rgbmatrix_refresh_obj, rgbmatrix_rgbmatrix_refresh);
 
 //|     width: int
 //|     """The width of the display, in pixels"""
-static mp_obj_t rgbmatrix_rgbmatrix_get_width(mp_obj_t self_in) {
-    rgbmatrix_rgbmatrix_obj_t *self = (rgbmatrix_rgbmatrix_obj_t *)self_in;
-    check_for_deinit(self);
-    return MP_OBJ_NEW_SMALL_INT(common_hal_rgbmatrix_rgbmatrix_get_width(self));
-}
-MP_DEFINE_CONST_FUN_OBJ_1(rgbmatrix_rgbmatrix_get_width_obj, rgbmatrix_rgbmatrix_get_width);
-MP_PROPERTY_GETTER(rgbmatrix_rgbmatrix_width_obj,
-    (mp_obj_t)&rgbmatrix_rgbmatrix_get_width_obj);
+        static mp_obj_t rgbmatrix_rgbmatrix_get_width(mp_obj_t self_in) {
+            rgbmatrix_rgbmatrix_obj_t *self = (rgbmatrix_rgbmatrix_obj_t *)self_in;
+            check_for_deinit(self);
+            return MP_OBJ_NEW_SMALL_INT(common_hal_rgbmatrix_rgbmatrix_get_width(self));
+        }
+        MP_DEFINE_CONST_FUN_OBJ_1(rgbmatrix_rgbmatrix_get_width_obj, rgbmatrix_rgbmatrix_get_width);
+        MP_PROPERTY_GETTER(rgbmatrix_rgbmatrix_width_obj,
+            (mp_obj_t)&rgbmatrix_rgbmatrix_get_width_obj);
 
 //|     height: int
 //|     """The height of the display, in pixels"""
 //|
-static mp_obj_t rgbmatrix_rgbmatrix_get_height(mp_obj_t self_in) {
-    rgbmatrix_rgbmatrix_obj_t *self = (rgbmatrix_rgbmatrix_obj_t *)self_in;
-    check_for_deinit(self);
-    return MP_OBJ_NEW_SMALL_INT(common_hal_rgbmatrix_rgbmatrix_get_height(self));
-}
-MP_DEFINE_CONST_FUN_OBJ_1(rgbmatrix_rgbmatrix_get_height_obj, rgbmatrix_rgbmatrix_get_height);
+        static mp_obj_t rgbmatrix_rgbmatrix_get_height(mp_obj_t self_in) {
+            rgbmatrix_rgbmatrix_obj_t *self = (rgbmatrix_rgbmatrix_obj_t *)self_in;
+            check_for_deinit(self);
+            return MP_OBJ_NEW_SMALL_INT(common_hal_rgbmatrix_rgbmatrix_get_height(self));
+        }
+        MP_DEFINE_CONST_FUN_OBJ_1(rgbmatrix_rgbmatrix_get_height_obj, rgbmatrix_rgbmatrix_get_height);
 
-MP_PROPERTY_GETTER(rgbmatrix_rgbmatrix_height_obj,
-    (mp_obj_t)&rgbmatrix_rgbmatrix_get_height_obj);
+        MP_PROPERTY_GETTER(rgbmatrix_rgbmatrix_height_obj,
+            (mp_obj_t)&rgbmatrix_rgbmatrix_get_height_obj);
 
-static const mp_rom_map_elem_t rgbmatrix_rgbmatrix_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&rgbmatrix_rgbmatrix_deinit_obj) },
-    { MP_ROM_QSTR(MP_QSTR_brightness), MP_ROM_PTR(&rgbmatrix_rgbmatrix_brightness_obj) },
-    { MP_ROM_QSTR(MP_QSTR_refresh), MP_ROM_PTR(&rgbmatrix_rgbmatrix_refresh_obj) },
-    { MP_ROM_QSTR(MP_QSTR_width), MP_ROM_PTR(&rgbmatrix_rgbmatrix_width_obj) },
-    { MP_ROM_QSTR(MP_QSTR_height), MP_ROM_PTR(&rgbmatrix_rgbmatrix_height_obj) },
-};
-static MP_DEFINE_CONST_DICT(rgbmatrix_rgbmatrix_locals_dict, rgbmatrix_rgbmatrix_locals_dict_table);
+        static const mp_rom_map_elem_t rgbmatrix_rgbmatrix_locals_dict_table[] = {
+            { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&rgbmatrix_rgbmatrix_deinit_obj) },
+            { MP_ROM_QSTR(MP_QSTR_brightness), MP_ROM_PTR(&rgbmatrix_rgbmatrix_brightness_obj) },
+            { MP_ROM_QSTR(MP_QSTR_refresh), MP_ROM_PTR(&rgbmatrix_rgbmatrix_refresh_obj) },
+            { MP_ROM_QSTR(MP_QSTR_width), MP_ROM_PTR(&rgbmatrix_rgbmatrix_width_obj) },
+            { MP_ROM_QSTR(MP_QSTR_height), MP_ROM_PTR(&rgbmatrix_rgbmatrix_height_obj) },
+        };
+        static MP_DEFINE_CONST_DICT(rgbmatrix_rgbmatrix_locals_dict, rgbmatrix_rgbmatrix_locals_dict_table);
 
-static void rgbmatrix_rgbmatrix_get_bufinfo(mp_obj_t self_in, mp_buffer_info_t *bufinfo) {
-    common_hal_rgbmatrix_rgbmatrix_get_bufinfo(self_in, bufinfo);
-}
+        static void rgbmatrix_rgbmatrix_get_bufinfo(mp_obj_t self_in, mp_buffer_info_t *bufinfo) {
+            common_hal_rgbmatrix_rgbmatrix_get_bufinfo(self_in, bufinfo);
+        }
 
 // These version exists so that the prototype matches the protocol,
 // avoiding a type cast that can hide errors
-static void rgbmatrix_rgbmatrix_swapbuffers(mp_obj_t self_in, uint8_t *dirty_row_bitmap) {
-    (void)dirty_row_bitmap;
-    common_hal_rgbmatrix_rgbmatrix_refresh(self_in);
-}
+        static void rgbmatrix_rgbmatrix_swapbuffers(mp_obj_t self_in, uint8_t *dirty_row_bitmap) {
+            (void)dirty_row_bitmap;
+            common_hal_rgbmatrix_rgbmatrix_refresh(self_in);
+        }
 
-static void rgbmatrix_rgbmatrix_deinit_proto(mp_obj_t self_in) {
-    common_hal_rgbmatrix_rgbmatrix_deinit(self_in);
-}
+        static void rgbmatrix_rgbmatrix_deinit_proto(mp_obj_t self_in) {
+            common_hal_rgbmatrix_rgbmatrix_deinit(self_in);
+        }
 
-static float rgbmatrix_rgbmatrix_get_brightness_proto(mp_obj_t self_in) {
-    return common_hal_rgbmatrix_rgbmatrix_get_paused(self_in) ? 0.0f : 1.0f;
-}
+        static float rgbmatrix_rgbmatrix_get_brightness_proto(mp_obj_t self_in) {
+            return common_hal_rgbmatrix_rgbmatrix_get_paused(self_in) ? 0.0f : 1.0f;
+        }
 
-static bool rgbmatrix_rgbmatrix_set_brightness_proto(mp_obj_t self_in, mp_float_t value) {
-    common_hal_rgbmatrix_rgbmatrix_set_paused(self_in, value <= 0);
-    return true;
-}
+        static bool rgbmatrix_rgbmatrix_set_brightness_proto(mp_obj_t self_in, mp_float_t value) {
+            common_hal_rgbmatrix_rgbmatrix_set_paused(self_in, value <= 0);
+            return true;
+        }
 
-static int rgbmatrix_rgbmatrix_get_width_proto(mp_obj_t self_in) {
-    return common_hal_rgbmatrix_rgbmatrix_get_width(self_in);
-}
+        static int rgbmatrix_rgbmatrix_get_width_proto(mp_obj_t self_in) {
+            return common_hal_rgbmatrix_rgbmatrix_get_width(self_in);
+        }
 
-static int rgbmatrix_rgbmatrix_get_height_proto(mp_obj_t self_in) {
-    return common_hal_rgbmatrix_rgbmatrix_get_height(self_in);
-}
+        static int rgbmatrix_rgbmatrix_get_height_proto(mp_obj_t self_in) {
+            return common_hal_rgbmatrix_rgbmatrix_get_height(self_in);
+        }
 
-static int rgbmatrix_rgbmatrix_get_color_depth_proto(mp_obj_t self_in) {
-    return 16;
-}
+        static int rgbmatrix_rgbmatrix_get_color_depth_proto(mp_obj_t self_in) {
+            return 16;
+        }
 
-static int rgbmatrix_rgbmatrix_get_bytes_per_cell_proto(mp_obj_t self_in) {
-    return 1;
-}
+        static int rgbmatrix_rgbmatrix_get_bytes_per_cell_proto(mp_obj_t self_in) {
+            return 1;
+        }
 
-static int rgbmatrix_rgbmatrix_get_native_frames_per_second_proto(mp_obj_t self_in) {
-    return 250;
-}
+        static int rgbmatrix_rgbmatrix_get_native_frames_per_second_proto(mp_obj_t self_in) {
+            return 250;
+        }
 
 
-static const framebuffer_p_t rgbmatrix_rgbmatrix_proto = {
-    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_framebuffer)
-    .get_bufinfo = rgbmatrix_rgbmatrix_get_bufinfo,
-    .set_brightness = rgbmatrix_rgbmatrix_set_brightness_proto,
-    .get_brightness = rgbmatrix_rgbmatrix_get_brightness_proto,
-    .get_width = rgbmatrix_rgbmatrix_get_width_proto,
-    .get_height = rgbmatrix_rgbmatrix_get_height_proto,
-    .get_color_depth = rgbmatrix_rgbmatrix_get_color_depth_proto,
-    .get_bytes_per_cell = rgbmatrix_rgbmatrix_get_bytes_per_cell_proto,
-    .get_native_frames_per_second = rgbmatrix_rgbmatrix_get_native_frames_per_second_proto,
-    .swapbuffers = rgbmatrix_rgbmatrix_swapbuffers,
-    .deinit = rgbmatrix_rgbmatrix_deinit_proto,
-};
+        static const framebuffer_p_t rgbmatrix_rgbmatrix_proto = {
+            MP_PROTO_IMPLEMENT(MP_QSTR_protocol_framebuffer)
+            .get_bufinfo = rgbmatrix_rgbmatrix_get_bufinfo,
+            .set_brightness = rgbmatrix_rgbmatrix_set_brightness_proto,
+            .get_brightness = rgbmatrix_rgbmatrix_get_brightness_proto,
+            .get_width = rgbmatrix_rgbmatrix_get_width_proto,
+            .get_height = rgbmatrix_rgbmatrix_get_height_proto,
+            .get_color_depth = rgbmatrix_rgbmatrix_get_color_depth_proto,
+            .get_bytes_per_cell = rgbmatrix_rgbmatrix_get_bytes_per_cell_proto,
+            .get_native_frames_per_second = rgbmatrix_rgbmatrix_get_native_frames_per_second_proto,
+            .swapbuffers = rgbmatrix_rgbmatrix_swapbuffers,
+            .deinit = rgbmatrix_rgbmatrix_deinit_proto,
+        };
 
-static mp_int_t rgbmatrix_rgbmatrix_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
-    rgbmatrix_rgbmatrix_obj_t *self = (rgbmatrix_rgbmatrix_obj_t *)self_in;
-    // a readonly framebuffer would be unusual but not impossible
-    if ((flags & MP_BUFFER_WRITE) && !(self->bufinfo.typecode & MP_OBJ_ARRAY_TYPECODE_FLAG_RW)) {
-        return 1;
-    }
-    common_hal_rgbmatrix_rgbmatrix_get_bufinfo(self_in, bufinfo);
-    bufinfo->typecode = 'H';
-    return 0;
-}
+        static mp_int_t rgbmatrix_rgbmatrix_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
+            rgbmatrix_rgbmatrix_obj_t *self = (rgbmatrix_rgbmatrix_obj_t *)self_in;
+            // a readonly framebuffer would be unusual but not impossible
+            if ((flags & MP_BUFFER_WRITE) && !(self->bufinfo.typecode & MP_OBJ_ARRAY_TYPECODE_FLAG_RW)) {
+                return 1;
+            }
+            common_hal_rgbmatrix_rgbmatrix_get_bufinfo(self_in, bufinfo);
+            bufinfo->typecode = 'H';
+            return 0;
+        }
 
-MP_DEFINE_CONST_OBJ_TYPE(
-    rgbmatrix_RGBMatrix_type,
-    MP_QSTR_RGBMatrix,
-    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
-    locals_dict, &rgbmatrix_rgbmatrix_locals_dict,
-    make_new, rgbmatrix_rgbmatrix_make_new,
-    buffer, rgbmatrix_rgbmatrix_get_buffer,
-    protocol, &rgbmatrix_rgbmatrix_proto
-    );
+        MP_DEFINE_CONST_OBJ_TYPE(
+            rgbmatrix_RGBMatrix_type,
+            MP_QSTR_RGBMatrix,
+            MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
+            locals_dict, &rgbmatrix_rgbmatrix_locals_dict,
+            make_new, rgbmatrix_rgbmatrix_make_new,
+            buffer, rgbmatrix_rgbmatrix_get_buffer,
+            protocol, &rgbmatrix_rgbmatrix_proto
+            );

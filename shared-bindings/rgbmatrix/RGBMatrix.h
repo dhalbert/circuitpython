@@ -9,9 +9,19 @@
 #include "shared-module/rgbmatrix/RGBMatrix.h"
 #include "lib/protomatter/src/core.h"
 
+typedef enum rgbmatrix_result_t {
+    RGBMATRIX_OK,
+    RGBMATRIX_NO_TIMER_AVAILABLE,
+    RGBMATRIX_INVALID_FREQUENCY,
+    RGBMATRIX_INVALID_FREQUENCY_ON_PIN,
+    RGBMATRIX_VARIABLE_FREQUENCY_NOT_AVAILABLE,
+    RGBMATRIX_INTERNAL_RESOURCES_IN_USE,
+    RGBMATRIX_INITIALIZATION_ERROR,
+} rgbmatrix_result_t;
+
 extern const mp_obj_type_t rgbmatrix_RGBMatrix_type;
 
-void common_hal_rgbmatrix_rgbmatrix_construct(rgbmatrix_rgbmatrix_obj_t *self, int width, int bit_depth, uint8_t rgb_count, uint8_t *rgb_pins, uint8_t addr_count, uint8_t *addr_pins, uint8_t clock_pin, uint8_t latch_pin, uint8_t oe_pin, bool doublebuffer, mp_obj_t framebuffer, int8_t tile, bool serpentine, void *timer);
+rgbmatrix_result_t common_hal_rgbmatrix_rgbmatrix_construct(rgbmatrix_rgbmatrix_obj_t *self, int width, int bit_depth, uint8_t rgb_count, uint8_t *rgb_pins, uint8_t addr_count, uint8_t *addr_pins, uint8_t clock_pin, uint8_t latch_pin, uint8_t oe_pin, bool doublebuffer, mp_obj_t framebuffer, int8_t tile, bool serpentine, void *timer);
 void common_hal_rgbmatrix_rgbmatrix_deinit(rgbmatrix_rgbmatrix_obj_t *);
 void rgbmatrix_rgbmatrix_collect_ptrs(rgbmatrix_rgbmatrix_obj_t *);
 void common_hal_rgbmatrix_rgbmatrix_get_bufinfo(rgbmatrix_rgbmatrix_obj_t *self, mp_buffer_info_t *bufinfo);
