@@ -16,6 +16,10 @@
     #define BLE_GATT_ATT_MTU_DEFAULT GATT_MTU_SIZE_DEFAULT
 #endif
 
+// Desired value is the max size of a characteristic plus the usual three bytes overhead.
+// #define BLEIO_MTU_DESIRED (MAX(BLE_GATTS_FIX_ATTR_LEN_MAX, BLE_GATTS_VAR_ATTR_LEN_MAX) + 3)
+#define BLEIO_MTU_DESIRED 527
+
 #define BLE_CONN_CFG_TAG_CUSTOM 1
 
 #define MSEC_TO_UNITS(TIME, RESOLUTION) (((TIME) * 1000) / (RESOLUTION))

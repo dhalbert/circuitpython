@@ -154,7 +154,7 @@ static uint32_t ble_stack_enable(void) {
     // Set ATT_MTU so that the maximum MTU we can negotiate is up to the full characteristic size.
     memset(&ble_conf, 0, sizeof(ble_conf));
     ble_conf.conn_cfg.conn_cfg_tag = BLE_CONN_CFG_TAG_CUSTOM;
-    ble_conf.conn_cfg.params.gatt_conn_cfg.att_mtu = BLE_GATTS_VAR_ATTR_LEN_MAX;
+    ble_conf.conn_cfg.params.gatt_conn_cfg.att_mtu = BLEIO_MTU_DESIRED;
     err_code = sd_ble_cfg_set(BLE_CONN_CFG_GATT, &ble_conf, sd_ram_end);
     if (err_code != NRF_SUCCESS) {
         return err_code;
@@ -680,7 +680,7 @@ mp_obj_t common_hal_bleio_adapter_connect(bleio_adapter_obj_t *self, bleio_addre
     //     "The value must be equal to Server RX MTU size given in
     //     sd_ble_gatts_exchange_mtu_reply if an ATT_MTU exchange has
     //     already been performed in the other direction."
-    check_nrf_error(sd_ble_gattc_exchange_mtu_request(conn_handle, BLE_GATTS_VAR_ATTR_LEN_MAX));
+    check_nrf_error(sd_ble_gattc_exchange_mtu_request(conn_handle, BLEIO_MTU_DESIRED));
     check_nrf_error(sd_ble_gap_data_length_update(conn_handle, NULL, NULL));
 
     // Make the connection object and return it.

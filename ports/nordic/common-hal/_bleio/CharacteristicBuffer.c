@@ -47,8 +47,10 @@ static bool characteristic_buffer_on_ble_evt(ble_evt_t *ble_evt, void *param) {
             // A client wrote to this server characteristic.
 
             ble_gatts_evt_write_t *evt_write = &ble_evt->evt.gatts_evt.params.write;
+            mp_printf(&mp_plat_print, "characteristic_buffer_on_ble_evt WRITE: len: %d\n", evt_write->len); //////////
             // Event handle must match the handle for my characteristic.
             if (evt_write->handle == self->characteristic->handle) {
+                mp_printf(&mp_plat_print, "handles match\n"); ///////////
                 write_to_ringbuf(self, evt_write->data, evt_write->len);
             }
             break;

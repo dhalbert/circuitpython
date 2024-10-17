@@ -82,7 +82,7 @@ bool connection_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
                 .rx_phys = BLE_GAP_PHY_AUTO,
                 .tx_phys = BLE_GAP_PHY_AUTO,
             };
-            sd_ble_gap_phy_update(ble_evt->evt.gap_evt.conn_handle, &phys);
+            check_nrf_error(sd_ble_gap_phy_update(ble_evt->evt.gap_evt.conn_handle, &phys));
             break;
         }
 
@@ -103,13 +103,16 @@ bool connection_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
             ble_gatts_evt_exchange_mtu_request_t *request =
                 &ble_evt->evt.gatts_evt.params.exchange_mtu_request;
 
-            uint16_t new_mtu = BLE_GATTS_VAR_ATTR_LEN_MAX;
+            // We'd like 515, the max size of a characteristic plus the usual three bytes overhead.
+            uint16_t new_mtu = BLEIO_MTU_DESIRED;
             if (request->client_rx_mtu < new_mtu) {
                 new_mtu = request->client_rx_mtu;
             }
             if (new_mtu < BLE_GATT_ATT_MTU_DEFAULT) {
                 new_mtu = BLE_GATT_ATT_MTU_DEFAULT;
             }
+            mp_printf(&mp_plat_print, "BLE_GATTS_EVT_EXCHANGE_MTU_REQUEST: self->mtu: %d, request->client_rx_mtu: %d, new_mtu: %d\n",
+                self->mtu, request->client_rx_mtu, new_mtu);
             if (self->mtu > 0) {
                 new_mtu = self->mtu;
             }
@@ -118,7 +121,7 @@ bool connection_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
             //     "The value must be equal to Client RX MTU size given in
             //     sd_ble_gattc_exchange_mtu_request if an ATT_MTU exchange has
             //     already been performed in the other direction."
-            check_nrf_error(sd_ble_gatts_exchange_mtu_reply(self->conn_handle, BLE_GATTS_VAR_ATTR_LEN_MAX));
+            check_nrf_error(sd_ble_gatts_exchange_mtu_reply(self->conn_handle, new_mtu));
             break;
         }
 
@@ -126,6 +129,8 @@ bool connection_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
             ble_gattc_evt_exchange_mtu_rsp_t *response =
                 &ble_evt->evt.gattc_evt.params.exchange_mtu_rsp;
 
+            mp_printf(&mp_plat_print, "BLE_GATTS_EVT_EXCHANGE_MTU_RSP: self->mtu: %d, response->server_rx_mtu: %d\n",
+                self->mtu, response->server_rx_mtu);
             self->mtu = response->server_rx_mtu;
             break;
         }
