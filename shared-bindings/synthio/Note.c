@@ -49,11 +49,11 @@ static const mp_arg_t note_properties[] = {
 //|         ring_waveform_loop_start: BlockInput = 0,
 //|         ring_waveform_loop_end: BlockInput = waveform_max_length,
 //|     ) -> None:
-//|         """Construct a Note object, with a frequency in Hz, and optional panning, waveform, envelope, tremolo (volume change) and bend (frequency change).
+//|         """Construct a `Note` object, with a frequency in Hz, and optional panning, waveform, envelope, tremolo (volume change) and bend (frequency change).
 //|
 //|         If waveform or envelope are `None` the synthesizer object's default waveform or envelope are used.
 //|
-//|         If the same Note object is played on multiple Synthesizer objects, the result is undefined.
+//|         If the same `Note` object is played on multiple `Synthesizer` objects, the result is undefined.
 //|         """
 //|
 static mp_obj_t synthio_note_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
@@ -113,7 +113,7 @@ MP_PROPERTY_GETSET(synthio_note_filter_obj,
 //|
 //|     -1 is left channel only, 0 is both channels, and 1 is right channel.
 //|     For fractional values, the note plays at full amplitude in one channel
-//|     and partial amplitude in the other channel. For instance -.5 plays at full
+//|     and partial amplitude in the other channel. For instance -0.5 plays at full
 //|     amplitude in the left channel and 1/2 amplitude in the right channel."""
 static mp_obj_t synthio_note_get_panning(mp_obj_t self_in) {
     synthio_note_obj_t *self = MP_OBJ_TO_PTR(self_in);

@@ -21,7 +21,7 @@
 //|     Controls an SD card over SPI.  This built-in module has higher read
 //|     performance than the library adafruit_sdcard, but it is only compatible with
 //|     `busio.SPI`, not `bitbangio.SPI`.  Usually an SDCard object is used
-//|     with ``storage.VfsFat`` to allow file I/O to an SD card."""
+//|     with `storage.VfsFat` to allow file I/O to an SD card."""
 //|
 //|     def __init__(
 //|         self, bus: busio.SPI, cs: microcontroller.Pin, baudrate: int = 8000000
@@ -107,7 +107,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(sdcardio_sdcard_deinit_obj, sdcardio_sdcard_deinit);
 
 
 //|     def readblocks(self, start_block: int, buf: WriteableBuffer) -> None:
-//|         """Read one or more blocks from the card
+//|         """Read one or more blocks from the card.
 //|
 //|         :param int start_block: The block to start reading from
 //|         :param ~circuitpython_typing.WriteableBuffer buf: The buffer to write into.  Length must be multiple of 512.
@@ -130,7 +130,7 @@ static mp_obj_t _sdcardio_sdcard_readblocks(mp_obj_t self_in, mp_obj_t start_blo
 MP_DEFINE_CONST_FUN_OBJ_3(sdcardio_sdcard_readblocks_obj, _sdcardio_sdcard_readblocks);
 
 //|     def sync(self) -> None:
-//|         """Ensure all blocks written are actually committed to the SD card
+//|         """Ensure all blocks written are actually committed to the SD card.
 //|
 //|         :return: None"""
 //|         ...
@@ -148,7 +148,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(sdcardio_sdcard_sync_obj, sdcardio_sdcard_sync);
 
 
 //|     def writeblocks(self, start_block: int, buf: ReadableBuffer) -> None:
-//|         """Write one or more blocks to the card
+//|         """Write one or more blocks to the card.
 //|
 //|         :param int start_block: The block to start writing from
 //|         :param ~circuitpython_typing.ReadableBuffer buf: The buffer to read from.  Length must be multiple of 512.

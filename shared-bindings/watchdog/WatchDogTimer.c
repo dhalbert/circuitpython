@@ -21,10 +21,10 @@
 #include "supervisor/port.h"
 
 //| class WatchDogTimer:
-//|     """Timer that is used to detect code lock ups and automatically reset the microcontroller
+//|     """Timer used to detect code lock-ups and automatically reset the microcontroller
 //|     when one is detected.
 //|
-//|     A lock up is detected when the watchdog hasn't been fed after a given duration. So, make
+//|     A lock-up is detected when the watchdog hasn't been fed after a given duration. So, make
 //|     sure to call `feed` within the timeout.
 //|     """
 //|
@@ -53,7 +53,7 @@ static MP_DEFINE_CONST_FUN_OBJ_1(watchdog_watchdogtimer_feed_obj, watchdog_watch
 //|
 //|         :raises RuntimeError: if the watchdog timer cannot be disabled on this platform.
 //|
-//|         .. note:: This is deprecated in ``9.0.0`` and will be removed in ``10.0.0``.
+//|         .. note:: This is deprecated in CircuitPython 9.0.0 and will be removed in 10.0.0.
 //|             Set watchdog `mode` to `None` instead.
 //|
 //|         """

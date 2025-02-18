@@ -66,7 +66,7 @@ static mp_obj_t spitarget_spi_target_obj_deinit(mp_obj_t self_in) {
 MP_DEFINE_CONST_FUN_OBJ_1(spitarget_spi_target_deinit_obj, spitarget_spi_target_obj_deinit);
 
 //|     def __enter__(self) -> SPITarget:
-//|         """No-op used in Context Managers."""
+//|         """No-op used in context managers."""
 //|         ...
 //|
 //  Provided by context manager helper.

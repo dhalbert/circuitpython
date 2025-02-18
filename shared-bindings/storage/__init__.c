@@ -71,7 +71,7 @@ static mp_obj_t storage_mount(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
 MP_DEFINE_CONST_FUN_OBJ_KW(storage_mount_obj, 0, storage_mount);
 
 //| def umount(mount: Union[str, VfsFat]) -> None:
-//|     """Unmounts the given filesystem object or if *mount* is a path, then unmount
+//|     """Unmounts the given filesystem object or if ``mount`` is a path, then unmount
 //|     the filesystem mounted at that location.
 //|
 //|     This is the CircuitPython analog to the UNIX ``umount`` command."""
@@ -154,7 +154,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(storage_getmount_obj, storage_getmount);
 //|          filesystem (e.g. uf2 load), the existing extension setting is preserved.
 //|
 //|     .. warning:: All the data on ``CIRCUITPY`` will be lost, and
-//|         CircuitPython will restart on certain boards."""
+//|         CircuitPython will restart."""
 //|     ...
 //|
 //|
@@ -209,7 +209,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(storage_disable_usb_drive_obj, storage_disable_usb_dri
 //|
 //|     If you enable too many devices at once, you will run out of USB endpoints.
 //|     The number of available endpoints varies by microcontroller.
-//|     CircuitPython will go into safe mode after running boot.py to inform you if
+//|     CircuitPython will go into safe mode after running ``boot.py`` to inform you if
 //|     not enough endpoints are available.
 //|     """
 //|     ...

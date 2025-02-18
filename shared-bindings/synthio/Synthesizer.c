@@ -46,7 +46,7 @@
 //|
 //|         :param int sample_rate: The desired playback sample rate; higher sample rate requires more memory
 //|         :param int channel_count: The number of output channels (1=mono, 2=stereo)
-//|         :param ReadableBuffer waveform: A single-cycle waveform. Default is a 50% duty cycle square wave. If specified, must be a ReadableBuffer of type 'h' (signed 16 bit)
+//|         :param ReadableBuffer waveform: A single-cycle waveform. Default is a 50% duty cycle square wave. If specified, must be a ReadableBuffer of type ``'h'`` (signed 16 bit)
 //|         :param Optional[Envelope] envelope: An object that defines the loudness of a note over time. The default envelope, `None` provides no ramping, voices turn instantly on and off.
 //|         """
 //|

@@ -37,13 +37,13 @@
 // See https://github.com/micropython/micropython/pull/10348.
 
 //|     def __enter__(self) -> Socket:
-//|         """No-op used by Context Managers."""
+//|         """No-op used by context managers."""
 //|         ...
 //|
 //  Provided by context manager helper.
 
 //|     def __exit__(self) -> None:
-//|         """Automatically closes the Socket when exiting a context. See
+//|         """Automatically closes the socket when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
 //|
@@ -55,8 +55,8 @@ static mp_obj_t socketpool_socket___exit__(size_t n_args, const mp_obj_t *args) 
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socketpool_socket___exit___obj, 4, 4, socketpool_socket___exit__);
 
 //|     def accept(self) -> Tuple[Socket, Tuple[str, int]]:
-//|         """Accept a connection on a listening socket of type SOCK_STREAM,
-//|         creating a new socket of type SOCK_STREAM.
+//|         """Accept a connection on a listening socket of type ``SOCK_STREAM``,
+//|         creating a new socket of type ``SOCK_STREAM``.
 //|         Returns a tuple of (new_socket, remote_address)"""
 //|
 static mp_obj_t _socketpool_socket_accept(mp_obj_t self_in) {
@@ -70,7 +70,7 @@ static mp_obj_t _socketpool_socket_accept(mp_obj_t self_in) {
 static MP_DEFINE_CONST_FUN_OBJ_1(socketpool_socket_accept_obj, _socketpool_socket_accept);
 
 //|     def bind(self, address: Tuple[str, int]) -> None:
-//|         """Bind a socket to an address
+//|         """Bind a socket to an address.
 //|
 //|         :param ~tuple address: tuple of (remote_address, remote_port)"""
 //|         ...
@@ -98,7 +98,7 @@ static mp_obj_t socketpool_socket_bind(mp_obj_t self_in, mp_obj_t addr_in) {
 static MP_DEFINE_CONST_FUN_OBJ_2(socketpool_socket_bind_obj, socketpool_socket_bind);
 
 //|     def close(self) -> None:
-//|         """Closes this Socket and makes its resources available to its SocketPool."""
+//|         """Closes this socket and makes its resources available to its `SocketPool`."""
 //|
 static mp_obj_t _socketpool_socket_close(mp_obj_t self_in) {
     socketpool_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -108,7 +108,7 @@ static mp_obj_t _socketpool_socket_close(mp_obj_t self_in) {
 static MP_DEFINE_CONST_FUN_OBJ_1(socketpool_socket_close_obj, _socketpool_socket_close);
 
 //|     def connect(self, address: Tuple[str, int]) -> None:
-//|         """Connect a socket to a remote address
+//|         """Connect a socket to a remote address.
 //|
 //|         :param ~tuple address: tuple of (remote_address, remote_port)"""
 //|         ...
@@ -172,12 +172,12 @@ static MP_DEFINE_CONST_FUN_OBJ_2(socketpool_socket_recvfrom_into_obj, socketpool
 
 //|     def recv_into(self, buffer: WriteableBuffer, bufsize: int) -> int:
 //|         """Reads some bytes from the connected remote address, writing
-//|         into the provided buffer. If bufsize <= len(buffer) is given,
-//|         a maximum of bufsize bytes will be read into the buffer. If no
-//|         valid value is given for bufsize, the default is the length of
+//|         into the provided ``buffer``. If ``bufsize`` <= ``len(buffer)``,
+//|         a maximum of ``bufsize`` bytes will be read into the buffer. If no
+//|         valid value is given for ``bufsize``, the default is the length of
 //|         the given buffer.
 //|
-//|         Suits sockets of type SOCK_STREAM
+//|         Suits sockets of type ``SOCK_STREAM``.
 //|         Returns an int of number of bytes read.
 //|
 //|         :param bytearray buffer: buffer to receive into
@@ -218,7 +218,7 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socketpool_socket_recv_into_obj, 2, 3
 
 //|     def send(self, bytes: ReadableBuffer) -> int:
 //|         """Send some bytes to the connected remote address.
-//|         Suits sockets of type SOCK_STREAM
+//|         Suits sockets of type ``SOCK_STREAM``.
 //|
 //|         :param ~bytes bytes: some bytes to send"""
 //|         ...
@@ -244,9 +244,9 @@ static MP_DEFINE_CONST_FUN_OBJ_2(socketpool_socket_send_obj, _socketpool_socket_
 
 //|     def sendall(self, bytes: ReadableBuffer) -> None:
 //|         """Send some bytes to the connected remote address.
-//|         Suits sockets of type SOCK_STREAM
+//|         Suits sockets of type ``SOCK_STREAM``.
 //|
-//|         This calls send() repeatedly until all the data is sent or an error
+//|         This calls `send()` repeatedly until all the data is sent or an error
 //|         occurs. If an error occurs, it's impossible to tell how much data
 //|         has been sent.
 //|

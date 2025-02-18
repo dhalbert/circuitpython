@@ -33,7 +33,7 @@ static MP_DEFINE_CONST_FUN_OBJ_0(max_stack_usage_obj, max_stack_usage);
 
 //| def stack_size() -> int:
 //|     """Return the size of the entire stack.
-//|     Same as in micropython.mem_info(), but returns a value instead
+//|     Same as in ``micropython.mem_info()``, but returns a value instead
 //|     of just printing it."""
 //|     ...
 //|
@@ -45,7 +45,7 @@ static MP_DEFINE_CONST_FUN_OBJ_0(stack_size_obj, stack_size);
 
 //| def stack_usage() -> int:
 //|     """Return how much stack is currently in use.
-//|     Same as micropython.stack_use(); duplicated here for convenience."""
+//|     Same as ``micropython.stack_use()``; duplicated here for convenience."""
 //|     ...
 //|
 //|

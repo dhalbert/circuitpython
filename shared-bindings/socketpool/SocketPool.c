@@ -18,14 +18,14 @@
 
 //| class SocketPool:
 //|     """A pool of socket resources available for the given radio. Only one
-//|     SocketPool can be created for each radio.
+//|     `SocketPool` can be created for each radio.
 //|
-//|     SocketPool should be used in place of CPython's socket which provides
+//|     `SocketPool` should be used in place of CPython's socket which provides
 //|     a pool of sockets provided by the underlying OS.
 //|     """
 //|
 //|     def __init__(self, radio: wifi.Radio) -> None:
-//|         """Create a new SocketPool object for the provided radio
+//|         """Create a new `SocketPool` object for the provided radio
 //|
 //|         :param wifi.Radio radio: The (connected) network hardware to associate
 //|             with this SocketPool; currently, this will always be the object
@@ -123,7 +123,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(socketpool_socketpool_socket_obj, 1, socketpool_socke
 //|         """Gets the address information for a hostname and port
 //|
 //|         Returns the appropriate family, socket type, socket protocol and
-//|         address information to call socket.socket() and socket.connect() with,
+//|         address information to call `socketpool.socket()` and `socket.connect()` with,
 //|         as a tuple."""
 //|         ...
 //|

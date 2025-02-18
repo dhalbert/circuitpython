@@ -27,7 +27,7 @@ MAKE_ENUM_VALUE(supervisor_run_reason_type, run_reason, REPL_RELOAD, RUN_REASON_
 //|     """CircuitPython restarted due to a call to `supervisor.reload()`."""
 //|
 //|     REPL_RELOAD: object
-//|     """CircuitPython started due to the user typing CTRL-D in the REPL."""
+//|     """CircuitPython restarted due to the user typing CTRL-D in the REPL."""
 //|
 //|
 MAKE_ENUM_MAP(supervisor_run_reason) {

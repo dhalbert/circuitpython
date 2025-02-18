@@ -52,7 +52,7 @@ static mp_obj_t touchio_touchin_make_new(const mp_obj_type_t *type,
 }
 
 //|     def deinit(self) -> None:
-//|         """Deinitialises the TouchIn and releases any hardware resources for reuse."""
+//|         """Deinitializes the `TouchIn` and releases any hardware resources for reuse."""
 //|         ...
 //|
 static mp_obj_t touchio_touchin_deinit(mp_obj_t self_in) {
@@ -69,7 +69,7 @@ static void check_for_deinit(touchio_touchin_obj_t *self) {
 }
 
 //|     def __enter__(self) -> TouchIn:
-//|         """No-op used by Context Managers."""
+//|         """No-op used by context managers."""
 //|         ...
 //|
 //  Provided by context manager helper.
@@ -113,7 +113,7 @@ MP_PROPERTY_GETTER(touchio_touchin_raw_value_obj,
 //|     threshold: Optional[int]
 //|     """Minimum `raw_value` needed to detect a touch (and for `value` to be `True`).
 //|
-//|     When the **TouchIn** object is created, an initial `raw_value` is read from the pin,
+//|     When the `TouchIn` object is created, an initial `raw_value` is read from the pin,
 //|     and then `threshold` is set to be 100 + that value.
 //|
 //|     You can adjust `threshold` to make the pin more or less sensitive::

@@ -25,9 +25,9 @@
 //|     ) -> None:
 //|         """Represents a rectangle by defining its bounds
 //|
-//|         :param Union[~displayio.ColorConverter,~displayio.Palette] pixel_shader: The pixel shader that produces colors from values
-//|         :param int width: The number of pixels wide
-//|         :param int height: The number of pixels high
+//|         :param Union[~displayio.ColorConverter,~displayio.Palette] pixel_shader: The pixel shader that produces colors from values.
+//|         :param int width: The number of pixels wide.
+//|         :param int height: The number of pixels high.
 //|         :param int x: Initial x position of the top left corner.
 //|         :param int y: Initial y position of the top left corner.
 //|         :param int color_index: Initial color_index to use when selecting color from the palette.

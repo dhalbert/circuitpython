@@ -21,7 +21,7 @@
 //|         """You cannot create an instance of `usb_midi.PortIn`.
 //|
 //|         PortIn objects are constructed for every corresponding entry in the USB
-//|         descriptor and added to the ``usb_midi.ports`` tuple."""
+//|         descriptor and added to the `usb_midi.ports` tuple."""
 //|         ...
 //|
 

@@ -27,7 +27,7 @@
 //|         waveform: Optional[ReadableBuffer] = None,
 //|         envelope: Optional[Envelope] = None,
 //|     ) -> None:
-//|         """Create a MidiTrack from the given stream of MIDI events. Only "Note On" and "Note Off" events
+//|         """Create a `MidiTrack` from the given stream of MIDI events. Only "Note On" and "Note Off" events
 //|         are supported; channel numbers and key velocities are ignored. Up to two notes may be on at the
 //|         same time.
 //|

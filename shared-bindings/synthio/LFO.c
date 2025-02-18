@@ -21,7 +21,7 @@ static const uint16_t triangle[] = {0, 32767, 0, -32767};
 //|     Every `rate` seconds, the output of the LFO cycles through its `waveform`.
 //|     The output at any particular moment is ``waveform[idx] * scale + offset``.
 //|
-//|     If `waveform` is None, a triangle waveform is used.
+//|     If `waveform` is `None`, a triangle waveform is used.
 //|
 //|     `rate`, `phase_offset`, `offset`, `scale`, and `once` can be changed at
 //|     run-time. `waveform` may be mutated.

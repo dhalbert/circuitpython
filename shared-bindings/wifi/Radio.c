@@ -338,7 +338,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_stop_station_obj, wifi_radio_stop_station);
 //|         If ``channel`` is given, the access point will use that channel unless
 //|         a station is already operating on a different channel.
 //|
-//|         If ``authmode`` is not None, the access point will use the given authentication modes.
+//|         If ``authmode`` is not ``None``, the access point will use the given authentication modes.
 //|         If a non-empty password is given, ``authmode`` must not include ``OPEN``.
 //|         If ``authmode`` is not given or is an empty iterable,
 //|         ``(wifi.AuthMode.OPEN,)`` will be used when the password is the empty string,

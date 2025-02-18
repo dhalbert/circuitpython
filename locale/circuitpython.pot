@@ -102,7 +102,7 @@ msgstr ""
 msgid "%q failure: %d"
 msgstr ""
 
-#: py/argcheck.c
+#: py/argcheck.c shared-module/audiofilters/Filter.c
 msgid "%q in %q must be of type %q, not %q"
 msgstr ""
 
@@ -187,10 +187,6 @@ msgstr ""
 msgid "%q must be >= %d"
 msgstr ""
 
-#: shared-module/audiofilters/Filter.c
-msgid "%q must be a %q object, %q, or %q"
-msgstr ""
-
 #: shared-bindings/analogbufio/BufferedIn.c
 msgid "%q must be a bytearray or array of type 'H' or 'B'"
 msgstr ""
@@ -218,6 +214,7 @@ msgstr ""
 #: ports/raspberrypi/bindings/cyw43/__init__.c py/argcheck.c py/objexcept.c
 #: shared-bindings/bitmapfilter/__init__.c shared-bindings/canio/CAN.c
 #: shared-bindings/digitalio/Pull.c shared-bindings/supervisor/__init__.c
+#: shared-module/audiofilters/Filter.c shared-module/displayio/__init__.c
 #: shared-module/synthio/Biquad.c shared-module/synthio/Synthesizer.c
 msgid "%q must be of type %q or %q, not %q"
 msgstr ""
@@ -759,7 +756,7 @@ msgid "Cannot change USB devices now"
 msgstr ""
 
 #: shared-bindings/_bleio/Adapter.c
-msgid "Cannot create a new Adapter; use _bleio.adapter;"
+msgid "Cannot create a new Adapter; use _bleio.adapter"
 msgstr ""
 
 #: shared-bindings/displayio/Bitmap.c
@@ -873,10 +870,6 @@ msgstr ""
 #: ports/atmel-samd/common-hal/paralleldisplaybus/ParallelBus.c
 #: ports/nordic/common-hal/paralleldisplaybus/ParallelBus.c
 msgid "Data 0 pin must be byte aligned"
-msgstr ""
-
-#: shared-module/audiocore/WaveFile.c
-msgid "Data chunk must follow fmt chunk"
 msgstr ""
 
 #: shared-module/jpegio/JpegDecoder.c
@@ -2025,8 +2018,7 @@ msgstr ""
 msgid "The length of rgb_pins must be 6, 12, 18, 24, or 30"
 msgstr ""
 
-#: shared-module/audiodelays/Echo.c shared-module/audiofilters/Distortion.c
-#: shared-module/audiofilters/Filter.c shared-module/audiomixer/MixerVoice.c
+#: shared-module/audiocore/__init__.c
 msgid "The sample's %q does not match"
 msgstr ""
 

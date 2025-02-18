@@ -27,7 +27,7 @@
 //| def disable() -> None:
 //|     """Disable presenting a USB MIDI device to the host.
 //|     The device is normally enabled by default, but on some boards with limited endpoints
-//|     including ESP32-S2 and certain STM boards, it is disabled by default.
+//|     including Espressif and certain STM boards, it is disabled by default.
 //|     Can be called in ``boot.py``, before USB is connected."""
 //|     ...
 //|
@@ -42,7 +42,8 @@ MP_DEFINE_CONST_FUN_OBJ_0(usb_midi_disable_obj, usb_midi_disable);
 
 //| def enable() -> None:
 //|     """Enable presenting a USB MIDI device to the host.
-//|     The device is enabled by default, so you do not normally need to call this function.
+//|     The device is normally enabled by default, but on some boards with limited endpoints
+//|     including Espressif and certain STM boards, it is disabled by default.
 //|     Can be called in ``boot.py``, before USB is connected.
 //|
 //|     If you enable too many devices at once, you will run out of USB endpoints.

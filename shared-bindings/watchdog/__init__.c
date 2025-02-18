@@ -18,7 +18,7 @@
 //| once it has been enabled.
 //|
 //| The `WatchDogTimer` is used to restart the system when the application crashes and ends
-//| up into a non recoverable state. Once started it cannot be stopped or
+//| up into a non-recoverable state. Once started it cannot be stopped or
 //| reconfigured in any way. After enabling, the application must "feed" the
 //| watchdog periodically to prevent it from expiring and resetting the system.
 //|

@@ -20,7 +20,7 @@
 //|
 
 //| def create_default_context() -> ssl.SSLContext:
-//|     """Return the default SSLContext."""
+//|     """Return the default `SSLContext`."""
 //|     ...
 //|
 //|

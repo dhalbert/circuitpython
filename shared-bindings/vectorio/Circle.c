@@ -25,8 +25,8 @@
 //|     ) -> None:
 //|         """Circle is positioned on screen by its center point.
 //|
-//|         :param Union[~displayio.ColorConverter,~displayio.Palette] pixel_shader: The pixel shader that produces colors from values
-//|         :param int radius: The radius of the circle in pixels
+//|         :param Union[~displayio.ColorConverter,~displayio.Palette] pixel_shader: The pixel shader that produces colors from values.
+//|         :param int radius: The radius of the circle in pixels.
 //|         :param int x: Initial x position of the axis.
 //|         :param int y: Initial y position of the axis.
 //|         :param int color_index: Initial color_index to use when selecting color from the palette.

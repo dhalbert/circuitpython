@@ -15,10 +15,10 @@
 
 #include "py/runtime.h"
 
-//| """Displays text in a TileGrid
+//| """Displays text in a `TileGrid`.
 //|
 //| The `terminalio` module contains classes to display a character stream on a display. The built
-//| in font is available as ``terminalio.FONT``.
+//| in font is available as `terminalio.FONT`.
 //|
 //| .. note:: This module does not give access to the
 //|     `REPL <https://learn.adafruit.com/welcome-to-circuitpython/interacting-with-the-serial-console>`_.

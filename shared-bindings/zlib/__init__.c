@@ -28,20 +28,20 @@
 //|
 
 //| def decompress(data: bytes, wbits: Optional[int] = 0, bufsize: Optional[int] = 0) -> bytes:
-//|     """Return decompressed *data* as bytes. *wbits* is DEFLATE dictionary window
-//|     size used during compression (8-15, the dictionary size is power of 2 of
-//|     that value). Additionally, if value is positive, *data* is assumed to be
-//|     zlib stream (with zlib header). Otherwise, if it's negative, it's assumed
+//|     """Return decompressed *data* as bytes. ``wbits`` is DEFLATE dictionary window
+//|     size used during compression (8-15; the dictionary size is the power of 2 of
+//|     that value). Additionally, if ``wbits`` is positive, ``data`` is assumed to be
+//|     zlib stream (with zlib header). Otherwise, if ``wbits`` negative, ``data`` is assumed
 //|     to be raw DEFLATE stream.
 //|
-//|     The wbits parameter controls the size of the history buffer (or “window size”), and what header
+//|     The ``wbits`` parameter controls the size of the history buffer (or “window size”), and what header
 //|     and trailer format is expected.
 //|
-//|     Common wbits values:
+//|     Common ``wbits`` values:
 //|
-//|     * To decompress deflate format, use wbits = -15
-//|     * To decompress zlib format, use wbits = 15
-//|     * To decompress gzip format, use wbits = 31
+//|     * To decompress deflate format, use ``wbits`` = -15
+//|     * To decompress zlib format, use ``wbits`` = 15
+//|     * To decompress gzip format, use ``wbits`` = 31
 //|
 //|     :param bytes data: data to be decompressed
 //|     :param int wbits: DEFLATE dictionary window size used during compression. See above.

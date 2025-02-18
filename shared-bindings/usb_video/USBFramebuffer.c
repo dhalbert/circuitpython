@@ -56,7 +56,7 @@ static mp_obj_t usb_video_uvcframebuffer_refresh(mp_obj_t self_in) {
 MP_DEFINE_CONST_FUN_OBJ_1(usb_video_uvcframebuffer_refresh_obj, usb_video_uvcframebuffer_refresh);
 
 //|     width: int
-//|     """The width of the display, in pixels"""
+//|     """The width of the display, in pixels."""
 static mp_obj_t usb_video_uvcframebuffer_get_width(mp_obj_t self_in) {
     usb_video_uvcframebuffer_obj_t *self = (usb_video_uvcframebuffer_obj_t *)self_in;
     check_for_deinit(self);
@@ -67,7 +67,7 @@ MP_PROPERTY_GETTER(usb_video_uvcframebuffer_width_obj,
     (mp_obj_t)&usb_video_uvcframebuffer_get_width_obj);
 
 //|     height: int
-//|     """The height of the display, in pixels"""
+//|     """The height of the display, in pixels."""
 //|
 //|
 static mp_obj_t usb_video_uvcframebuffer_get_height(mp_obj_t self_in) {

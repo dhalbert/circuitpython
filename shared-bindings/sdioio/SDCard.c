@@ -22,10 +22,10 @@
 //| class SDCard:
 //|     """SD Card Block Interface with SDIO
 //|
-//|     Controls an SD card over SDIO.  SDIO is a parallel protocol designed
-//|     for SD cards.  It uses a clock pin, a command pin, and 1 or 4
-//|     data pins.  It can be operated at a high frequency such as
-//|     25MHz.  Usually an SDCard object is used with ``storage.VfsFat``
+//|     Controls an SD card over SDIO. SDIO is a parallel protocol designed
+//|     for SD cards. It uses a clock pin, a command pin, and 1 or 4
+//|     data pins. It can be operated at a high frequency such as
+//|     25MHz. Usually an SDCard object is used with `storage.VfsFat`
 //|     to allow file I/O to an SD card."""
 //|
 //|     def __init__(
@@ -127,7 +127,7 @@ static mp_obj_t sdioio_sdcard_configure(size_t n_args, const mp_obj_t *pos_args,
 MP_DEFINE_CONST_FUN_OBJ_KW(sdioio_sdcard_configure_obj, 1, sdioio_sdcard_configure);
 
 //|     def count(self) -> int:
-//|         """Returns the total number of sectors
+//|         """Returns the total number of sectors.
 //|
 //|         Due to technical limitations, this is a function and not a property.
 //|
@@ -141,7 +141,7 @@ static mp_obj_t sdioio_sdcard_count(mp_obj_t self_in) {
 MP_DEFINE_CONST_FUN_OBJ_1(sdioio_sdcard_count_obj, sdioio_sdcard_count);
 
 //|     def readblocks(self, start_block: int, buf: WriteableBuffer) -> None:
-//|         """Read one or more blocks from the card
+//|         """Read one or more blocks from the card.
 //|
 //|         :param int start_block: The block to start reading from
 //|         :param ~circuitpython_typing.WriteableBuffer buf: The buffer to write into.  Length must be multiple of 512.
@@ -163,7 +163,7 @@ static mp_obj_t _sdioio_sdcard_readblocks(mp_obj_t self_in, mp_obj_t start_block
 MP_DEFINE_CONST_FUN_OBJ_3(sdioio_sdcard_readblocks_obj, _sdioio_sdcard_readblocks);
 
 //|     def writeblocks(self, start_block: int, buf: ReadableBuffer) -> None:
-//|         """Write one or more blocks to the card
+//|         """Write one or more blocks to the card.
 //|
 //|         :param int start_block: The block to start writing from
 //|         :param ~circuitpython_typing.ReadableBuffer buf: The buffer to read from.  Length must be multiple of 512.
@@ -198,7 +198,7 @@ MP_PROPERTY_GETTER(sdioio_sdcard_frequency_obj,
     (mp_obj_t)&sdioio_sdcard_get_frequency_obj);
 
 //|     width: int
-//|     """The actual SDIO bus width, in bits"""
+//|     """The actual SDIO bus width, in bits."""
 //|
 static mp_obj_t sdioio_sdcard_obj_get_width(mp_obj_t self_in) {
     sdioio_sdcard_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -223,7 +223,7 @@ static mp_obj_t sdioio_sdcard_obj_deinit(mp_obj_t self_in) {
 MP_DEFINE_CONST_FUN_OBJ_1(sdioio_sdcard_deinit_obj, sdioio_sdcard_obj_deinit);
 
 //|     def __enter__(self) -> SDCard:
-//|         """No-op used by Context Managers.
+//|         """No-op used by context managers.
 //|         Provided by context manager helper."""
 //|         ...
 //|

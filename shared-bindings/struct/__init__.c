@@ -42,7 +42,7 @@ static mp_obj_t struct_calcsize(mp_obj_t fmt_in) {
 MP_DEFINE_CONST_FUN_OBJ_1(struct_calcsize_obj, struct_calcsize);
 
 //| def pack(fmt: str, *values: Any) -> bytes:
-//|     """Pack the values according to the format string fmt.
+//|     """Pack the ``values`` according to the format string ``fmt``.
 //|     The return value is a bytes object encoding the values."""
 //|     ...
 //|
@@ -61,8 +61,8 @@ static mp_obj_t struct_pack(size_t n_args, const mp_obj_t *args) {
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(struct_pack_obj, 1, MP_OBJ_FUN_ARGS_MAX, struct_pack);
 
 //| def pack_into(fmt: str, buffer: WriteableBuffer, offset: int, *values: Any) -> None:
-//|     """Pack the values according to the format string fmt into a buffer
-//|     starting at offset. offset may be negative to count from the end of buffer."""
+//|     """Pack the ``values`` according to the format string ``fmt`` into a ``buffer``
+//|     starting at ``offset``. ``offset`` may be negative to count from the end of ``buffer``."""
 //|     ...
 //|
 //|
@@ -88,7 +88,7 @@ static mp_obj_t struct_pack_into(size_t n_args, const mp_obj_t *args) {
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(struct_pack_into_obj, 3, MP_OBJ_FUN_ARGS_MAX, struct_pack_into);
 
 //| def unpack(fmt: str, data: ReadableBuffer) -> Tuple[Any, ...]:
-//|     """Unpack from the data according to the format string fmt. The return value
+//|     """Unpack from the ``data`` according to the format string ``fmt``. The return value
 //|     is a tuple of the unpacked values. The buffer size must match the size
 //|     required by the format."""
 //|     ...
@@ -107,7 +107,7 @@ static mp_obj_t struct_unpack(size_t n_args, const mp_obj_t *args) {
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(struct_unpack_obj, 2, 3, struct_unpack);
 
 //| def unpack_from(fmt: str, data: ReadableBuffer, offset: int = 0) -> Tuple[Any, ...]:
-//|     """Unpack from the data starting at offset according to the format string fmt.
+//|     """Unpack from the ``data`` starting at ``offset`` according to the format string ``fmt``.
 //|     offset may be negative to count from the end of buffer. The return value is
 //|     a tuple of the unpacked values. The buffer size must be at least as big
 //|     as the size required by the form."""

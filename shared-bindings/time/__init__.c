@@ -26,19 +26,19 @@
 //|     point. Only use it to compare against other values from `time.monotonic()`
 //|     during the same code run.
 //|
-//|     On most boards, `time.monotonic()` converts a 64-bit millisecond tick counter
-//|     to a float. Floats on most boards are encoded in 30 bits internally, with
-//|     effectively 22 bits of precision. The float returned by `time.monotonic()` will
-//|     accurately represent time to millisecond precision only up to 2**22 milliseconds
-//|     (about 1.165 hours).
-//|     At that point it will start losing precision, and its value will change only
-//|     every second millisecond. At 2**23 milliseconds it will change every fourth
-//|     millisecond, and so forth.
+//|     .. note:: On most boards, `time.monotonic()` converts a 64-bit millisecond tick counter
+//|       to a float. Floats on most boards are encoded in 30 bits internally, with
+//|       effectively 22 bits of precision. The float returned by `time.monotonic()` will
+//|       accurately represent time to millisecond precision only up to 2**22 milliseconds
+//|       (about 1.165 hours).
+//|       At that point it will start losing precision, and its value will change only
+//|       every second millisecond. At 2**23 milliseconds it will change every fourth
+//|       millisecond, and so forth.
 //|
-//|     If you need more consistent precision, use `time.monotonic_ns()`, or `supervisor.ticks_ms()`.
-//|     `time.monotonic_ns()` is not available on boards without long integer support.
-//|     `supervisor.ticks_ms()` uses intervals of a millisecond, but wraps around, and is not
-//|     CPython-compatible.
+//|       If you need more consistent precision, use `time.monotonic_ns()`, or `supervisor.ticks_ms()`.
+//|       `time.monotonic_ns()` is not available on boards without long integer support.
+//|       `supervisor.ticks_ms()` uses intervals of a millisecond, but wraps around, and is not
+//|       CPython-compatible.
 //|
 //|     :return: the current monotonic time
 //|     :rtype: float"""
@@ -213,7 +213,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(time_monotonic_ns_obj, time_monotonic_ns);
 //| def localtime(secs: int) -> struct_time:
 //|     """Convert a time expressed in seconds since Jan 1, 1970 to a struct_time in
 //|     local time. If secs is not provided or None, the current time as returned
-//|     by time() is used.
+//|     by `time()` is used.
 //|     The earliest date for which it can generate a time is Jan 1, 2000.
 //|
 //|     :return: the current time
@@ -249,8 +249,8 @@ static mp_obj_t time_localtime(size_t n_args, const mp_obj_t *args) {
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(time_localtime_obj, 0, 1, time_localtime);
 
 //| def mktime(t: struct_time) -> int:
-//|     """This is the inverse function of localtime(). Its argument is the
-//|     struct_time or full 9-tuple (since the dst flag is needed; use -1 as the
+//|     """This is the inverse function of `localtime()`. Its argument is the
+//|     `struct_time` or full 9-tuple (since the dst flag is needed; use -1 as the
 //|     dst flag if it is unknown) which expresses the time in local time, not UTC.
 //|     The earliest date for which it can generate a time is Jan 1, 2000.
 //|

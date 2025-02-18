@@ -34,7 +34,7 @@ MAKE_ENUM_VALUE(supervisor_safe_mode_reason_type, safe_mode_reason, WATCHDOG, SA
 //| class SafeModeReason:
 //|     """The reason that CircuitPython went into safe mode.
 //|
-//|     **Limitations**: Class not available on builds that do not implement ``safemode.py``.
+//|     **Limitations**: Class is not available on builds that do not implement ``safemode.py``.
 //|     """
 //|
 MAKE_ENUM_MAP(supervisor_safe_mode_reason) {

@@ -87,7 +87,7 @@ static mp_obj_t bleio_adapter_make_new(const mp_obj_type_t *type, size_t n_args,
 
     return MP_OBJ_FROM_PTR(self);
     #else
-    mp_raise_NotImplementedError(MP_ERROR_TEXT("Cannot create a new Adapter; use _bleio.adapter;"));
+    mp_raise_NotImplementedError(MP_ERROR_TEXT("Cannot create a new Adapter; use _bleio.adapter"));
     return mp_const_none;
     #endif // CIRCUITPY_BLEIO_HCI
 }

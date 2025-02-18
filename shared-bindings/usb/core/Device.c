@@ -43,7 +43,7 @@
 
 //| class Device:
 //|     def __init__(self) -> None:
-//|         """User code cannot create Device objects. Instead, get them from
+//|         """User code cannot create `Device` objects. Instead, get them from
 //|         `usb.core.find`.
 //|         """
 //|         ...
@@ -108,7 +108,7 @@ MP_PROPERTY_GETTER(usb_core_device_manufacturer_obj,
 //|     def set_configuration(self, configuration: int = 1) -> None:
 //|         """Set the active configuration.
 //|
-//|         The configuration parameter is the bConfigurationValue field of the
+//|         The configuration parameter is the ``bConfigurationValue`` field of the
 //|         configuration you want to set as active. If you call this method
 //|         without parameter, it will use the first configuration found.  As a
 //|         device hardly ever has more than one configuration, calling the method
@@ -164,9 +164,9 @@ MP_DEFINE_CONST_FUN_OBJ_KW(usb_core_device_write_obj, 2, usb_core_device_write);
 //|     ) -> int:
 //|         """Read data from the endpoint.
 //|
-//|         :param int endpoint: the bEndpointAddress you want to communicate with.
+//|         :param int endpoint: the ``bEndpointAddress`` you want to communicate with.
 //|         :param array.array size_or_buffer: the array to read data into. PyUSB also allows size but CircuitPython only support array to force deliberate memory use.
-//|         :param int timeout: Time to wait specified in milliseconds. (Different from most CircuitPython!)
+//|         :param int timeout: Time to wait specified in milliseconds. (Different from most CircuitPython ``timeout`` values!)
 //|         :returns: the number of bytes read
 //|         """
 //|         ...
@@ -198,20 +198,20 @@ MP_DEFINE_CONST_FUN_OBJ_KW(usb_core_device_read_obj, 2, usb_core_device_read);
 //|         data_or_wLength: Optional[array.array] = None,
 //|         timeout: Optional[int] = None,
 //|     ) -> int:
-//|         """Do a control transfer on the endpoint 0. The parameters bmRequestType,
-//|         bRequest, wValue and wIndex are the same of the USB Standard Control
+//|         """Do a control transfer on the endpoint 0. The parameters ``bmRequestType``,
+//|         ``bRequest``, ``wValue`` and ``wIndex`` are the same of the USB Standard Control
 //|         Request format.
 //|
 //|         Control requests may or may not have a data payload to write/read.
-//|         In cases which it has, the direction bit of the bmRequestType
+//|         In cases which it has, the direction bit of the ``bmRequestType``
 //|         field is used to infer the desired request direction.
 //|
-//|         For host to device requests (OUT), data_or_wLength parameter is
+//|         For host to device requests (OUT), ``data_or_wLength`` parameter is
 //|         the data payload to send, and it must be a sequence type convertible
 //|         to an array object. In this case, the return value is the number
 //|         of bytes written in the data payload.
 //|
-//|         For device to host requests (IN), data_or_wLength is an array
+//|         For device to host requests (IN), ``data_or_wLength`` is an array
 //|         object which the data will be read to, and the return value is the
 //|         number of bytes read.
 //|         """
@@ -270,7 +270,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(usb_core_device_is_kernel_driver_active_obj, usb_core_
 //|     def detach_kernel_driver(self, interface: int) -> None:
 //|         """Stop CircuitPython from using the interface. If successful, you
 //|         will then be able to perform I/O. CircuitPython will automatically
-//|         re-start using the interface on reload.
+//|         restart using the interface on reload.
 //|
 //|         :param int interface: the device interface number to stop CircuitPython on
 //|         """

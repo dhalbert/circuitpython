@@ -29,7 +29,7 @@
 //|
 //| """Support for multi-channel audio synthesis
 //|
-//| At least 2 simultaneous notes are supported.  samd5x, mimxrt10xx and rp2040 platforms support up to 12 notes.
+//| At least 2 simultaneous notes are supported.  SAMD5x, i.MXRT10XX and RP2040 platforms support up to 12 notes.
 //| """
 //|
 
@@ -80,7 +80,7 @@ static const mp_arg_t envelope_properties[] = {
 //| BlockInput = Union["Math", "LFO", float, None]
 //| """Blocks and Notes can take any of these types as inputs on certain attributes
 //|
-//| A BlockInput can be any of the following types: `Math`, `LFO`, `builtins.float`, `None` (treated same as 0).
+//| A `BlockInput` can be any of the following types: `Math`, `LFO`, `builtins.float`, `None` (treated same as 0).
 //| """
 //|
 //|

@@ -122,10 +122,10 @@ static void traceback_exception_common(bool is_print_exception, mp_print_t *prin
 //|     newer.
 //|
 //|     The arguments have the same meaning as the corresponding arguments
-//|     to print_exception().  The return value is a list of strings, each
+//|     to `print_exception()`.  The return value is a list of strings, each
 //|     ending in a newline and some containing internal newlines.  When
 //|     these lines are concatenated and printed, exactly the same text is
-//|     printed as does print_exception().
+//|     printed as does `print_exception()`.
 //|
 //|     :param exc: The exception. Must be an instance of `BaseException`. Unused if value is specified.
 //|     :param value: If specified, is used in place of ``exc``.

@@ -20,10 +20,10 @@
 
 //| class SSLSocket:
 //|     """Implements TLS security on a subset of `socketpool.Socket` functions. Cannot be created
-//|     directly. Instead, call `wrap_socket` on an existing socket object.
+//|     directly. Instead, call `wrap_socket()` on an existing socket object.
 //|
 //|     Provides a subset of CPython's `ssl.SSLSocket` API. It only implements the versions of
-//|     recv that do not allocate bytes objects."""
+//|     recv that do not allocate `bytes` objects."""
 //|
 
 //|     def __hash__(self) -> int:
@@ -40,7 +40,7 @@
 //  Provided by context manager helper.
 
 //|     def __exit__(self) -> None:
-//|         """Automatically closes the Socket when exiting a context. See
+//|         """Automatically closes the `Socket` when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
 //|
@@ -52,8 +52,8 @@ static mp_obj_t ssl_sslsocket___exit__(size_t n_args, const mp_obj_t *args) {
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ssl_sslsocket___exit___obj, 4, 4, ssl_sslsocket___exit__);
 
 //|     def accept(self) -> Tuple[SSLSocket, Tuple[str, int]]:
-//|         """Accept a connection on a listening socket of type SOCK_STREAM,
-//|         creating a new socket of type SOCK_STREAM.
+//|         """Accept a connection on a listening socket of type ``SOCK_STREAM``,
+//|         creating a new socket of type ``SOCK_STREAM``.
 //|         Returns a tuple of (new_socket, remote_address)"""
 //|
 static mp_obj_t ssl_sslsocket_accept(mp_obj_t self_in) {
@@ -63,7 +63,7 @@ static mp_obj_t ssl_sslsocket_accept(mp_obj_t self_in) {
 static MP_DEFINE_CONST_FUN_OBJ_1(ssl_sslsocket_accept_obj, ssl_sslsocket_accept);
 
 //|     def bind(self, address: Tuple[str, int]) -> None:
-//|         """Bind a socket to an address
+//|         """Bind a socket to an address.
 //|
 //|         :param ~tuple address: tuple of (remote_address, remote_port)"""
 //|         ...
@@ -80,7 +80,7 @@ static mp_obj_t ssl_sslsocket_bind(mp_obj_t self_in, mp_obj_t addr_in) {
 static MP_DEFINE_CONST_FUN_OBJ_2(ssl_sslsocket_bind_obj, ssl_sslsocket_bind);
 
 //|     def close(self) -> None:
-//|         """Closes this Socket"""
+//|         """Close this socket."""
 //|
 static mp_obj_t ssl_sslsocket_close(mp_obj_t self_in) {
     ssl_sslsocket_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -90,7 +90,7 @@ static mp_obj_t ssl_sslsocket_close(mp_obj_t self_in) {
 static MP_DEFINE_CONST_FUN_OBJ_1(ssl_sslsocket_close_obj, ssl_sslsocket_close);
 
 //|     def connect(self, address: Tuple[str, int]) -> None:
-//|         """Connect a socket to a remote address
+//|         """Connect a socket to a remote address.
 //|
 //|         :param ~tuple address: tuple of (remote_address, remote_port)"""
 //|         ...
@@ -104,7 +104,7 @@ static mp_obj_t ssl_sslsocket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
 static MP_DEFINE_CONST_FUN_OBJ_2(ssl_sslsocket_connect_obj, ssl_sslsocket_connect);
 
 //|     def listen(self, backlog: int) -> None:
-//|         """Set socket to listen for incoming connections
+//|         """Set socket to listen for incoming connections.
 //|
 //|         :param ~int backlog: length of backlog queue for waiting connetions"""
 //|         ...
@@ -121,12 +121,12 @@ static MP_DEFINE_CONST_FUN_OBJ_2(ssl_sslsocket_listen_obj, ssl_sslsocket_listen)
 
 //|     def recv_into(self, buffer: WriteableBuffer, bufsize: int) -> int:
 //|         """Reads some bytes from the connected remote address, writing
-//|         into the provided buffer. If bufsize <= len(buffer) is given,
-//|         a maximum of bufsize bytes will be read into the buffer. If no
-//|         valid value is given for bufsize, the default is the length of
+//|         into the provided ``buffer``. If ``bufsize`` <= ``len(buffer)`` is given,
+//|         a maximum of ``bufsize`` bytes will be read into the buffer. If no
+//|         valid value is given for ``bufsize``, the default is the length of
 //|         the given buffer.
 //|
-//|         Suits sockets of type SOCK_STREAM
+//|         Suits sockets of type ``SOCK_STREAM``.
 //|         Returns an int of number of bytes read.
 //|
 //|         :param bytearray buffer: buffer to receive into
@@ -191,10 +191,10 @@ static mp_obj_t ssl_sslsocket_send(mp_obj_t self_in, mp_obj_t buf_in) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_2(ssl_sslsocket_send_obj, ssl_sslsocket_send);
 
-// //|     def setsockopt(self, level: int, optname: int, value: int | ReadableBuffer) -> None:
-// //|         """Sets socket options"""
-// //|         ...
-// //|
+//|     def setsockopt(self, level: int, optname: int, value: int | ReadableBuffer) -> None:
+//|         """Set socket options."""
+//|         ...
+//|
 static mp_obj_t ssl_sslsocket_setsockopt(size_t n_args, const mp_obj_t *args) {
     ssl_sslsocket_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     mp_obj_t level = args[1];
