@@ -15,6 +15,8 @@
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"
 
+#include "esp_log.h"
+
 void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     const mcu_pin_obj_t *scl, const mcu_pin_obj_t *sda, uint32_t frequency, uint32_t timeout_us) {
 
@@ -66,6 +68,11 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     }
     #endif
 
+    // Create the mutex early so we don't have to unwind other initializations if the creation fails.
+    self->xSemaphore = xSemaphoreCreateMutex();
+    if (self->xSemaphore == NULL) {
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Unable to create lock"));
+    }
 
     i2c_master_bus_config_t config = {
         .i2c_port = -1, // auto
@@ -88,12 +95,6 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     }
     CHECK_ESP_RESULT(result);
 
-    self->xSemaphore = xSemaphoreCreateMutex();
-    if (self->xSemaphore == NULL) {
-        i2c_del_master_bus(self->handle);
-        self->handle = NULL;
-        mp_raise_RuntimeError(MP_ERROR_TEXT("Unable to create lock"));
-    }
     self->sda_pin = sda;
     self->scl_pin = scl;
     self->has_lock = false;
@@ -121,12 +122,18 @@ void common_hal_busio_i2c_mark_deinit(busio_i2c_obj_t *self) {
 }
 
 void common_hal_busio_i2c_deinit(busio_i2c_obj_t *self) {
+    ESP_LOGW("common_hal_busio_i2c_deinit", "************"); ////////////
     if (common_hal_busio_i2c_deinited(self)) {
         return;
     }
 
     i2c_del_master_bus(self->handle);
     self->handle = NULL;
+
+    // Release the mutex before we delete it. Otherwise FreeRTOS gets unhappy.
+    xSemaphoreGive(self->xSemaphore);
+    vSemaphoreDelete(self->xSemaphore);
+    self->xSemaphore = NULL;
 
     common_hal_reset_pin(self->sda_pin);
     common_hal_reset_pin(self->scl_pin);
@@ -152,6 +159,7 @@ bool common_hal_busio_i2c_try_lock(busio_i2c_obj_t *self) {
         return false;
     }
     self->has_lock = xSemaphoreTake(self->xSemaphore, 0) == pdTRUE;
+    ESP_LOGW("common_hal_busio_i2c_try_lock", "xSemaphoreTake: task: %0x", xTaskGetCurrentTaskHandle()); //////////
     return self->has_lock;
 }
 
