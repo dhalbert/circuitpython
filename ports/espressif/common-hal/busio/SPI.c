@@ -76,6 +76,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     for (spi_host_device_t host_id = SPI2_HOST; host_id < SOC_SPI_PERIPH_NUM; host_id++) {
         if (spi_bus_is_free(host_id)) {
             self->host_id = host_id;
+            break;
         }
     }
 
@@ -84,10 +85,18 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     }
 
     esp_err_t result = spi_bus_initialize(self->host_id, &bus_config, SPI_DMA_CH_AUTO);
-    if (result == ESP_ERR_NO_MEM) {
-        mp_raise_msg(&mp_type_MemoryError, MP_ERROR_TEXT("ESP-IDF memory allocation failed"));
-    } else if (result == ESP_ERR_INVALID_ARG) {
-        raise_ValueError_invalid_pins();
+    switch (result) {
+        case ESP_OK:
+            break;
+        case ESP_ERR_NO_MEM:
+            mp_raise_msg(&mp_type_MemoryError, MP_ERROR_TEXT("ESP-IDF memory allocation failed"));
+            break;
+        case ESP_ERR_INVALID_ARG:
+            raise_ValueError_invalid_pins();
+            break;
+        default:
+            mp_raise_RuntimeError_varg(MP_ERROR_TEXT("%q failure: %d"), MP_QSTR_SPI, result);
+            break;
     }
 
     set_spi_config(self, 250000, 0, 0, 8);
@@ -166,7 +175,7 @@ bool common_hal_busio_spi_try_lock(busio_spi_obj_t *self) {
     if (common_hal_busio_spi_deinited(self)) {
         return false;
     }
-    return xSemaphoreTake(self->mutex, 1) == pdTRUE;
+    return xSemaphoreTake(self->mutex, 0) == pdTRUE;
 }
 
 bool common_hal_busio_spi_has_lock(busio_spi_obj_t *self) {

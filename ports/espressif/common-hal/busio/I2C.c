@@ -15,8 +15,6 @@
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"
 
-#include "esp_log.h"
-
 void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     const mcu_pin_obj_t *scl, const mcu_pin_obj_t *sda, uint32_t frequency, uint32_t timeout_us) {
 
@@ -122,7 +120,6 @@ void common_hal_busio_i2c_mark_deinit(busio_i2c_obj_t *self) {
 }
 
 void common_hal_busio_i2c_deinit(busio_i2c_obj_t *self) {
-    ESP_LOGW("common_hal_busio_i2c_deinit", "************"); ////////////
     if (common_hal_busio_i2c_deinited(self)) {
         return;
     }
@@ -159,7 +156,6 @@ bool common_hal_busio_i2c_try_lock(busio_i2c_obj_t *self) {
         return false;
     }
     self->has_lock = xSemaphoreTake(self->xSemaphore, 0) == pdTRUE;
-    ESP_LOGW("common_hal_busio_i2c_try_lock", "xSemaphoreTake: task: %0x", xTaskGetCurrentTaskHandle()); //////////
     return self->has_lock;
 }
 
