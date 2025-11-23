@@ -1,4 +1,4 @@
-USB_VID = 0x239A
+ USB_VID = 0x239A
 USB_PID = 0x8026
 USB_PRODUCT = "Feather M4 Express"
 USB_MANUFACTURER = "Adafruit Industries LLC"

@@ -210,6 +210,9 @@ endif
 ifeq ($(CIRCUITPY_EPAPERDISPLAY),1)
 SRC_PATTERNS += epaperdisplay/%
 endif
+ifeq ($(CIRCUITPY_ESP32SPI),1)
+SRC_PATTERNS += adafruit_esp32spi/%
+endif
 ifeq ($(CIRCUITPY_ESPCAMERA),1)
 SRC_PATTERNS += espcamera/%
 endif
@@ -661,13 +664,20 @@ SRC_BINDINGS_ENUMS += \
 	util.c
 
 SRC_SHARED_MODULE_ALL = \
+	adafruit_bus_device/__init__.c \
+	adafruit_bus_device/i2c_device/I2CDevice.c \
+	adafruit_bus_device/spi_device/SPIDevice.c \
+	adafruit_esp32spi/__init__.c \
+	adafruit_esp32spi/ESP_SPIcontrol.c \
+	adafruit_esp32spi/Network.c \
+	adafruit_esp32spi/socketpool/SocketPool.c \
+	adafruit_pixelbuf/PixelBuf.c \
+	adafruit_pixelbuf/__init__.c \
 	_bleio/Address.c \
 	_bleio/Attribute.c \
 	_bleio/ScanEntry.c \
 	_bleio/ScanResults.c \
 	_eve/__init__.c \
-	adafruit_pixelbuf/PixelBuf.c \
-	adafruit_pixelbuf/__init__.c \
 	_pixelmap/PixelMap.c \
 	_pixelmap/__init__.c \
 	_stage/Layer.c \
@@ -706,9 +716,6 @@ SRC_SHARED_MODULE_ALL = \
 	bitmapfilter/__init__.c \
 	bitops/__init__.c \
 	board/__init__.c \
-	adafruit_bus_device/__init__.c \
-	adafruit_bus_device/i2c_device/I2CDevice.c \
-	adafruit_bus_device/spi_device/SPIDevice.c \
 	busdisplay/__init__.c \
 	busdisplay/BusDisplay.c \
 	canio/Match.c \

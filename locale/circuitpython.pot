@@ -111,6 +111,7 @@ msgid "%q in %q must be of type %q, not %q"
 msgstr ""
 
 #: ports/espressif/common-hal/espulp/ULP.c
+#: ports/espressif/common-hal/mipidsi/Bus.c
 #: ports/mimxrt10xx/common-hal/audiobusio/__init__.c
 #: ports/mimxrt10xx/common-hal/usb_host/Port.c
 #: ports/raspberrypi/common-hal/picodvi/Framebuffer_RP2040.c
@@ -465,9 +466,15 @@ msgstr ""
 msgid "AP could not be started"
 msgstr ""
 
-#: shared-bindings/_bleio/Address.c shared-bindings/ipaddress/IPv4Address.c
+#: shared-bindings/_bleio/Address.c
+#: shared-bindings/adafruit_esp32spi/ESP_SPIcontrol.c
+#: shared-bindings/ipaddress/IPv4Address.c
 #, c-format
 msgid "Address must be %d bytes long"
+msgstr ""
+
+#: shared-bindings/adafruit_esp32spi/socketpool/SocketPool.c
+msgid "Address must be (host, port) tuple"
 msgstr ""
 
 #: ports/espressif/common-hal/memorymap/AddressRange.c
@@ -575,6 +582,10 @@ msgstr ""
 #: shared-module/os/getenv.c
 #, c-format
 msgid "An error occurred while retrieving '%s':\n"
+msgstr ""
+
+#: shared-module/adafruit_esp32spi/ESP_SPIcontrol.c
+msgid "Analog read error: invalid pin"
 msgstr ""
 
 #: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
@@ -834,14 +845,14 @@ msgstr ""
 msgid "Clock unit in use"
 msgstr ""
 
-#: ports/espressif/common-hal/mipidsi/Display.c
-msgid "Color depth must be 16 or 24"
-msgstr ""
-
 #: shared-bindings/_bleio/Connection.c
 msgid ""
 "Connection has been disconnected and can no longer be used. Create a new "
 "connection."
+msgstr ""
+
+#: shared-module/adafruit_esp32spi/ESP_SPIcontrol.c
+msgid "Connection timeout"
 msgstr ""
 
 #: shared-bindings/bitmaptools/__init__.c
@@ -856,6 +867,10 @@ msgstr ""
 msgid "Could not allocate DMA capable buffer"
 msgstr ""
 
+#: shared-module/adafruit_esp32spi/ESP_SPIcontrol.c
+msgid "Could not connect to remote server"
+msgstr ""
+
 #: ports/espressif/common-hal/rclcpy/Publisher.c
 msgid "Could not publish to ROS topic"
 msgstr ""
@@ -866,6 +881,10 @@ msgstr ""
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "Could not start interrupt, RX busy"
+msgstr ""
+
+#: shared-module/adafruit_esp32spi/ESP_SPIcontrol.c
+msgid "Could not start server"
 msgstr ""
 
 #: shared-module/audiomp3/MP3Decoder.c
@@ -924,6 +943,10 @@ msgstr ""
 msgid "Device in use"
 msgstr ""
 
+#: shared-module/adafruit_esp32spi/ESP_SPIcontrol.c
+msgid "Digital read response error"
+msgstr ""
+
 #: shared-bindings/busdisplay/BusDisplay.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Display must have a 16 bit colorspace."
@@ -963,6 +986,15 @@ msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "Error in safemode.py."
+msgstr ""
+
+#: shared-module/adafruit_esp32spi/ESP_SPIcontrol.c
+msgid "Error response to command"
+msgstr ""
+
+#: shared-module/adafruit_esp32spi/ESP_SPIcontrol.c
+#, c-format
+msgid "Expected %02x but got %02x"
 msgstr ""
 
 #: shared-bindings/alarm/__init__.c
@@ -1041,8 +1073,16 @@ msgstr ""
 msgid "Failed to create continuous channels: not found"
 msgstr ""
 
+#: shared-module/adafruit_esp32spi/ESP_SPIcontrol.c
+msgid "Failed to disconnect"
+msgstr ""
+
 #: ports/espressif/common-hal/audioio/AudioOut.c
 msgid "Failed to enable continuous"
+msgstr ""
+
+#: shared-module/adafruit_esp32spi/ESP_SPIcontrol.c
+msgid "Failed to enable enterprise mode"
 msgstr ""
 
 #: shared-module/audiomp3/MP3Decoder.c
@@ -1058,20 +1098,89 @@ msgstr ""
 msgid "Failed to release mutex, err 0x%04x"
 msgstr ""
 
+#: shared-module/adafruit_esp32spi/ESP_SPIcontrol.c
+msgid "Failed to request hostname"
+msgstr ""
+
+#: shared-module/adafruit_esp32spi/ESP_SPIcontrol.c
+msgid "Failed to send UDP data"
+msgstr ""
+
+#: shared-module/adafruit_esp32spi/ESP_SPIcontrol.c
+msgid "Failed to send all bytes"
+msgstr ""
+
+#: shared-module/adafruit_esp32spi/ESP_SPIcontrol.c
+msgid "Failed to set DNS"
+msgstr ""
+
 #: ports/analog/common-hal/busio/SPI.c
 msgid "Failed to set SPI Clock Mode"
 msgstr ""
 
+#: shared-module/adafruit_esp32spi/ESP_SPIcontrol.c
+msgid "Failed to set certificate"
+msgstr ""
+
+#: shared-module/adafruit_esp32spi/ESP_SPIcontrol.c
+msgid "Failed to set debug mode"
+msgstr ""
+
+#: shared-module/adafruit_esp32spi/ESP_SPIcontrol.c
+msgid "Failed to set enterprise identity"
+msgstr ""
+
+#: shared-module/adafruit_esp32spi/ESP_SPIcontrol.c
+msgid "Failed to set enterprise password"
+msgstr ""
+
+#: shared-module/adafruit_esp32spi/ESP_SPIcontrol.c
+msgid "Failed to set enterprise username"
+msgstr ""
+
 #: ports/zephyr-cp/common-hal/wifi/Radio.c
+#: shared-module/adafruit_esp32spi/ESP_SPIcontrol.c
 msgid "Failed to set hostname"
+msgstr ""
+
+#: shared-module/adafruit_esp32spi/ESP_SPIcontrol.c
+msgid "Failed to set network"
+msgstr ""
+
+#: shared-module/adafruit_esp32spi/ESP_SPIcontrol.c
+msgid "Failed to set passphrase"
+msgstr ""
+
+#: shared-module/adafruit_esp32spi/ESP_SPIcontrol.c
+msgid "Failed to set pin mode"
+msgstr ""
+
+#: shared-module/adafruit_esp32spi/ESP_SPIcontrol.c
+msgid "Failed to set private key"
+msgstr ""
+
+#: shared-module/adafruit_esp32spi/ESP_SPIcontrol.c
+msgid "Failed to start AP scan"
 msgstr ""
 
 #: ports/espressif/common-hal/audioio/AudioOut.c
 msgid "Failed to start async audio"
 msgstr ""
 
+#: shared-module/adafruit_esp32spi/ESP_SPIcontrol.c
+msgid "Failed to verify data sent"
+msgstr ""
+
+#: shared-module/adafruit_esp32spi/ESP_SPIcontrol.c
+msgid "Failed to write all chunks"
+msgstr ""
+
 #: supervisor/shared/safe_mode.c
 msgid "Failed to write internal flash."
+msgstr ""
+
+#: shared-module/adafruit_esp32spi/ESP_SPIcontrol.c
+msgid "Failed to write to pin"
 msgstr ""
 
 #: py/moderrno.c
@@ -1271,6 +1380,7 @@ msgstr ""
 #: ports/espressif/common-hal/_bleio/Service.c
 #: ports/espressif/common-hal/espulp/ULP.c
 #: ports/espressif/common-hal/microcontroller/Processor.c
+#: ports/espressif/common-hal/mipidsi/Display.c
 #: ports/mimxrt10xx/common-hal/audiobusio/__init__.c
 #: ports/mimxrt10xx/common-hal/pwmio/PWMOut.c
 #: ports/raspberrypi/bindings/picodvi/Framebuffer.c
@@ -1677,6 +1787,10 @@ msgstr ""
 #: ports/raspberrypi/common-hal/audiobusio/PDMIn.c
 #, c-format
 msgid "Only 8 or 16 bit mono with %dx oversampling supported."
+msgstr ""
+
+#: shared-module/adafruit_esp32spi/socketpool/SocketPool.c
+msgid "Only AF_INET family supported"
 msgstr ""
 
 #: ports/espressif/common-hal/wifi/__init__.c
@@ -3302,6 +3416,10 @@ msgstr ""
 msgid "generator raised StopIteration"
 msgstr ""
 
+#: shared-module/adafruit_esp32spi/ESP_SPIcontrol.c
+msgid "get_time returned 0"
+msgstr ""
+
 #: shared-bindings/_stage/Layer.c
 msgid "graphic must be 2048 bytes long"
 msgstr ""
@@ -4265,6 +4383,10 @@ msgstr ""
 msgid "timeout must be < 655.35 secs"
 msgstr ""
 
+#: shared-module/adafruit_esp32spi/ESP_SPIcontrol.c
+msgid "timeout waiting for byte"
+msgstr ""
+
 #: ports/raspberrypi/common-hal/floppyio/__init__.c
 msgid "timeout waiting for flux"
 msgstr ""
@@ -4272,6 +4394,10 @@ msgstr ""
 #: ports/raspberrypi/common-hal/floppyio/__init__.c
 #: shared-module/floppyio/__init__.c
 msgid "timeout waiting for index pulse"
+msgstr ""
+
+#: shared-module/adafruit_esp32spi/ESP_SPIcontrol.c
+msgid "timeout waiting for ready %q"
 msgstr ""
 
 #: shared-module/sdcardio/SDCard.c
