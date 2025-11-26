@@ -12,7 +12,7 @@
 #include "shared-bindings/socketpool/SocketPool.h"
 #include "common-hal/socketpool/__init__.h"
 #include "common-hal/wifi/__init__.h"
-#if CIRCUITPY_SSL
+#if CIRCUITPY_SSL_NATIVE
 #include "shared-bindings/ssl/SSLSocket.h"
 #include "shared-module/ssl/SSLSocket.h"
 #endif

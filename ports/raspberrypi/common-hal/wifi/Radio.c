@@ -52,6 +52,13 @@ NORETURN static void ro_attribute(qstr attr) {
     mp_raise_NotImplementedError_varg(MP_ERROR_TEXT("%q is read-only for this board"), attr);
 }
 
+const char *common_hal_wifi_radio_get_version(wifi_radio_obj_t *self) {
+    return "cyw43-driver "
+           MP_STRINGIFY(CYW43_VERSION_MAJOR) "."
+           MP_STRINGIFY(CYW43_VERSION_MINOR) "."
+           MP_STRINGIFY(CYW43_VERSION_MICRO);
+}
+
 bool common_hal_wifi_radio_get_enabled(wifi_radio_obj_t *self) {
     return self->enabled;
 }

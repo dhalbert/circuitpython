@@ -75,6 +75,10 @@ static void set_mode_ap(wifi_radio_obj_t *self, bool state) {
     self->ap_mode = state;
 }
 
+const char *common_hal_wifi_radio_get_version(wifi_radio_obj_t *self) {
+    return esp_idf_get_version();
+}
+
 bool common_hal_wifi_radio_get_enabled(wifi_radio_obj_t *self) {
     return self->started;
 }

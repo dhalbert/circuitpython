@@ -8,6 +8,8 @@
 
 #include <stdint.h>
 
+#include "shared-bindings/busio/SPI.h"
+#include "shared-bindings/digitalio/DigitalInOut.h"
 #include "shared-bindings/wifi/PowerManagement.h"
 
 #include "common-hal/wifi/Radio.h"
@@ -61,14 +63,16 @@ typedef enum {
     WIFI_RADIO_NO_AP_FOUND_IN_RSSI_THRESHOLD     = 212,
 } wifi_radio_error_t;
 
+extern void common_hal_wifi_radio_init_airlift(wifi_radio_obj_t *self, busio_spi_obj_t *spi, digitalio_digitalinout_obj_t *cs, digitalio_digitalinout_obj_t *ready, digitalio_digitalinout_obj_t *reset, digitalio_digitalinout_obj_t *gpio0);
+
+extern mp_obj_t common_hal_wifi_radio_get_version(wifi_radio_obj_t *self);
+
 extern bool common_hal_wifi_radio_get_enabled(wifi_radio_obj_t *self);
 extern void common_hal_wifi_radio_set_enabled(wifi_radio_obj_t *self, bool enabled);
 
 extern mp_obj_t common_hal_wifi_radio_get_hostname(wifi_radio_obj_t *self);
 extern void common_hal_wifi_radio_set_hostname(wifi_radio_obj_t *self, const char *hostname);
 
-
-extern void wifi_radio_get_mac_address(wifi_radio_obj_t *self, uint8_t *mac);
 extern mp_obj_t common_hal_wifi_radio_get_mac_address(wifi_radio_obj_t *self);
 extern void common_hal_wifi_radio_set_mac_address(wifi_radio_obj_t *self, const uint8_t *mac);
 extern mp_obj_t common_hal_wifi_radio_get_mac_address_ap(wifi_radio_obj_t *self);

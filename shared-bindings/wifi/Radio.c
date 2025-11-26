@@ -77,6 +77,64 @@ static void validate_hex_password(const uint8_t *buf, size_t len) {
 //|         ...
 //|
 
+#if CIRCUITPY_WIFI_AIRLIFT
+//|     def init_airlift(
+//|         spi: busio.SPI,
+//|         cs: digitalio.DigitalInOut,
+//|         ready: digitalio.DigitalInOut,
+//|         reset: digitalio.DigitalInOut,
+//|         gpio0: Optional[digitalio.DigitalInOut] = None,
+//|     ) -> None:
+//|         """Create an ESP32 SPI WiFi control object.
+//|
+//|         :param busio.SPI spi: The SPI bus to use
+//|         :param digitalio.DigitalInOut cs: Chip select pin
+//|         :param digitalio.DigitalInOut ready: Ready pin
+//|         :param digitalio.DigitalInOut reset: Reset pin
+//|         :param digitalio.DigitalInOut gpio0: Optional GPIO0 pin for boot mode control
+//|         """
+static mp_obj_t wifi_radio_init_airlift(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_spi, ARG_cs, ARG_ready, ARG_reset, ARG_gpio0, };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_spi, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_cs, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_ready, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_reset, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_gpio0, MP_ARG_OBJ, {.u_obj = mp_const_none} },
+    };
+
+    wifi_radio_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    busio_spi_obj_t *spi =
+        mp_arg_validate_type(args[ARG_spi].u_obj, &busio_spi_type, MP_QSTR_spi);
+    digitalio_digitalinout_obj_t *cs =
+        mp_arg_validate_type(args[ARG_cs].u_obj, &digitalio_digitalinout_type, MP_QSTR_cs);
+    digitalio_digitalinout_obj_t *ready =
+        mp_arg_validate_type(args[ARG_ready].u_obj, &digitalio_digitalinout_type, MP_QSTR_ready);
+    digitalio_digitalinout_obj_t *reset =
+        mp_arg_validate_type(args[ARG_reset].u_obj, &digitalio_digitalinout_type, MP_QSTR_reset);
+    digitalio_digitalinout_obj_t *gpio0 =
+        mp_arg_validate_type_or_none(args[ARG_gpio0].u_obj, &digitalio_digitalinout_type, MP_QSTR_gpio0);
+
+    common_hal_wifi_radio_init_airlift(self, spi, cs, ready, reset, gpio0 == mp_const_none ? NULL : gpio0);
+
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_KW(wifi_radio_init_airlift_obj, 4, wifi_radio_init_airlift);
+#endif
+
+//|     version: str
+//|     """A string described the version of the underlying WiFi software (read-only)."""
+static mp_obj_t wifi_radio_get_version(mp_obj_t self) {
+    return common_hal_wifi_radio_get_version(self);
+}
+MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_get_version_obj, wifi_radio_get_version);
+
+MP_PROPERTY_GETTER(wifi_radio_version_obj,
+    (mp_obj_t)&wifi_radio_get_version_obj);
+
 //|     enabled: bool
 //|     """``True`` when the wifi radio is enabled.
 //|     If you set the value to ``False``, any open sockets will be closed.
@@ -831,6 +889,10 @@ static mp_obj_t wifi_radio_ping(size_t n_args, const mp_obj_t *pos_args, mp_map_
 static MP_DEFINE_CONST_FUN_OBJ_KW(wifi_radio_ping_obj, 1, wifi_radio_ping);
 
 static const mp_rom_map_elem_t wifi_radio_locals_dict_table[] = {
+    #if CIRCUITPY_WIFI_AIRLIFT
+    { MP_ROM_QSTR(MP_QSTR_init_airlift), MP_ROM_PTR(&wifi_radio_init_airlift_obj) },
+    #endif
+    { MP_ROM_QSTR(MP_QSTR_version), MP_ROM_PTR(&wifi_radio_version_obj) },
     { MP_ROM_QSTR(MP_QSTR_enabled), MP_ROM_PTR(&wifi_radio_enabled_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_hostname),    MP_ROM_PTR(&wifi_radio_hostname_obj) },

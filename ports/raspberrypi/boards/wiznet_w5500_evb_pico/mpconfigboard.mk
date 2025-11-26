@@ -10,7 +10,7 @@ EXTERNAL_FLASH_DEVICES = "W25Q16JVxQ"
 
 CIRCUITPY__EVE = 1
 CIRCUITPY_FLOPPYIO = 0
-CIRCUITPY_SSL = 1
+CIRCUITPY_SSL_NATIVE = 1
 CIRCUITPY_USB_HOST = 0
 
 # The default is -O3. Change to -O2 because the build was overflowing.
