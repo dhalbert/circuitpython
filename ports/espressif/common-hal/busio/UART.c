@@ -170,17 +170,6 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     }
     #endif
 
-    // Start a task to listen for uart events
-    xTaskCreatePinnedToCore(
-        uart_event_task,
-        "uart_event_task",
-        configMINIMAL_STACK_SIZE + 512,
-        self,
-        CONFIG_PTHREAD_TASK_PRIO_DEFAULT,
-        &self->event_task,
-        xPortGetCoreID());
-    // uart_set_hw_flow_ctrl(self->uart_num, uart_config.flow_control, uart_config.rx_flow_ctrl_thresh);
-
     // Set baud rate
     // common_hal_busio_uart_set_baudrate(self, baudrate);
     uart_config.baud_rate = baudrate;
@@ -277,6 +266,17 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     if (uart_set_pin(self->uart_num, tx_num, rx_num, rts_num, cts_num) != ESP_OK) {
         raise_ValueError_invalid_pins();
     }
+
+    // Start a task to listen for uart events
+    xTaskCreatePinnedToCore(
+        uart_event_task,
+        "uart_event_task",
+        configMINIMAL_STACK_SIZE + 512,
+        self,
+        CONFIG_PTHREAD_TASK_PRIO_DEFAULT,
+        &self->event_task,
+        xPortGetCoreID());
+    // uart_set_hw_flow_ctrl(self->uart_num, uart_config.flow_control, uart_config.rx_flow_ctrl_thresh);
 }
 
 bool common_hal_busio_uart_deinited(busio_uart_obj_t *self) {
@@ -287,7 +287,9 @@ void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
     if (common_hal_busio_uart_deinited(self)) {
         return;
     }
-    vTaskDelete(self->event_task);
+    if (self->event_task) {
+        vTaskDelete(self->event_task);
+    }
     uart_driver_delete(self->uart_num);
 
     common_hal_reset_pin(self->rx_pin);
