@@ -10,15 +10,27 @@ Linux only. Leave it running in a terminal while you connect.
 
 BlueZ has no pairing UI of its own. Every pairing interaction is delegated over
 D-Bus to an org.bluez.Agent1 that some application must register, and whichever
-one calls RequestDefaultAgent receives the requests. Chromium registers no agent,
-so with nothing else providing one, bluetoothd refuses the pairing outright:
+one most recently called RequestDefaultAgent receives the requests.
+
+Chromium is no help, in two different ways. Usually it has no agent registered at
+all: it registers one only when bluetoothd starts, and unregisters it on page
+load, so by the time you connect there is nothing there and bluetoothd refuses
+the pairing outright:
 
     src/device.c:new_auth() No agent available for request type 2
     device_confirm_passkey: Operation not permitted
 
-The link then drops, and since every BLE workflow characteristic is encrypted
-(SECURITY_MODE_ENC_NO_MITM), nothing works. macOS and Windows do not need this --
-there the operating system owns pairing and shows its own dialog.
+When Chromium does hold an agent -- right after a bluetoothd restart, say -- it is
+worse, because RequestDefaultAgent puts it first in line and it then answers every
+RequestAuthorization with org.bluez.Error.Rejected, no prompt shown. That can
+preempt a desktop agent that would have asked. It is why this script insists on
+becoming the default agent, and warns when it cannot.
+
+Either way the link drops. The characteristics needing an encrypted link are the File
+Transfer transfer characteristic and the BLE serial ones (SECURITY_MODE_ENC_NO_MITM);
+the version characteristics are SECURITY_MODE_OPEN, which is why service discovery
+and a version read succeed first and the drop looks unprovoked. macOS and Windows do
+not need this -- there the operating system owns pairing and shows its own dialog.
 
 This registers a NoInputNoOutput agent, which tells BlueZ not to ask anything, so
 pairing completes as Just Works: encrypted, but with no MITM protection, since
@@ -137,7 +149,9 @@ async def run(verbose):
         await call_agent_manager(bus, "RegisterAgent", [AGENT_PATH, "NoInputNoOutput"], "os")
     except RuntimeError as e:
         status(str(e))
-        status("is another agent already registered? bluetoothctl registers one while it runs.")
+        # RegisterAgent keys on the D-Bus sender, so another application's agent is not
+        # the cause; only a second registration on this same connection collides.
+        status("is an agent already registered on this connection?")
         return 1
 
     try:
