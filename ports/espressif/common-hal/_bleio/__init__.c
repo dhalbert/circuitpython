@@ -35,9 +35,12 @@ void bleio_user_reset(void) {
     if (!common_hal_bleio_adapter_get_enabled(&common_hal_bleio_adapter_obj)) {
         return;
     }
-    // Stop any user scanning or advertising, and stop all connections.
-    // TODO: Don't stop BLE workflow connection.
-    bleio_adapter_reset(&common_hal_bleio_adapter_obj);
+    // Stop any user scanning or advertising. Deliberately not bleio_adapter_reset(),
+    // which also drops every connection, including the BLE workflow's. Connections
+    // that user code created are torn down by bleio_reset() instead, which runs only
+    // when user code imported _bleio. This matches the nordic port.
+    common_hal_bleio_adapter_stop_scan(&common_hal_bleio_adapter_obj);
+    common_hal_bleio_adapter_stop_advertising(&common_hal_bleio_adapter_obj);
 
     ble_event_remove_heap_handlers();
 
@@ -52,11 +55,21 @@ void bleio_reset(void) {
         return;
     }
 
+    // If user code never imported _bleio, then it cannot have added anything to the
+    // GATT attribute table or created any connections, so there is nothing to tear
+    // down. Skipping matters: the disable/enable cycle below drops any BLE workflow
+    // session that is in progress. Measured: without this return, the first keypress
+    // at the REPL prompt disconnects the workflow client.
+    if (!bleio_user_imported()) {
+        return;
+    }
+
     supervisor_stop_bluetooth();
     ble_event_reset();
     bleio_adapter_reset(&common_hal_bleio_adapter_obj);
     common_hal_bleio_adapter_set_enabled(&common_hal_bleio_adapter_obj, false);
     supervisor_start_bluetooth();
+    bleio_clear_user_imported();
 }
 
 // The singleton _bleio.Adapter object, bound to _bleio.adapter
