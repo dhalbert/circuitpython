@@ -359,6 +359,114 @@ uint64_t float_to_uint64(float f) {
     const uint32_t lower_half = (uint32_t)f;
     return (((uint64_t)upper_half) << 32) + lower_half;
 }
+
+#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
+// CIRCUITPY-CHANGE: begin float<->double bit conversion
+// Convert between IEEE 754 single and double precision by manipulating the bit
+// patterns directly. A plain C cast would call libgcc's __aeabi_f2d/__aeabi_d2f,
+// and on hard-FPU targets __aeabi_f2d lives in the same object as the software
+// double add/subtract routines, so one cast costs about 1 kB of flash. These are
+// used for the 'd' typecode in struct and array, which must exchange doubles with
+// the outside world even though the runtime float is single precision.
+
+double mp_float_widen_to_double(mp_float_t f) {
+    union {
+        float f;
+        uint32_t u;
+    } in = { .f = f };
+    union {
+        double d;
+        uint64_t u;
+    } out;
+    uint32_t sign = in.u & 0x80000000u;
+    uint32_t exp = (in.u >> 23) & 0xffu;
+    uint32_t mant = in.u & 0x7fffffu;
+    uint64_t dexp;
+    if (exp == 0xffu) {
+        // inf or nan: payload moves up unchanged
+        dexp = 0x7ff;
+    } else if (exp == 0) {
+        if (mant == 0) {
+            out.u = (uint64_t)sign << 32;
+            return out.d;
+        }
+        // subnormal float: every subnormal is a normal double, so normalize
+        int shift = 0;
+        while (!(mant & 0x800000u)) {
+            mant <<= 1;
+            shift++;
+        }
+        mant &= 0x7fffffu;
+        dexp = 1023 - 126 - shift;
+    } else {
+        dexp = exp + (1023 - 127);
+    }
+    out.u = ((uint64_t)sign << 32) | (dexp << 52) | ((uint64_t)mant << 29);
+    return out.d;
+}
+
+mp_float_t mp_float_narrow_double(double d) {
+    union {
+        double d;
+        uint64_t u;
+    } in = { .d = d };
+    union {
+        float f;
+        uint32_t u;
+    } out;
+    uint32_t sign = (uint32_t)(in.u >> 32) & 0x80000000u;
+    int exp = (int)((in.u >> 52) & 0x7ff);
+    uint64_t mant = in.u & 0xfffffffffffffULL;
+    if (exp == 0x7ff) {
+        // inf, or nan made quiet with the top of its payload kept
+        out.u = sign | 0x7f800000u | (mant ? (0x400000u | (uint32_t)(mant >> 29)) : 0);
+        return out.f;
+    }
+    if (exp == 0) {
+        // zero, or a double subnormal, which is far below the smallest float subnormal
+        out.u = sign;
+        return out.f;
+    }
+    int fexp = exp - (1023 - 127);
+    if (fexp >= 0xff) {
+        out.u = sign | 0x7f800000u; // overflow to inf
+        return out.f;
+    }
+    uint64_t sig = mant | (1ULL << 52); // 53-bit significand with the implicit 1
+    int shift = 29; // 53 -> 24 significant bits
+    if (fexp <= 0) {
+        // result is a float subnormal: shift out the extra exponent range too
+        shift += 1 - fexp;
+        fexp = 0;
+        if (shift > 53) {
+            out.u = sign; // less than half the smallest subnormal
+            return out.f;
+        }
+    }
+    uint64_t result = sig >> shift;
+    uint64_t rem = sig & ((1ULL << shift) - 1);
+    uint64_t half = 1ULL << (shift - 1);
+    if (rem > half || (rem == half && (result & 1))) {
+        result++; // round to nearest, ties to even
+    }
+    if (fexp == 0) {
+        // result <= 1<<23; reaching it encodes the smallest normal float, as intended
+        out.u = sign | (uint32_t)result;
+    } else {
+        if (result >> 24) {
+            result >>= 1; // rounding carried into a new leading bit
+            fexp++;
+        }
+        if (fexp >= 0xff) {
+            out.u = sign | 0x7f800000u;
+        } else {
+            out.u = sign | ((uint32_t)fexp << 23) | ((uint32_t)result & 0x7fffffu);
+        }
+    }
+    return out.f;
+}
+// CIRCUITPY-CHANGE: end float<->double bit conversion
+#endif
 #pragma GCC diagnostic pop
 
 #endif // MICROPY_PY_BUILTINS_FLOAT

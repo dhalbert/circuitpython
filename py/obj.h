@@ -1108,6 +1108,10 @@ mp_obj_t mp_obj_new_complex(mp_float_t real, mp_float_t imag);
 // CIRCUITPY-CHANGE: our own conversion routines that don't bring double routines
 extern mp_float_t uint64_to_float(uint64_t ui64);
 extern uint64_t float_to_uint64(float f);
+#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
+double mp_float_widen_to_double(mp_float_t f);
+mp_float_t mp_float_narrow_double(double d);
+#endif
 #endif
 mp_obj_t mp_obj_new_exception(const mp_obj_type_t *exc_type);
 mp_obj_t mp_obj_new_exception_args(const mp_obj_type_t *exc_type, size_t n_args, const mp_obj_t *args);
@@ -1235,8 +1239,10 @@ static inline float mp_obj_get_float_to_f(mp_obj_t o) {
     return mp_obj_get_float(o);
 }
 
+// CIRCUITPY-CHANGE: convert by bit manipulation, not a cast, to keep libgcc's
+// double-precision routines out of single-precision builds
 static inline double mp_obj_get_float_to_d(mp_obj_t o) {
-    return (double)mp_obj_get_float(o);
+    return mp_float_widen_to_double(mp_obj_get_float(o));
 }
 
 static inline mp_obj_t mp_obj_new_float_from_f(float o) {
@@ -1244,7 +1250,7 @@ static inline mp_obj_t mp_obj_new_float_from_f(float o) {
 }
 
 static inline mp_obj_t mp_obj_new_float_from_d(double o) {
-    return mp_obj_new_float((mp_float_t)o);
+    return mp_obj_new_float(mp_float_narrow_double(o));
 }
 #elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
 static inline float mp_obj_get_float_to_f(mp_obj_t o) {
