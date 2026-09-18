@@ -1,0 +1,71 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 Adafruit Industries LLC
+#
+# SPDX-License-Identifier: MIT
+
+# EXPERIMENT ONLY. Measures what a container-based zephyr-cp job would pay on a
+# hosted runner: the pull and unpack time of the Zephyr CI images, and the startup
+# and module fetch time of a job that runs inside one.
+
+name: "Experiment: container pull time"
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/experiment-container-pull.yml
+
+env:
+  ZEPHYR_CI_TAG: v0.29.2.20260422
+
+jobs:
+  pull-times:
+    runs-on: ubuntu-24.04
+    steps:
+    - name: Runner info
+      run: |
+        grep "model name" /proc/cpuinfo | head -1
+        docker --version
+        df -h / | tail -1
+    - name: Pull ci-base
+      run: time docker pull --quiet ghcr.io/zephyrproject-rtos/ci-base:$ZEPHYR_CI_TAG
+    - name: Pull ci
+      run: time docker pull --quiet ghcr.io/zephyrproject-rtos/ci:$ZEPHYR_CI_TAG
+    - name: Pull ci-repo-cache
+      run: time docker pull --quiet ghcr.io/zephyrproject-rtos/ci-repo-cache:$ZEPHYR_CI_TAG
+    - name: Image sizes
+      run: docker image ls --format '{{.Repository}}:{{.Tag}} {{.Size}}' | grep zephyrproject-rtos
+
+  inside-repo-cache-container:
+    # "Initialize containers" in this job's log is the pull plus start cost that a
+    # real container job would pay before its first step.
+    runs-on: ubuntu-24.04
+    container:
+      image: ghcr.io/zephyrproject-rtos/ci-repo-cache:v0.29.2.20260422
+    steps:
+    - name: Set up repository
+      uses: actions/checkout@v6
+      with:
+        submodules: false
+        show-progress: false
+        fetch-depth: 1
+        persist-credentials: false
+    - name: What the image provides
+      run: |
+        west --version || true
+        ls /opt/toolchains 2>/dev/null || true
+        du -sh /repo-cache 2>/dev/null || echo "no /repo-cache"
+        ls /repo-cache 2>/dev/null || true
+    - name: west init
+      working-directory: ports/zephyr-cp
+      run: time west init -l zephyr-config --mf west.yml
+    - name: west update from the image's repo cache
+      working-directory: ports/zephyr-cp
+      run: |
+        if [ -d /repo-cache/zephyrproject ]; then
+          time west update -o=--depth=1 -n --path-cache /repo-cache/zephyrproject
+        else
+          echo "no repo cache in image; plain update"
+          time west update -o=--depth=1 -n
+        fi
+    - name: Workspace size
+      working-directory: ports/zephyr-cp
+      run: du -sh --exclude=.git zephyr modules bootloader tools 2>/dev/null | sort -rh | head -5

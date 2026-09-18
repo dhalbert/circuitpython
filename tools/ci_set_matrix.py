@@ -55,6 +55,7 @@ IGNORE_BOARD = {
     ".github/workflows/run-tests.yml",
     ".github/workflows/run-zephyr-tests.yml",
     ".github/workflows/build-board-custom.yml",
+    ".github/workflows/experiment-container-pull.yml",
     ".github/workflows/bundle_cron.yml",
     ".github/workflows/create-website-pr.yml",
     ".github/workflows/learn_cron.yml",
