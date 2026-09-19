@@ -14,7 +14,9 @@ on:
       - .github/workflows/experiment-container-pull.yml
 
 env:
-  ZEPHYR_CI_TAG: v0.29.2.20260422
+  # ci-base and ci are tagged by version; ci-repo-cache adds the date of its repo snapshot.
+  ZEPHYR_CI_TAG: v0.29.2
+  ZEPHYR_CI_REPO_CACHE_TAG: v0.29.2.20260422
 
 jobs:
   pull-times:
@@ -30,7 +32,7 @@ jobs:
     - name: Pull ci
       run: time docker pull --quiet ghcr.io/zephyrproject-rtos/ci:$ZEPHYR_CI_TAG
     - name: Pull ci-repo-cache
-      run: time docker pull --quiet ghcr.io/zephyrproject-rtos/ci-repo-cache:$ZEPHYR_CI_TAG
+      run: time docker pull --quiet ghcr.io/zephyrproject-rtos/ci-repo-cache:$ZEPHYR_CI_REPO_CACHE_TAG
     - name: Image sizes
       run: docker image ls --format '{{.Repository}}:{{.Tag}} {{.Size}}' | grep zephyrproject-rtos
 
@@ -56,9 +58,11 @@ jobs:
         ls /repo-cache 2>/dev/null || true
     - name: west init
       working-directory: ports/zephyr-cp
+      shell: bash
       run: time west init -l zephyr-config --mf west.yml
     - name: west update from the image's repo cache
       working-directory: ports/zephyr-cp
+      shell: bash
       run: |
         if [ -d /repo-cache/zephyrproject ]; then
           time west update -o=--depth=1 -n --path-cache /repo-cache/zephyrproject
