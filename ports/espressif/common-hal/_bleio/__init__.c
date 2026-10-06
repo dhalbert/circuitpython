@@ -194,13 +194,30 @@ void check_ble_error(int error_code, const char *file, size_t line) {
         return;
     }
     switch (error_code) {
+        case BLE_HS_ATT_ERR(BLE_ATT_ERR_READ_NOT_PERMITTED):
+            mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("%q not permitted"), MP_QSTR_read);
+            return;
+        case BLE_HS_ATT_ERR(BLE_ATT_ERR_WRITE_NOT_PERMITTED):
+            mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("%q not permitted"), MP_QSTR_write);
+            return;
         case BLE_HS_ATT_ERR(BLE_ATT_ERR_INSUFFICIENT_AUTHEN):
             mp_raise_bleio_SecurityError(MP_ERROR_TEXT("Insufficient authentication"));
             return;
+        case BLE_HS_ATT_ERR(BLE_ATT_ERR_INSUFFICIENT_AUTHOR):
+            mp_raise_bleio_SecurityError(MP_ERROR_TEXT("Insufficient authorization"));
+            return;
         case BLE_HS_ATT_ERR(BLE_ATT_ERR_INSUFFICIENT_ENC):
+        case BLE_HS_ATT_ERR(BLE_ATT_ERR_INSUFFICIENT_KEY_SZ):
             mp_raise_bleio_SecurityError(MP_ERROR_TEXT("Insufficient encryption"));
             return;
+        case BLE_HS_ATT_ERR(BLE_ATT_ERR_INVALID_ATTR_VALUE_LEN):
+            mp_arg_error_invalid(MP_QSTR_length);
+            return;
         default:
+            if (error_code > BLE_HS_ERR_ATT_BASE && error_code < BLE_HS_ERR_HCI_BASE) {
+                // Some other ATT error from the peer.
+                mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("Unknown gatt error: 0x%04x"), error_code);
+            }
             #if CIRCUITPY_VERBOSE_BLE || CIRCUITPY_DEBUG
             if (file) {
                 mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("Unknown BLE error at %s:%d: %d"), file, line, error_code);
