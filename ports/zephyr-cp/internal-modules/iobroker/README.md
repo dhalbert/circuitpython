@@ -162,9 +162,22 @@ allocations the same way bus allocations conflict with each other.
 and returns both the GPIO controller device and the pin number within it.
 PWM instances are allocated whole with `iobroker_pwm_allocate()`, for one
 package pin routed to the instance's first output; the caller initializes the
-device and returns it with `iobroker_release()`, as with the buses. Sharing an
-instance between pins with the same base frequency (for pwmio) is not
-supported yet.
+device and returns it with `iobroker_release()`, as with the buses.
+Individual PWM channels are allocated with
+`iobroker_pwm_channel_allocate()`, which shares an instance between pins.
+Channels that share a period form a group (for instance, on nRF, the four
+outputs of an instance; on other SoCs this might be a slice or a timer). The
+call takes a frequency, adjusts it to a period the hardware can produce
+(truncating on nRF), and joins a running group with the same period and a
+free channel, or takes a free instance. It returns the device, the channel
+number and the group's period, which the caller passes unchanged to
+`pwm_set_cycles()`. Joining or leaving a running group connects or
+disconnects only that one output, so the group's other outputs are not
+disturbed. An exclusive request (variable frequency) gets a group of its
+own, and `iobroker_pwm_period_cycles()` adjusts a new frequency for it.
+`iobroker_pwm_channel_release()` returns a channel; the group's last channel
+releases the instance. A frequency the hardware cannot produce at all fails
+with `-ERANGE`.
 
 Not every instance can reach every pad. On nRF52 and nRF53 the routing is a
 full crossbar, but on nRF54L peripherals and GPIO controllers are grouped in

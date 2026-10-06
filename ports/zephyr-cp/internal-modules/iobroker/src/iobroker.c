@@ -137,6 +137,32 @@ int iobroker_pwm_allocate(package_pin_t pin, const struct device **dev_out) {
     return -ENOSYS;
 }
 
+int iobroker_pwm_channel_allocate(package_pin_t pin, uint32_t frequency,
+    bool exclusive, const struct device **dev_out, uint32_t *channel_out,
+    uint32_t *period_cycles_out) {
+    (void)pin;
+    (void)frequency;
+    (void)exclusive;
+    (void)dev_out;
+    (void)channel_out;
+    (void)period_cycles_out;
+    return -ENOSYS;
+}
+
+bool iobroker_pwm_channel_release(const struct device *dev, uint32_t channel) {
+    (void)dev;
+    (void)channel;
+    return false;
+}
+
+int iobroker_pwm_period_cycles(const struct device *dev, uint32_t frequency,
+    uint32_t *period_cycles_out) {
+    (void)dev;
+    (void)frequency;
+    (void)period_cycles_out;
+    return -ENOSYS;
+}
+
 bool iobroker_release(const struct device *dev) {
     (void)dev;
     LOG_DBG("release: no routing support on this SoC, nothing to release");
