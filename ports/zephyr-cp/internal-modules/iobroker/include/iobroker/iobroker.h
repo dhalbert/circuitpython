@@ -59,6 +59,16 @@
 #define IOBROKER_DAC 0
 #endif
 
+// PWM channel allocation (iobroker_pwm_channel_allocate()) is available with
+// nRF runtime routing (src/nordic/nrf/) and with the emulated PWM on
+// native_sim (src/emul/). Without it the PWM channel functions report
+// -ENOSYS.
+#if IOBROKER_ROUTING || defined(CONFIG_PWM_ADAFRUIT_EMUL)
+#define IOBROKER_PWM_CHANNELS 1
+#else
+#define IOBROKER_PWM_CHANNELS 0
+#endif
+
 // Signals needed by the widest bus (UART with tx/rx/rts/cts).
 #define IOBROKER_MAX_PINS 4
 

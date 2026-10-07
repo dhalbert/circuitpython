@@ -137,6 +137,19 @@ int iobroker_pwm_allocate(package_pin_t pin, const struct device **dev_out) {
     return -ENOSYS;
 }
 
+bool iobroker_release(const struct device *dev) {
+    (void)dev;
+    LOG_DBG("release: no routing support on this SoC, nothing to release");
+    return false;
+}
+
+#endif // !IOBROKER_ROUTING
+
+#if !IOBROKER_PWM_CHANNELS
+
+// SoCs without a PWM channel implementation: the API still exists so pwmio
+// can call it, but every allocation reports -ENOSYS. The implementations
+// live in src/<vendor>/<soc>/ (nRF) and in src/emul/ (the emulated PWM).
 int iobroker_pwm_channel_allocate(package_pin_t pin, uint32_t frequency,
     bool exclusive, const struct device **dev_out, uint32_t *channel_out,
     uint32_t *period_cycles_out) {
@@ -163,13 +176,7 @@ int iobroker_pwm_period_cycles(const struct device *dev, uint32_t frequency,
     return -ENOSYS;
 }
 
-bool iobroker_release(const struct device *dev) {
-    (void)dev;
-    LOG_DBG("release: no routing support on this SoC, nothing to release");
-    return false;
-}
-
-#endif // !IOBROKER_ROUTING
+#endif // !IOBROKER_PWM_CHANNELS
 
 #if !IOBROKER_ADC
 
