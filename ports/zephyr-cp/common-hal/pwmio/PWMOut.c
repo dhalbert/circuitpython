@@ -127,9 +127,3 @@ bool common_hal_pwmio_pwmout_get_variable_frequency(pwmio_pwmout_obj_t *self) {
 const mcu_pin_obj_t *common_hal_pwmio_pwmout_get_pin(pwmio_pwmout_obj_t *self) {
     return self->pin;
 }
-
-void common_hal_pwmio_pwmout_reset_ok(pwmio_pwmout_obj_t *self) {
-    // CIRCUITPY_BULK_RESET is off on this port: nothing is kept across
-    // resets, so there is nothing to undo.
-    (void)self;
-}
