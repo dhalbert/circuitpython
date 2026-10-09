@@ -179,10 +179,11 @@ typedef struct {
     // The fields below are used only for a PWM instance shared by channels
     // (iobroker_pwm_channel_allocate()). Buses and whole-instance PWM
     // allocations (iobroker_pwm_allocate()) leave them 0.
-    // Period, in PWM clock cycles, of every channel on the instance.
-    uint32_t period_cycles;
-    // True when the instance's one channel may change the period (variable
-    // frequency), so no other channel may join it.
+    // Frequency in Hz that the instance's channels were requested at; a
+    // request joins only at exactly this frequency.
+    uint32_t frequency;
+    // True when one caller holds the instance alone, so no other channel
+    // may join it.
     bool exclusive;
     // Bit n is set while output n is allocated to a channel.
     uint8_t channels_used;
@@ -246,23 +247,20 @@ int iobroker_pwm_allocate(package_pin_t pin, const struct device **dev_out);
 
 // Allocate one PWM output channel for a pin. Channels that share a period
 // (all outputs of an nRF instance; on other SoCs a slice or a timer) form a
-// group. frequency is in Hz and is adjusted to a period the hardware can
-// produce (on nRF by truncation, so the actual frequency is the same or
-// slightly higher); a request joins a running group whose period comes out
-// the same, unless the group or the request is exclusive
-// (variable-frequency use, where the holder changes the period). Otherwise a
-// free group is taken.
+// group. frequency (Hz) only decides sharing: a request joins a running group
+// requested at exactly the same frequency, unless the group or the request
+// is exclusive (one caller holds the whole group, e.g. to change the period).
+// Otherwise a free group is taken. The caller turns the frequency into a
+// period itself (pwm_get_cycles_per_sec()); requests at the same frequency
+// thus pass identical periods to pwm_set_cycles(), as drivers require of
+// channels in one group.
 //
-// On success returns 0 and sets *dev_out, *channel_out (the channel number
-// pwm_set_cycles() takes) and *period_cycles_out (the group's period in the
-// device's PWM clock cycles). The caller must pass exactly that period to
-// pwm_set_cycles(): drivers refuse a different period while other channels
-// of the group run. The caller then calls device_init(), which returns
-// -EALREADY if the group was already running. Joining a running group
-// only connects the new pin; the group's other outputs are not disturbed.
+// On success returns 0 and sets *dev_out and *channel_out (the channel number
+// pwm_set_cycles() takes). The caller then calls device_init(), which returns
+// -EALREADY if the group was already running. Joining a running group only
+// connects the new pin; the group's other outputs are not disturbed.
 //
 // Returns a negative errno on failure, with the out parameters untouched:
-//   -ERANGE: the hardware cannot produce the frequency (including 0)
 //   -EINVAL: the pin is disconnected, not in the package map, has no GPIO,
 //            or no PWM group can reach it
 //   -EBUSY:  the pin is already claimed
@@ -270,8 +268,7 @@ int iobroker_pwm_allocate(package_pin_t pin, const struct device **dev_out);
 //   -ENOSYS: PWM channel allocation is unsupported on this SoC
 // Every allocation must be paired with iobroker_pwm_channel_release().
 int iobroker_pwm_channel_allocate(package_pin_t pin, uint32_t frequency,
-    bool exclusive, const struct device **dev_out, uint32_t *channel_out,
-    uint32_t *period_cycles_out);
+    bool exclusive, const struct device **dev_out, uint32_t *channel_out);
 
 // Release a channel allocated with iobroker_pwm_channel_allocate(): its pin
 // is disconnected from the group and left quiescent. Releasing the group's
@@ -279,16 +276,6 @@ int iobroker_pwm_channel_allocate(package_pin_t pin, uint32_t frequency,
 // caller stops the channel's output (pwm_set_cycles() with a zero pulse)
 // first. Returns true when the channel was allocated.
 bool iobroker_pwm_channel_release(const struct device *dev, uint32_t channel);
-
-// Adjust frequency (Hz) to a period of an allocated PWM device, the same way
-// iobroker_pwm_channel_allocate() does, for a caller holding an exclusive
-// group that changes its frequency. Returns 0 and sets *period_cycles_out,
-// or a negative errno with *period_cycles_out untouched:
-//   -ERANGE: the hardware cannot produce the frequency (including 0)
-//   -EINVAL: dev is not an iobroker PWM device
-//   -ENOSYS: PWM channel allocation is unsupported on this SoC
-int iobroker_pwm_period_cycles(const struct device *dev, uint32_t frequency,
-    uint32_t *period_cycles_out);
 
 // Allocate a package pin for the ADC. Analog inputs have no runtime routing:
 // the pad's analog input is fixed by the SoC, so the call resolves and

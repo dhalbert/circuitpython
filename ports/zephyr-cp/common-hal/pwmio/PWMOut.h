@@ -19,7 +19,7 @@ typedef struct {
     // NULL when deinited.
     const struct device *dev;
     uint32_t channel;
-    // Period in the device's PWM clock cycles, as iobroker computed it. Every
+    // Period in the device's PWM clock cycles, from the frequency. Every
     // pwm_set_cycles() call passes exactly this value.
     uint32_t period_cycles;
     uint16_t duty_cycle;

@@ -151,14 +151,12 @@ bool iobroker_release(const struct device *dev) {
 // can call it, but every allocation reports -ENOSYS. The implementations
 // live in src/<vendor>/<soc>/ (nRF) and in src/emul/ (the emulated PWM).
 int iobroker_pwm_channel_allocate(package_pin_t pin, uint32_t frequency,
-    bool exclusive, const struct device **dev_out, uint32_t *channel_out,
-    uint32_t *period_cycles_out) {
+    bool exclusive, const struct device **dev_out, uint32_t *channel_out) {
     (void)pin;
     (void)frequency;
     (void)exclusive;
     (void)dev_out;
     (void)channel_out;
-    (void)period_cycles_out;
     return -ENOSYS;
 }
 
@@ -166,14 +164,6 @@ bool iobroker_pwm_channel_release(const struct device *dev, uint32_t channel) {
     (void)dev;
     (void)channel;
     return false;
-}
-
-int iobroker_pwm_period_cycles(const struct device *dev, uint32_t frequency,
-    uint32_t *period_cycles_out) {
-    (void)dev;
-    (void)frequency;
-    (void)period_cycles_out;
-    return -ENOSYS;
 }
 
 #endif // !IOBROKER_PWM_CHANNELS

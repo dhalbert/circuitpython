@@ -23,11 +23,8 @@
 
 #include <zephyr/dt-bindings/pinctrl/nrf-pinctrl.h>
 #include <zephyr/drivers/pinctrl.h>
-#include <zephyr/drivers/pwm.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/sys/util.h>
-
-#include <nrfx.h>
 
 #include "iobroker_internal.h"
 
@@ -541,40 +538,6 @@ BUILD_ASSERT(NRF_FUN_PWM_OUT1 == NRF_FUN_PWM_OUT0 + 1 &&
     NRF_FUN_PWM_OUT2 == NRF_FUN_PWM_OUT0 + 2 &&
     NRF_FUN_PWM_OUT3 == NRF_FUN_PWM_OUT0 + 3,
     "PWM output function codes must be consecutive");
-// Smallest COUNTERTOP the hardware accepts (the nRF52 MDK has no _Min).
-#define NRF_PWM_COUNTERTOP_MIN 3U
-
-// Adjust a frequency to a period of dev's PWM clock that pwm_nrfx programs
-// exactly: COUNTERTOP << PRESCALER, with the smallest prescaler whose
-// COUNTERTOP fits, as pwm_nrfx's pwm_period_check_and_set() picks it. A
-// period of that form maps back to the same prescaler in the driver, so
-// every channel of a group passes the identical period_cycles it requires.
-// Both divisions truncate, as in ports/nordic, so the period is never
-// longer than requested and the actual frequency is the same or slightly
-// higher. Assumes the instance counts up only (pwm_nrfx's default, no
-// center-aligned mode).
-static int nrf_pwm_frequency_period(const struct device *dev, uint32_t frequency,
-    uint32_t *period_cycles_out) {
-    uint64_t cycles_per_sec;
-    if (frequency == 0 || pwm_get_cycles_per_sec(dev, 0, &cycles_per_sec) < 0) {
-        return -ERANGE;
-    }
-    // Period in undivided clock cycles.
-    uint64_t raw = cycles_per_sec / frequency;
-    for (uint32_t prescaler = 0; prescaler <= PWM_PRESCALER_PRESCALER_Msk; prescaler++) {
-        uint64_t countertop = raw >> prescaler;
-        if (countertop > PWM_COUNTERTOP_COUNTERTOP_Msk) {
-            continue;
-        }
-        if (countertop < NRF_PWM_COUNTERTOP_MIN) {
-            return -ERANGE;
-        }
-        *period_cycles_out = (uint32_t)(countertop << prescaler);
-        return 0;
-    }
-    return -ERANGE;
-}
-
 static iobroker_state_t *nrf_pwm_state_find(const struct device *dev) {
     for (size_t i = 0; i < iobroker_pwm_bus_count; i++) {
         if (iobroker_pwm_buses[i].dev == dev) {
@@ -582,14 +545,6 @@ static iobroker_state_t *nrf_pwm_state_find(const struct device *dev) {
         }
     }
     return NULL;
-}
-
-int iobroker_pwm_period_cycles(const struct device *dev, uint32_t frequency,
-    uint32_t *period_cycles_out) {
-    if (nrf_pwm_state_find(dev) == NULL) {
-        return -EINVAL;
-    }
-    return nrf_pwm_frequency_period(dev, frequency, period_cycles_out);
 }
 
 // Connect output `out` of a running instance to a pad, or disconnect it when
@@ -612,20 +567,9 @@ static int nrf_pwm_connect_output(const iobroker_instance_t *inst,
 }
 
 int iobroker_pwm_channel_allocate(package_pin_t pin, uint32_t frequency,
-    bool exclusive, const struct device **dev_out, uint32_t *channel_out,
-    uint32_t *period_cycles_out) {
+    bool exclusive, const struct device **dev_out, uint32_t *channel_out) {
     LOG_INF("pwm channel allocate: pin=%u frequency=%u exclusive=%u",
         (unsigned)pin, (unsigned)frequency, (unsigned)exclusive);
-    // An out-of-range frequency is reported first, ahead of
-    // pin and busy errors.
-    bool in_range = false;
-    for (size_t i = 0; i < iobroker_pwm_bus_count && !in_range; i++) {
-        uint32_t unused;
-        in_range = nrf_pwm_frequency_period(iobroker_pwm_buses[i].dev, frequency, &unused) == 0;
-    }
-    if (!in_range) {
-        return -ERANGE;
-    }
     const package_pin_t requested[] = { pin };
     int ret = iobroker_check_request("pwm", requested, 1);
     if (ret < 0) {
@@ -641,16 +585,13 @@ int iobroker_pwm_channel_allocate(package_pin_t pin, uint32_t frequency,
         return -EINVAL;
     }
 
-    // Join a running group with the same period and a free output.
+    // Join a running group requested at the same frequency, with a free
+    // output.
     for (size_t i = 0; i < iobroker_pwm_bus_count && !exclusive; i++) {
         const iobroker_instance_t *inst = &iobroker_pwm_buses[i];
         iobroker_state_t *state = &iobroker_pwm_bus_states[i];
-        uint32_t period_cycles;
-        if (nrf_pwm_frequency_period(inst->dev, frequency, &period_cycles) < 0) {
-            continue;
-        }
         if (!state->in_use || state->channels_used == 0 || state->exclusive ||
-            state->period_cycles != period_cycles ||
+            state->frequency != frequency ||
             !nrf_instance_reaches_pad(inst->reg_addr, pad)) {
             continue;
         }
@@ -667,37 +608,23 @@ int iobroker_pwm_channel_allocate(package_pin_t pin, uint32_t frequency,
                 (unsigned)out);
             *dev_out = inst->dev;
             *channel_out = out;
-            *period_cycles_out = period_cycles;
             return 0;
         }
     }
 
-    // Otherwise take a free instance, with the pin on OUT0. The instance's
-    // clock decides the period, so check the range on the one allocated.
+    // Otherwise take a free instance, with the pin on OUT0.
     const struct device *dev;
     ret = iobroker_pwm_allocate(pin, &dev);
     if (ret < 0) {
         // No new PWM available.
         return ret;
     }
-    uint32_t period_cycles;
-    if (nrf_pwm_frequency_period(dev, frequency, &period_cycles) < 0) {
-        // The range check at the top only showed that some instance can
-        // produce the frequency, not necessarily this one: the period
-        // depends on the instance's PWM clock. This can only fail on a SoC
-        // whose instances run from different clocks; on the nRF52, nRF53
-        // and nRF54L every instance runs at 16 MHz.
-        (void)iobroker_release(dev);
-        iobroker_gpio_pad_quiesce(soc_pad);
-        return -ERANGE;
-    }
     iobroker_state_t *state = nrf_pwm_state_find(dev);
-    state->period_cycles = period_cycles;
+    state->frequency = frequency;
     state->exclusive = exclusive;
     state->channels_used = BIT(0);
     *dev_out = dev;
     *channel_out = 0;
-    *period_cycles_out = period_cycles;
     return 0;
 }
 
@@ -718,7 +645,7 @@ bool iobroker_pwm_channel_release(const struct device *dev, uint32_t channel) {
     if (state->channels_used == 0) {
         // Last channel: release the whole group. De-init applies the sleep
         // state to the instance's pads.
-        state->period_cycles = 0;
+        state->frequency = 0;
         state->exclusive = false;
         (void)iobroker_release(dev);
     } else {

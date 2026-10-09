@@ -167,17 +167,16 @@ Individual PWM channels are allocated with
 `iobroker_pwm_channel_allocate()`, which shares an instance between pins.
 Channels that share a period form a group (for instance, on nRF, the four
 outputs of an instance; on other SoCs this might be a slice or a timer). The
-call takes a frequency, adjusts it to a period the hardware can produce
-(truncating on nRF), and joins a running group with the same period and a
-free channel, or takes a free instance. It returns the device, the channel
-number and the group's period, which the caller passes unchanged to
-`pwm_set_cycles()`. Joining or leaving a running group connects or
-disconnects only that one output, so the group's other outputs are not
-disturbed. An exclusive request (variable frequency) gets a group of its
-own, and `iobroker_pwm_period_cycles()` adjusts a new frequency for it.
+call takes the requested frequency only as the sharing key: it joins a
+running group requested at exactly the same frequency and with a free
+channel, or takes a free instance. It returns the device and the channel
+number; the caller turns the frequency into a period itself and passes it to
+`pwm_set_cycles()`, and the driver rejects a period its hardware cannot
+produce. Joining or leaving a running group connects or disconnects only
+that one output, so the group's other outputs are not disturbed. An
+exclusive request (variable frequency) gets a group of its own.
 `iobroker_pwm_channel_release()` returns a channel; the group's last channel
-releases the instance. A frequency the hardware cannot produce at all fails
-with `-ERANGE`.
+releases the instance.
 
 Not every instance can reach every pad. On nRF52 and nRF53 the routing is a
 full crossbar, but on nRF54L peripherals and GPIO controllers are grouped in
