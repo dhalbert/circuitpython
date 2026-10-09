@@ -501,7 +501,10 @@ int iobroker_uart_allocate(package_pin_t tx, package_pin_t rx,
         iobroker_uart_bus_states, requested, pins, 4, dev_out);
 }
 
-int iobroker_pwm_allocate(package_pin_t pin, const struct device **dev_out) {
+// Allocate a whole PWM instance for one output pin, routed to its first
+// output (OUT0); the other outputs stay disconnected. Used for a new
+// channel group.
+static int nrf_pwm_instance_allocate(package_pin_t pin, const struct device **dev_out) {
     LOG_INF("pwm allocate: pin=%u", (unsigned)pin);
     // The pin goes to OUT0; OUT1..OUT3 stay disconnected, and are recorded as
     // disconnected so the instance's pin list is complete.
@@ -614,7 +617,7 @@ int iobroker_pwm_channel_allocate(package_pin_t pin, uint32_t frequency,
 
     // Otherwise take a free instance, with the pin on OUT0.
     const struct device *dev;
-    ret = iobroker_pwm_allocate(pin, &dev);
+    ret = nrf_pwm_instance_allocate(pin, &dev);
     if (ret < 0) {
         // No new PWM available.
         return ret;

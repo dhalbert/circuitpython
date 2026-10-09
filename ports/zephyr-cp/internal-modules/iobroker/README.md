@@ -160,23 +160,20 @@ quiescent state (disconnected) on release, and GPIO claims conflict with bus
 allocations the same way bus allocations conflict with each other.
 `iobroker_gpio_allocate()` resolves the package pin through the map
 and returns both the GPIO controller device and the pin number within it.
-PWM instances are allocated whole with `iobroker_pwm_allocate()`, for one
-package pin routed to the instance's first output; the caller initializes the
-device and returns it with `iobroker_release()`, as with the buses.
-Individual PWM channels are allocated with
-`iobroker_pwm_channel_allocate()`, which shares an instance between pins.
-Channels that share a period form a group (for instance, on nRF, the four
-outputs of an instance; on other SoCs this might be a slice or a timer). The
-call takes the requested frequency only as the sharing key: it joins a
-running group requested at exactly the same frequency and with a free
-channel, or takes a free instance. It returns the device and the channel
-number; the caller turns the frequency into a period itself and passes it to
-`pwm_set_cycles()`, and the driver rejects a period its hardware cannot
-produce. Joining or leaving a running group connects or disconnects only
-that one output, so the group's other outputs are not disturbed. An
-exclusive request (variable frequency) gets a group of its own.
-`iobroker_pwm_channel_release()` returns a channel; the group's last channel
-releases the instance.
+PWM channels are allocated with `iobroker_pwm_channel_allocate()`, which
+shares an instance between pins. Channels that share a period form a group
+(for instance, on nRF, the four outputs of an instance; on other SoCs this
+might be a slice or a timer). The call takes the requested frequency only as
+the sharing key: it joins a running group requested at exactly the same
+frequency and with a free channel, or takes a free instance. It returns the
+device and the channel number; the caller turns the frequency into a period
+itself and passes it to `pwm_set_cycles()`, and the driver rejects a period
+its hardware cannot produce. Joining or leaving a running group connects or
+disconnects only that one output, so the group's other outputs are not
+disturbed. An exclusive request gets a group of its own that nobody joins:
+pwmio uses it for a variable frequency, and neopixel_write to program a
+whole nRF instance itself. `iobroker_pwm_channel_release()` returns a
+channel; the group's last channel releases the instance.
 
 Not every instance can reach every pad. On nRF52 and nRF53 the routing is a
 full crossbar, but on nRF54L peripherals and GPIO controllers are grouped in

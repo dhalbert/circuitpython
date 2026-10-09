@@ -176,9 +176,8 @@ typedef struct {
     // Used by iobroker_pin_in_use(); empty while the instance is free.
     package_pin_t pins[IOBROKER_MAX_PINS];
     uint8_t pin_count;
-    // The fields below are used only for a PWM instance shared by channels
-    // (iobroker_pwm_channel_allocate()). Buses and whole-instance PWM
-    // allocations (iobroker_pwm_allocate()) leave them 0.
+    // The fields below are used only for PWM instances allocated by channel
+    // (iobroker_pwm_channel_allocate()); buses leave them 0.
     // Frequency in Hz that the instance's channels were requested at; a
     // request joins only at exactly this frequency.
     uint32_t frequency;
@@ -236,21 +235,14 @@ int iobroker_spi_allocate(package_pin_t clock, package_pin_t mosi,
     package_pin_t miso, const struct device **dev_out);
 int iobroker_uart_allocate(package_pin_t tx, package_pin_t rx,
     package_pin_t rts, package_pin_t cts, const struct device **dev_out);
-// Allocate a whole PWM instance for one output pin, routed to the
-// instance's first output (OUT0 on nRF); its other outputs stay
-// disconnected. The instance is not shared, so the caller may program all
-// of it (neopixel_write plays its own sequence). Like the bus allocate
-// functions, the caller initializes the device (device_init()) and returns
-// it with iobroker_release(). To share an instance between pins, use
-// iobroker_pwm_channel_allocate() instead.
-int iobroker_pwm_allocate(package_pin_t pin, const struct device **dev_out);
-
 // Allocate one PWM output channel for a pin. Channels that share a period
 // (all outputs of an nRF instance; on other SoCs a slice or a timer) form a
 // group. frequency (Hz) only decides sharing: a request joins a running group
 // requested at exactly the same frequency, unless the group or the request
-// is exclusive (one caller holds the whole group, e.g. to change the period).
-// Otherwise a free group is taken. The caller turns the frequency into a
+// is exclusive. Otherwise a free group is taken. An exclusive request gets a
+// group of its own that nobody joins, for a caller that changes the period
+// or programs the group's hardware itself. What a group is depends on the
+// SoC: on nRF it is a whole PWM instance. The caller turns the frequency into a
 // period itself (pwm_get_cycles_per_sec()); requests at the same frequency
 // thus pass identical periods to pwm_set_cycles(), as drivers require of
 // channels in one group.
