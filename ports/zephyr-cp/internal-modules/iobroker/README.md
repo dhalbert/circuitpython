@@ -167,13 +167,14 @@ might be a slice or a timer). The call takes the requested frequency only as
 the sharing key: it joins a running group requested at exactly the same
 frequency and with a free channel, or takes a free instance. It returns the
 device and the channel number; the caller turns the frequency into a period
-itself and passes it to `pwm_set_cycles()`, and the driver rejects a period
-its hardware cannot produce. Joining or leaving a running group connects or
-disconnects only that one output, so the group's other outputs are not
-disturbed. An exclusive request gets a group of its own that nobody joins:
-pwmio uses it for a variable frequency, and neopixel_write to program a
-whole nRF instance itself. `iobroker_pwm_channel_release()` returns a
-channel; the group's last channel releases the instance.
+itself and passes it to `pwm_set_cycles()`. Checking that the hardware can
+produce that period is left to the driver, which doesn't reliably do so yet.
+Joining or leaving a running group connects or disconnects only that one
+output, so the group's other outputs are not disturbed. An exclusive request
+gets a group of its own that nobody joins: pwmio uses it for a variable
+frequency, and neopixel_write to program a whole nRF instance itself.
+`iobroker_pwm_channel_release()` returns a channel; the group's last channel
+releases the instance.
 
 Not every instance can reach every pad. On nRF52 and nRF53 the routing is a
 full crossbar, but on nRF54L peripherals and GPIO controllers are grouped in

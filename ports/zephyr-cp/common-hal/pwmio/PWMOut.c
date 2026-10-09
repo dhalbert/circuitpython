@@ -7,8 +7,9 @@
 // pwmio on Zephyr's PWM API. The iobroker module picks the PWM device and
 // channel for the pin; channels that share a period (an nRF instance's
 // outputs) are grouped there, so nothing here is SoC-specific. The period is
-// computed here from the device's clock, and the driver rejects a period it
-// can't produce.
+// computed here from the device's clock. Checking that the hardware can
+// produce it is left to the driver, which doesn't reliably do so yet (pwm_nrfx
+// skips the check at 0 % and 100 % duty).
 
 #include <errno.h>
 
@@ -98,7 +99,7 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t *self,
     self->period_cycles = period_cycles;
     self->duty_cycle = duty;
     self->variable_frequency = variable_frequency;
-    // The driver rejects a period its hardware can't produce.
+    // The driver may reject a period its hardware can't produce.
     if (set_period_and_duty(self) < 0) {
         (void)iobroker_pwm_channel_release(dev, channel);
         self->dev = NULL;
