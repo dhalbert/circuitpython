@@ -235,17 +235,26 @@ int iobroker_spi_allocate(package_pin_t clock, package_pin_t mosi,
     package_pin_t miso, const struct device **dev_out);
 int iobroker_uart_allocate(package_pin_t tx, package_pin_t rx,
     package_pin_t rts, package_pin_t cts, const struct device **dev_out);
-// Allocate one PWM output channel for a pin. Channels that share a period
-// (all outputs of an nRF instance; on other SoCs a slice or a timer) form a
-// group. frequency (Hz) only decides sharing: a request joins a running group
-// requested at exactly the same frequency, unless the group or the request
-// is exclusive. Otherwise a free group is taken. An exclusive request gets a
-// group of its own that nobody joins, for a caller that changes the period
-// or programs the group's hardware itself. What a group is depends on the
-// SoC: on nRF it is a whole PWM instance. The caller turns the frequency into a
-// period itself (pwm_get_cycles_per_sec()); requests at the same frequency
-// thus pass identical periods to pwm_set_cycles(), as drivers require of
-// channels in one group.
+
+// Allocate one PWM output channel for a pin.
+//
+// Channels that share a period form a group. What a group is depends on
+// the SoC:
+//   nRF:   a whole PWM instance (four channels)
+//   RP2:   a slice (channels A and B)
+//   ESP32: an LEDC timer and the channels bound to it
+//   STM32: a timer (up to four channels sharing its auto-reload period)
+//
+// frequency (Hz) is used only to decide sharing; this call does not set the
+// frequency. The caller converts it to a period itself (with
+// pwm_get_cycles_per_sec()) and sets it with pwm_set_cycles(). Requests at
+// the same frequency thus pass identical periods to pwm_set_cycles(), as
+// drivers require of channels in one group.
+//
+// A request joins a running group requested at exactly the same frequency,
+// unless the group or the request is exclusive. Otherwise a free group is
+// taken. An exclusive request gets a group of its own that nobody joins, for
+// a caller that changes the period or programs the group's hardware itself.
 //
 // On success returns 0 and sets *dev_out and *channel_out (the channel number
 // pwm_set_cycles() takes). The caller then calls device_init(), which returns

@@ -133,11 +133,11 @@ uint16_t common_hal_pwmio_pwmout_get_duty_cycle(pwmio_pwmout_obj_t *self) {
 }
 
 void common_hal_pwmio_pwmout_set_frequency(pwmio_pwmout_obj_t *self, uint32_t frequency) {
-    // Only used when variable_frequency=True, so the
-    // channel's group is exclusive and no other channel shares the period.
+    // shared-bindings raises AttributeError unless variable_frequency=True,
+    // so the channel's group is exclusive and no other channel shares the
+    // period. It also rejects 0 Hz, so frequency_to_period() can divide.
     uint32_t period_cycles;
-    if (frequency == 0 ||
-        frequency_to_period(self->dev, self->channel, frequency, &period_cycles) < 0) {
+    if (frequency_to_period(self->dev, self->channel, frequency, &period_cycles) < 0) {
         common_hal_pwmio_pwmout_raise_error(PWMOUT_INVALID_FREQUENCY);
     }
     uint32_t old_period_cycles = self->period_cycles;
