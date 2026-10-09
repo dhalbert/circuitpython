@@ -155,7 +155,7 @@ size_t usb_hid_add_descriptor(uint8_t *descriptor_buf, descriptor_counts_t *desc
         descriptor_buf[HID_DESCRIPTOR_INTERFACE_PROTOCOL_INDEX] = boot_device; // 1: keyboard, 2: mouse
     }
 
-    usb_add_interface_name(*current_interface_string, custom_usb_hid_interface_name, " HID");
+    usb_add_interface_name(*current_interface_string, custom_usb_hid_interface_name, "HID");
     descriptor_buf[HID_DESCRIPTOR_INTERFACE_STRING_INDEX] = *current_interface_string;
     (*current_interface_string)++;
 

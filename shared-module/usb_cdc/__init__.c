@@ -126,10 +126,10 @@ static const uint8_t usb_cdc_descriptor_template[] = {
     0x00,        // 65 bInterval 0 (unit depends on device speed)
 };
 
-static const char console_cdc_comm_interface_name[] = " CDC control";
-static const char data_cdc_comm_interface_name[] = " CDC2 control";
-static const char console_cdc_data_interface_name[] = " CDC data";
-static const char data_cdc_data_interface_name[] = " CDC2 data";
+static const char console_cdc_comm_interface_name[] = "CDC control";
+static const char data_cdc_comm_interface_name[] = "CDC2 control";
+static const char console_cdc_data_interface_name[] = "CDC data";
+static const char data_cdc_data_interface_name[] = "CDC2 data";
 
 // .idx is set later.
 
@@ -353,7 +353,7 @@ static const uint8_t usb_vendor_descriptor_template[] = {
     0x0          // 22  bInterval 0
 };
 
-static const char vendor_interface_name[] = " WebUSB";
+static const char vendor_interface_name[] = "WebUSB";
 
 
 bool usb_vendor_enabled(void) {

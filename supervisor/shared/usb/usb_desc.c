@@ -49,7 +49,7 @@ typedef union {
 } interface_string_t;
 static interface_string_t collected_interface_strings[MAX_INTERFACE_STRINGS];
 
-// Bit n set: string n is a suffix to put after USB_INTERFACE_NAME.
+// Bit n set: string n is a suffix to put after USB_INTERFACE_NAME and a space.
 static uint32_t prefixed_interface_strings;
 static size_t collected_interface_strings_length;
 static uint8_t current_interface_string;
@@ -291,16 +291,16 @@ static bool usb_build_configuration_descriptor(void) {
 }
 
 // str must not be on the heap.
-void usb_add_interface_name(uint8_t interface_string_index, const char *custom_name, const char *suffix) {
+void usb_add_interface_name(uint8_t interface_string_index, const char *custom_name, const char *default_suffix) {
     if (interface_string_index > MAX_INTERFACE_STRINGS) {
         reset_into_safe_mode(SAFE_MODE_USB_TOO_MANY_INTERFACE_NAMES);
     }
 
     const char *str = custom_name;
     if (str == NULL) {
-        str = suffix;
+        str = default_suffix;
         prefixed_interface_strings |= 1u << interface_string_index;
-        collected_interface_strings_length += sizeof(USB_INTERFACE_NAME) - 1;
+        collected_interface_strings_length += sizeof(USB_INTERFACE_NAME " ") - 1;
     }
     collected_interface_strings[interface_string_index].char_str = str;
     collected_interface_strings_length += strlen(str);
@@ -344,7 +344,7 @@ static bool usb_build_interface_string_table(void) {
         // Convert to le16 after 1 word for descriptor type and length.
         uint16_t *end = string_descriptor + 1;
         if (prefixed_interface_strings & (1u << string_index)) {
-            end = ascii_to_le16(end, USB_INTERFACE_NAME);
+            end = ascii_to_le16(end, USB_INTERFACE_NAME " ");
         }
         end = ascii_to_le16(end, str);
         const uint8_t descriptor_size_bytes = (end - string_descriptor) * 2;
