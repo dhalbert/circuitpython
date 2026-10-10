@@ -107,7 +107,7 @@ size_t usb_msc_descriptor_length(void) {
     return sizeof(usb_msc_descriptor_template);
 }
 
-static const char storage_interface_name[] = USB_INTERFACE_NAME " Mass Storage";
+static const char storage_interface_name[] = "Mass Storage";
 
 size_t usb_msc_add_descriptor(uint8_t *descriptor_buf, descriptor_counts_t *descriptor_counts, uint8_t *current_interface_string) {
     memcpy(descriptor_buf, usb_msc_descriptor_template, sizeof(usb_msc_descriptor_template));
@@ -127,7 +127,7 @@ size_t usb_msc_add_descriptor(uint8_t *descriptor_buf, descriptor_counts_t *desc
     descriptor_counts->num_out_endpoints++;
     descriptor_counts->current_endpoint++;
 
-    usb_add_interface_string(*current_interface_string, storage_interface_name);
+    usb_add_interface_name(*current_interface_string, NULL, storage_interface_name);
     descriptor_buf[MSC_INTERFACE_STRING_INDEX] = *current_interface_string;
     (*current_interface_string)++;
 

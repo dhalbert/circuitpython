@@ -47,6 +47,8 @@ typedef struct {
 // Shared implementation.
 bool usb_enabled(void);
 void usb_add_interface_string(uint8_t interface_string_index, const char str[]);
+// Add custom_name, or if it is NULL, USB_INTERFACE_NAME, a space, and default_suffix.
+void usb_add_interface_name(uint8_t interface_string_index, const char *custom_name, const char *default_suffix);
 bool usb_build_descriptors(const usb_identification_t *identification);
 bool usb_connected(void);
 void usb_disconnect(void);
