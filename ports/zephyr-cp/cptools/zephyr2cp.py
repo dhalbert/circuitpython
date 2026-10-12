@@ -812,6 +812,29 @@ def _dt_board_buses(device_tree, board_names):
     return buses
 
 
+def _toml_status_dotstar(mpconfigboard, board_names):
+    """Resolve the status DotStar's ``STATUS_DOTSTAR_DATA`` and
+    ``STATUS_DOTSTAR_CLOCK`` keys to a ``(data, clock)`` pair of pins.
+
+    Returns None when neither key is present. Raises when only one is, or
+    when ``STATUS_NEOPIXEL`` is also set: the status LED code would use the
+    NeoPixel and ignore the DotStar.
+    """
+    data = _toml_status_pin(mpconfigboard, board_names, "STATUS_DOTSTAR_DATA")
+    clock = _toml_status_pin(mpconfigboard, board_names, "STATUS_DOTSTAR_CLOCK")
+    if data is None and clock is None:
+        return None
+    if data is None or clock is None:
+        raise RuntimeError(
+            "circuitpython.toml needs both STATUS_DOTSTAR_DATA and STATUS_DOTSTAR_CLOCK"
+        )
+    if (mpconfigboard or {}).get("STATUS_NEOPIXEL") is not None:
+        raise RuntimeError(
+            "circuitpython.toml sets both STATUS_NEOPIXEL and a status DotStar; use one"
+        )
+    return data, clock
+
+
 @cpbuild.run_in_thread
 def zephyr_dts_to_cp_board(board_id, portdir, builddir, zephyrbuilddir, mpconfigboard=None):  # noqa: C901
     board_dir = builddir / "board"
@@ -1291,6 +1314,9 @@ def zephyr_dts_to_cp_board(board_id, portdir, builddir, zephyrbuilddir, mpconfig
     board_buses = _dt_board_buses(device_tree, board_names) if pinctrl_nrf else {}
     board_bus_names = {bus.upper() for bus in board_buses}
     pin_object_of = {}
+    # Status DotStar: ``STATUS_DOTSTAR_DATA`` and ``STATUS_DOTSTAR_CLOCK``,
+    # driven by the status LED code with bit-banged SPI.
+    status_dotstar = _toml_status_dotstar(mpconfigboard, board_names)
     # GPIO pad number -> pad: every (label, num) name and alias the
     # devicetree walk produced keys into one pin object per pad.
     pad_of_gpio = {}
@@ -1351,6 +1377,10 @@ def zephyr_dts_to_cp_board(board_id, portdir, builddir, zephyrbuilddir, mpconfig
             if status_neopixel_power and (ioport, num) == status_neopixel_power:
                 status_neopixel_power = pin_object_name
             pin_object_of[(ioport, num)] = pin_object_name
+            if status_dotstar:
+                status_dotstar = tuple(
+                    pin_object_name if pin == (ioport, num) else pin for pin in status_dotstar
+                )
             pin_defs.append(
                 f"const mcu_pin_obj_t pin_{pin_object_name} = {{ .base.type = &mcu_pin_type, .package_pin = {package_pin_init}}};"
             )
@@ -1762,6 +1792,14 @@ static mii_ethernet_obj_t ethernet_obj;
         )
     else:
         status_neopixel_power = ""
+    if status_dotstar:
+        status_dotstar = (
+            f"#define MICROPY_HW_APA102_MOSI (&pin_{status_dotstar[0]})\n"
+            f"#define MICROPY_HW_APA102_SCK (&pin_{status_dotstar[1]})\n"
+            "#define CIRCUITPY_BITBANG_APA102 (1)\n"
+        )
+    else:
+        status_dotstar = ""
     ram_list = []
     ram_externs = []
     max_size = 0
@@ -1796,6 +1834,7 @@ static mii_ethernet_obj_t ethernet_obj;
 {status_neopixel}
 {status_neopixel_power}
 {board_bus_defines}
+{status_dotstar}
         """
     if not header.exists() or header.read_text() != new_header_content:
         header.write_text(new_header_content)
