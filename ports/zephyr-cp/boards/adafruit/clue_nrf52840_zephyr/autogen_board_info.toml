@@ -75,6 +75,7 @@ mdns = false
 memorymap = false
 memorymonitor = false
 microcontroller = true
+mii = false
 mipidsi = false
 msgpack = true
 neopixel_write = true # Zephyr board has neopixel_write

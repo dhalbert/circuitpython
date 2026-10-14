@@ -52,6 +52,7 @@ DEFAULT_MODULES = [
     "json",
     "random",
     "digitalio",
+    "bitbangio",
     "rotaryio",
     "rainbowio",
     "traceback",

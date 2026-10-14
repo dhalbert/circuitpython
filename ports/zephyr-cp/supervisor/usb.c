@@ -314,7 +314,7 @@ void usb_init(void) {
     if (console) {
         uint8_t *receiver_buffer = port_malloc(1024, true);
         if (receiver_buffer != NULL) {
-            common_hal_usb_cdc_serial_construct_from_device(&usb_cdc_console_obj, DEVICE_DT_GET(DT_NODELABEL(cdc_acm_console)), 1024, receiver_buffer);
+            common_hal_usb_cdc_serial_construct_from_device(&usb_cdc_console_obj, DEVICE_DT_GET(DT_NODELABEL(cdc_acm_console)), 1024, receiver_buffer, true);
         } else {
             console = false;
         }
@@ -325,7 +325,7 @@ void usb_init(void) {
     if (data) {
         uint8_t *receiver_buffer = port_malloc(1024, true);
         if (receiver_buffer != NULL) {
-            common_hal_usb_cdc_serial_construct_from_device(&usb_cdc_data_obj, DEVICE_DT_GET(DT_NODELABEL(cdc_acm_data)), 1024, receiver_buffer);
+            common_hal_usb_cdc_serial_construct_from_device(&usb_cdc_data_obj, DEVICE_DT_GET(DT_NODELABEL(cdc_acm_data)), 1024, receiver_buffer, false);
         } else {
             data = false;
         }

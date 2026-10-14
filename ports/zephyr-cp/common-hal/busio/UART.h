@@ -30,6 +30,8 @@ typedef struct {
     // Set when the sender waits for unread data (USB CDC), so RX can
     // pause on a full msgq instead of dropping bytes.
     bool flow_control;
+    // Raise KeyboardInterrupt on mp_interrupt_char.
+    bool sigint_enabled;
 
     // True when the underlying Zephyr device was dynamically routed to the
     // pins above at construction time. Such objects own their receiver
@@ -38,7 +40,7 @@ typedef struct {
 } busio_uart_obj_t;
 
 // Helper function for Zephyr-specific initialization from device tree
-mp_obj_t common_hal_busio_uart_construct_from_device(busio_uart_obj_t *self, const struct device *uart_device, uint16_t receiver_buffer_size, byte *receiver_buffer);
+mp_obj_t common_hal_busio_uart_construct_from_device(busio_uart_obj_t *self, const struct device *uart_device, uint16_t receiver_buffer_size, byte *receiver_buffer, bool sigint_enabled);
 
 // Internal helper for clearing buffer
 void common_hal_busio_uart_clear_rx_buffer(busio_uart_obj_t *self);

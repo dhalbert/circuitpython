@@ -1493,7 +1493,7 @@ def zephyr_dts_to_cp_board(board_id, portdir, builddir, zephyrbuilddir, mpconfig
             if driver == "serial":
                 # UART needs a receiver buffer
                 buffer_decl = f"static byte {instance_name}_buffer[128];"
-                construct_call = f"common_hal_busio_uart_construct_from_device(&{instance_name}_obj, DEVICE_DT_GET(DT_NODELABEL({labels[0]})), 128, {instance_name}_buffer)"
+                construct_call = f"common_hal_busio_uart_construct_from_device(&{instance_name}_obj, DEVICE_DT_GET(DT_NODELABEL({labels[0]})), 128, {instance_name}_buffer, false)"
             else:
                 # Default case (I2C, SPI, I2S)
                 buffer_decl = ""
