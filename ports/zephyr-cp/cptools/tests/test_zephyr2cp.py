@@ -26,6 +26,7 @@ from zephyr2cp import (
     add_toml_pin_names,
     _fastest_first,
     _dt_board_buses,
+    _dt_board_bus_aliases,
     _toml_status_dotstar,
     _toml_status_pin,
 )
@@ -816,8 +817,14 @@ class TestDtBoardBuses:
     }
 
     @staticmethod
-    def _device_tree(*labels):
-        return SimpleNamespace(label2node={label: object() for label in labels})
+    def _device_tree(*nodes):
+        """Each argument is one node: a label, or a tuple of labels."""
+        label2node = {}
+        for labels in nodes:
+            node = object()
+            for label in (labels,) if isinstance(labels, str) else labels:
+                label2node[label] = node
+        return SimpleNamespace(label2node=label2node)
 
     def test_board_labels(self):
         buses = _dt_board_buses(
@@ -848,6 +855,18 @@ class TestDtBoardBuses:
         names = {key: value for key, value in self.BOARD_NAMES.items() if value != ["MISO"]}
         with pytest.raises(RuntimeError, match="board_spi needs a board pin named MISO"):
             _dt_board_buses(self._device_tree("board_spi"), names)
+
+    def test_alias_on_bus_node(self):
+        device_tree = self._device_tree(("i2c0", "board_i2c", "board_stemma_i2c"))
+        assert _dt_board_bus_aliases(device_tree) == {"STEMMA_I2C": "i2c"}
+
+    def test_no_alias_labels(self):
+        assert _dt_board_bus_aliases(self._device_tree("board_i2c")) == {}
+
+    def test_alias_on_other_node_raises(self):
+        device_tree = self._device_tree("board_i2c", "board_stemma_i2c")
+        with pytest.raises(RuntimeError, match="must be on the board_i2c node"):
+            _dt_board_bus_aliases(device_tree)
 
 
 class TestFastestFirst:

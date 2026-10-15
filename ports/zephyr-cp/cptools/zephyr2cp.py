@@ -774,6 +774,11 @@ BOARD_BUS_LABELS = {
     "board_spi": ("spi", (("clock", "SCK"), ("mosi", "MOSI"), ("miso", "MISO"))),
     "board_serial": ("uart", (("tx", "TX"), ("rx", "RX"))),
 }
+# Devicetree labels that give a board bus a second board name, mapped to the
+# BOARD_BUS_LABELS label whose node they must share and the extra name.
+BOARD_BUS_ALIAS_LABELS = {
+    "board_stemma_i2c": ("board_i2c", "STEMMA_I2C"),
+}
 # The board bus class each busio-capable devicetree driver provides.
 BOARD_BUS_OF_DRIVER = {"i2c": "i2c", "spi": "spi", "serial": "uart"}
 
@@ -810,6 +815,24 @@ def _dt_board_buses(device_tree, board_names):
             pins[field] = pin
         buses[bus] = pins
     return buses
+
+
+def _dt_board_bus_aliases(device_tree):
+    """Find the second board names that devicetree labels give board buses.
+
+    Each BOARD_BUS_ALIAS_LABELS label in the devicetree names the board bus
+    on the same node again, such as ``board.STEMMA_I2C`` for ``board.I2C``.
+    Returns ``{name: bus}``.
+    """
+    aliases = {}
+    for label, (bus_label, name) in BOARD_BUS_ALIAS_LABELS.items():
+        node = device_tree.label2node.get(label)
+        if node is None:
+            continue
+        if device_tree.label2node.get(bus_label) is not node:
+            raise RuntimeError(f"devicetree label {label} must be on the {bus_label} node")
+        aliases[name] = BOARD_BUS_LABELS[bus_label][0]
+    return aliases
 
 
 def _toml_status_dotstar(mpconfigboard, board_names):
@@ -1312,7 +1335,8 @@ def zephyr_dts_to_cp_board(board_id, portdir, builddir, zephyrbuilddir, mpconfig
     # labels mark, constructed on demand on their pins. That needs iobroker
     # routing (nRF); other SoCs keep their fixed devicetree buses.
     board_buses = _dt_board_buses(device_tree, board_names) if pinctrl_nrf else {}
-    board_bus_names = {bus.upper() for bus in board_buses}
+    board_bus_aliases = _dt_board_bus_aliases(device_tree) if pinctrl_nrf else {}
+    board_bus_names = {bus.upper() for bus in board_buses} | set(board_bus_aliases)
     pin_object_of = {}
     # Status DotStar: ``STATUS_DOTSTAR_DATA`` and ``STATUS_DOTSTAR_CLOCK``,
     # driven by the status LED code with bit-banged SPI.
@@ -1536,6 +1560,10 @@ static MP_DEFINE_CONST_FUN_OBJ_0({function_object}, {c_function_name});""".lstri
         board_bus_defines.append(f"#define CIRCUITPY_BOARD_{bus.upper()}_PIN {{{{{fields}}}}}")
         board_bus_labels.append(
             f"{{ MP_ROM_QSTR(MP_QSTR_{bus.upper()}), MP_ROM_PTR(&board_{bus}_obj) }},"
+        )
+    for name, bus in board_bus_aliases.items():
+        board_bus_labels.append(
+            f"{{ MP_ROM_QSTR(MP_QSTR_{name}), MP_ROM_PTR(&board_{bus}_obj) }},"
         )
     board_bus_defines = "\n".join(board_bus_defines)
     board_bus_labels = "\n".join(board_bus_labels)
