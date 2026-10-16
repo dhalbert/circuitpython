@@ -174,6 +174,12 @@
 	pinctrl-names = "default", "sleep";
 };
 
+// board.SPI() is on the expansion header's SPI pins (SCK/MOSI/MISO, header
+// D3/D0/D1), and board.UART() on TX/RX (P0.06/P0.07), the debugger's VCOM0
+// serial port. See BOARD_BUS_LABELS in cptools/zephyr2cp.py.
+board_spi: &nordic_expansion_spi {};
+board_serial: &uart30 {};
+
 // PWM instances 21 and 22, same scheme: all four outputs disconnected and
 // deferred init, so iobroker can hand an instance to neopixel_write and
 // pwmio and route its outputs at runtime. Instance 20 is left as the board
