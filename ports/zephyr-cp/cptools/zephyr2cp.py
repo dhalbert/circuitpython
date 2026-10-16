@@ -1398,16 +1398,21 @@ def zephyr_dts_to_cp_board(board_id, portdir, builddir, zephyrbuilddir, mpconfig
 
     # Bus instances the board enabled with all-disconnected pins are routed to
     # arbitrary pins at runtime by busio objects instead of being exposed as
-    # fixed board.X() singletons.
+    # fixed board.X() singletons. For now only nRF has iobroker routing. Other
+    # SoCs' pinctrl states have no psels, so all() of the empty list would
+    # wrongly mark every one of their buses as routable.
+    #
+    # TODO: add iobroker routing for the non-nRF SoCs.
     iobroker_labels = set()
-    for driver in BUSIO_CLASSES:
-        for labels in active_zephyr_devices.get(driver, []):
-            node = device_tree.label2node[labels[0]]
-            psels = _pinctrl_default_psels(node)
-            if psels is not None and all(
-                (value & NRF_PIN_FIELD_MASK) == NRF_PIN_FIELD_MASK for value in psels
-            ):
-                iobroker_labels.add(labels[0])
+    if pinctrl_nrf:
+        for driver in BUSIO_CLASSES:
+            for labels in active_zephyr_devices.get(driver, []):
+                node = device_tree.label2node[labels[0]]
+                psels = _pinctrl_default_psels(node)
+                if psels is not None and all(
+                    (value & NRF_PIN_FIELD_MASK) == NRF_PIN_FIELD_MASK for value in psels
+                ):
+                    iobroker_labels.add(labels[0])
 
     zephyr_binding_headers = []
     zephyr_binding_objects = []
